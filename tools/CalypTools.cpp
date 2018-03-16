@@ -401,7 +401,7 @@ int CalypTools::SaveOperation()
     bRet = m_apcInputStreams[s]->seekInput( m_iFrameNum );
     if( bRet == false )
     {
-      log( CLP_LOG_INFO, "Cannot seek input file to frame %d", m_iFrameNum );
+      log( CLP_LOG_INFO, "Cannot seek input file to frame %d! ", m_iFrameNum );
       return -1;
     }
     m_apcInputStreams[s]->saveFrame( m_pcOutputFileNames[s] );

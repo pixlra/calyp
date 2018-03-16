@@ -74,7 +74,7 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 
   if( !m_cOptions.parse( argc, argv ) )
   {
-    iRet = 1;
+    iRet = -1;
   }
 
   if( m_bQuiet )

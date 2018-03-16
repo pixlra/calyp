@@ -104,7 +104,7 @@ int CalypTools::openInputs()
         if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitPerPixel, uiEndianness, 1, true ) )
         {
           log( CLP_LOG_ERROR, "Cannot open input stream %s! ", inputFileNames[i].c_str() );
-          return 2;
+          return -1;
         }
         m_apcInputStreams.push_back( pcStream );
       }
@@ -112,7 +112,7 @@ int CalypTools::openInputs()
       {
         log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(),
              msg );
-        return 2;
+        return -1;
       }
     }
   }
@@ -142,16 +142,20 @@ int CalypTools::Open( int argc, char* argv[] )
   if( CalypPixel::getMaxNumberOfComponents() > MAX_NUMBER_CHANNELS )
   {
       log( CLP_LOG_ERROR, "Cannot parse the maximum number of components!" );
-      return 1;
+      return -1;
   }
-  if( ( iRet = parseToolsArgs( argc, argv ) ) > 0 )
+  if( ( iRet = parseToolsArgs( argc, argv ) ) < 0 )
   {
     return iRet;
   }
-
-  if( openInputs() > 0 )
+  if( iRet == 1 )
   {
-    return 2;
+      return iRet;
+  }
+
+  if( ( iRet = openInputs() ) < 0 )
+  {
+    return iRet;
   }
 
   if( Opts().hasOpt( "save" ) )
@@ -159,7 +163,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_apcInputStreams.size() == 0 )
     {
       log( CLP_LOG_ERROR, "Invalid number of input streams! " );
-      return 2;
+      return -1;
     }
     long long int currFrames = 0;
     long long int numberOfFrames = LONG_MAX;
@@ -173,7 +177,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( !( m_iFrameNum >= 0 && m_iFrameNum < numberOfFrames ) )
     {
       log( CLP_LOG_ERROR, "Invalid frame number! Use --frame option " );
-      return 2;
+      return -1;
     }
     if( Opts().hasOpt( "output" ) )
       m_pcOutputFileNames.push_back( m_strOutput );
@@ -181,7 +185,7 @@ int CalypTools::Open( int argc, char* argv[] )
     {
       log( CLP_LOG_ERROR, "Invalid number of outputs! Each input must have an "
                           "output filename. " );
-      return 2;
+      return -1;
     }
 
     m_uiOperation = SAVE_OPERATION;
@@ -194,7 +198,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_apcInputStreams.size() == 0 )
     {
       log( CLP_LOG_ERROR, "Invalid number of input streams! " );
-      return 2;
+      return -1;
     }
     long long int currFrames = 0;
     long long int numberOfFrames = LONG_MAX;
@@ -207,7 +211,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_iRateReductionFactor <= 0 )
     {
       log( CLP_LOG_ERROR, "Invalid frame rate reduction value!" );
-      return 2;
+      return -1;
     }
 
     if( Opts().hasOpt( "output" ) )
@@ -227,7 +231,7 @@ int CalypTools::Open( int argc, char* argv[] )
            msg );
       delete pcOutputStream;
       pcOutputStream = NULL;
-      return 2;
+      return -1;
     }
     m_apcOutputStreams.push_back( pcOutputStream );
 
@@ -235,7 +239,7 @@ int CalypTools::Open( int argc, char* argv[] )
     {
       log( CLP_LOG_ERROR, "Invalid number of outputs! Each input must have an "
                           "output filename. " );
-      return 2;
+      return -1;
     }
 
     m_uiOperation = RATE_REDUCTION_OPERATION;
@@ -252,7 +256,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_apcInputStreams.size() < 2 )
     {
       log( CLP_LOG_ERROR, "Invalid number of inputs! " );
-      return 2;
+      return -1;
     }
     for( unsigned int i = 0; i < CalypFrame::supportedQualityMetricsList().size(); i++ )
     {
@@ -264,7 +268,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_uiQualityMetric == -1 )
     {
       log( CLP_LOG_ERROR, "Invalid quality metric! " );
-      return 2;
+      return -1;
     }
     m_uiOperation = QUALITY_OPERATION;
     m_fpProcess = &CalypTools::QualityOperation;
@@ -291,13 +295,13 @@ int CalypTools::Open( int argc, char* argv[] )
     if( !m_pcCurrModuleIf )
     {
       log( CLP_LOG_ERROR, "Invalid module! " );
-      return 2;
+      return -1;
     }
 
     if( m_apcInputStreams.size() != m_pcCurrModuleIf->m_uiNumberOfFrames )
     {
       log( CLP_LOG_ERROR, "Invalid number of inputs! " );
-      return 2;
+      return -1;
     }
 
     m_pcCurrModuleIf->m_cModuleOptions.parse( argc, argv );
@@ -321,7 +325,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( !moduleCreated )
     {
       log( CLP_LOG_ERROR, "Module is not supported with the selected inputs! " );
-      return 2;
+      return -1;
     }
 
     if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
@@ -354,14 +358,14 @@ int CalypTools::Open( int argc, char* argv[] )
                msg );
           delete pcModStream;
           pcModStream = NULL;
-          return 2;
+          return -1;
         }
         m_apcOutputStreams.push_back( pcModStream );
       }
       else
       {
         log( CLP_LOG_ERROR, "One output is required! " );
-        return 2;
+        return -1;
       }
     }
 
@@ -373,7 +377,7 @@ int CalypTools::Open( int argc, char* argv[] )
   if( m_uiOperation == INVALID_OPERATION )
   {
     log( CLP_LOG_ERROR, "No operation was selected! " );
-    return 2;
+    return -1;
   }
   return iRet;
 }
@@ -397,7 +401,8 @@ int CalypTools::SaveOperation()
     bRet = m_apcInputStreams[s]->seekInput( m_iFrameNum );
     if( bRet == false )
     {
-      return 2;
+      log( CLP_LOG_INFO, "Cannot seek input file to frame %d", m_iFrameNum );
+      return -1;
     }
     m_apcInputStreams[s]->saveFrame( m_pcOutputFileNames[s] );
   }

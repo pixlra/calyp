@@ -35,19 +35,19 @@ int main( int argc, char* argv[] )
   {
     return 0;
   }
-  if( iRet > 1 )
+  if( iRet < 0 )
   {
     printf( "Exiting with error \n" );
     return 1;
   }
 
-  if( CalypToolsApp.Process() > 1 )
+  if( CalypToolsApp.Process() < 0 )
   {
     printf( "Exiting with error \n" );
     return 1;
   }
 
-  if( CalypToolsApp.Close() > 1 )
+  if( CalypToolsApp.Close() < 0 )
   {
     printf( "Exiting with error \n" );
     return 1;

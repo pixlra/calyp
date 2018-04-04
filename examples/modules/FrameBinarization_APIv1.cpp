@@ -47,7 +47,7 @@ FrameBinarization_APIv1::FrameBinarization_APIv1()
 void FrameBinarization_APIv1::create( CalypFrame* frame )
 {
   m_pcBinFrame = NULL;
-  m_pcBinFrame = new CalypFrame( frame->getWidth(), frame->getHeight(), CalypFrame::GRAY, 8 );
+  m_pcBinFrame = new CalypFrame( frame->getWidth(), frame->getHeight(), CLP_GRAY, 8 );
 }
 
 CalypFrame* FrameBinarization_APIv1::process( CalypFrame* frame )

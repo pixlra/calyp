@@ -55,7 +55,7 @@ bool AbsoluteFrameDifferenceExample::create( std::vector<CalypFrame*> apcFrameLi
       return false;
 
   m_pcFrameDifference =
-      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CalypFrame::GRAY );
+      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
   return true;
 }
 

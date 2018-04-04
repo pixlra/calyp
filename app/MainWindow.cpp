@@ -278,14 +278,16 @@ QStringList MainWindow::showFileDialog( bool bRead )
   filter << supported << formatsList << tr( "All Files (*)" );
 
   QStringList fileNameList;
+  fileNameList.clear();
   if( bRead )
   {
     fileNameList = QFileDialog::getOpenFileNames( this, tr( "Open File" ), m_cLastOpenPath, filter.join( ";;" ) );
   }
   else
   {
-    QString fileName = QFileDialog::getSaveFileName( this, tr( "Open File" ), m_cLastOpenPath, filter.join( ";;" ) );
-    fileNameList.append( fileName );
+    QString fileName = QFileDialog::getSaveFileName( this, tr( "Save File" ), m_cLastOpenPath, filter.join( ";;" ) );
+    if( !fileName.isEmpty() )
+        fileNameList.append( fileName );
   }
   return fileNameList;
 }
@@ -321,10 +323,10 @@ void MainWindow::saveFrame()
   {
     VideoSubWindow* saveWindow = m_pcCurrentVideoSubWindow;
 
-    QStringList fileNames = showFileDialog( false );
-    if( fileNames.size() == 1 )
+    QStringList fileNameList = showFileDialog( false );
+    if( fileNameList.size() == 1 )
     {
-      QString fileName = fileNames[0];
+      QString fileName = fileNameList[0];
       m_cLastOpenPath = QFileInfo( fileName ).path();
       try
       {
@@ -349,10 +351,10 @@ void MainWindow::saveStream()
   {
     VideoSubWindow* saveWindow = m_pcCurrentVideoSubWindow;
 
-    QStringList fileNames = showFileDialog( false );
-    if( fileNames.size() == 1 )
+    QStringList fileNameList = showFileDialog( false );
+    if( fileNameList.size() == 1 )
     {
-      QString fileName = fileNames[0];
+      QString fileName = fileNameList[0];
       m_cLastOpenPath = QFileInfo( fileName ).path();
       try
       {
@@ -657,7 +659,7 @@ void MainWindow::createActions()
   m_arrayActions[SAVE_STREAM_ACT]->setIcon( style()->standardIcon( QStyle::SP_DialogSaveButton ) );
   m_arrayActions[SAVE_STREAM_ACT]->setShortcuts( QKeySequence::SaveAs );
   m_arrayActions[SAVE_STREAM_ACT]->setStatusTip( tr( "Save current stream" ) );
-  connect( m_arrayActions[SAVE_ACT], SIGNAL( triggered() ), this, SLOT( saveStream() ) );
+  connect( m_arrayActions[SAVE_STREAM_ACT], SIGNAL( triggered() ), this, SLOT( saveStream() ) );
 
   m_arrayActions[FORMAT_ACT] = new QAction( tr( "&Format" ), this );
   m_arrayActions[FORMAT_ACT]->setIcon( QIcon::fromTheme( "transform-scale" ) );

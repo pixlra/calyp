@@ -1153,6 +1153,10 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
 
 double CalypFrame::getQuality( int Metric, CalypFrame* Org, int component )
 {
+  if( component >= getNumberChannels() )
+  {
+    return 0;
+  }
   switch( Metric )
   {
   case PSNR_METRIC:

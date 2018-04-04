@@ -197,7 +197,6 @@ void QualityMeasurementSidebar::updateSidebarData()
       }
       for( ; component < 3; component++ )
       {
-        quality = currFrame->getQuality( m_comboBoxMetric->currentIndex(), refFrame, component );
         m_ppcLabelQualityValue[component]->setText( zeroValue );
       }
       return;

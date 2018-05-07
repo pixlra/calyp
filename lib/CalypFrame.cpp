@@ -1151,7 +1151,7 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
   };
 }
 
-double CalypFrame::getQuality( int Metric, CalypFrame* Org, int component )
+double CalypFrame::getQuality( int Metric, CalypFrame* Org, unsigned int component )
 {
   if( component >= getNumberChannels() )
   {
@@ -1174,7 +1174,7 @@ double CalypFrame::getQuality( int Metric, CalypFrame* Org, int component )
   return 0;
 }
 
-double CalypFrame::getMSE( CalypFrame* Org, int component )
+double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
 {
   ClpPel* pPelYUV = getPelBufferYUV()[component][0];
   ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
@@ -1207,7 +1207,7 @@ double CalypFrame::getMSE( CalypFrame* Org, int component )
   return ssd / double( numberOfPixels );
 }
 
-double CalypFrame::getPSNR( CalypFrame* Org, int component )
+double CalypFrame::getPSNR( CalypFrame* Org, unsigned int component )
 {
   unsigned int uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
   double uiMaxValueSquare = uiMaxValue * uiMaxValue;
@@ -1285,7 +1285,7 @@ float compute_ssim( ClpPel** refImg, ClpPel** encImg, int width, int height, int
   return cur_distortion;
 }
 
-double CalypFrame::getSSIM( CalypFrame* Org, int component )
+double CalypFrame::getSSIM( CalypFrame* Org, unsigned int component )
 {
   double dSSIM = 1;
   if( component == CLP_LUMA )

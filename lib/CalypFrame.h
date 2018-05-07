@@ -357,10 +357,10 @@ public:
   };
 
   static std::vector<ClpString> supportedQualityMetricsList();
-  double getQuality( int Metric, CalypFrame* Org, int component );
-  double getMSE( CalypFrame* Org, int component );
-  double getPSNR( CalypFrame* Org, int component );
-  double getSSIM( CalypFrame* Org, int component );
+  double getQuality( int Metric, CalypFrame* Org, unsigned int component );
+  double getMSE( CalypFrame* Org, unsigned int component );
+  double getPSNR( CalypFrame* Org, unsigned int component );
+  double getSSIM( CalypFrame* Org, unsigned int component );
 
   /** @} */
 

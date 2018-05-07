@@ -598,6 +598,7 @@ void ModulesHandle::swapModulesWindowsIf( CalypAppModuleIf* pcCurrModuleIf )
     VideoSubWindow* auxWindowHandle = pcCurrModuleIf->m_pcSubWindow[0];
     pcCurrModuleIf->m_pcSubWindow[0] = pcCurrModuleIf->m_pcSubWindow[1];
     pcCurrModuleIf->m_pcSubWindow[1] = auxWindowHandle;
+    pcCurrModuleIf->m_pcDisplaySubWindow->updateVideoWindowInfo();
     pcCurrModuleIf->apply();
   }
 }

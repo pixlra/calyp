@@ -110,6 +110,8 @@ public:
   VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent = 0 );
   ~VideoSubWindow();
 
+  void updateVideoWindowInfo();
+
   bool loadFile( QString cFilename, bool bForceDialog = false );
   bool loadFile( CalypFileInfo* streamInfo );
   void loadAll();
@@ -200,7 +202,6 @@ private:
    * zoom to fit
    */
   void scaleView( const QSize& size, QPoint center = QPoint() );
-  void updateVideoWindowInfo();
 
   QSize getScrollSize();
 

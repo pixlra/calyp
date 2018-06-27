@@ -685,14 +685,17 @@ void CalypFrame::fillRGBBuffer()
   if( d->m_bHasRGBPel )
     return;
   int shiftBits = d->m_uiBitsPel - 8;
-  unsigned int* pARGB = (unsigned int*)d->m_pcARGB32;
+
+  // 4 bytes for A, R, G and B
+  uint32_t* pARGB = (uint32_t*)d->m_pcARGB32;
   if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY )
   {
     ClpPel* pY = d->m_pppcInputPel[CLP_LUMA][0];
+    unsigned char finalPel;
     for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
     {
-      *pARGB++ = PEL_RGB( *pY, *pY, *pY );
-      pY++;
+      finalPel = (*pY++) >> shiftBits;
+      *pARGB++ = PEL_RGB( finalPel, finalPel, finalPel );
     }
   }
   else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB )
@@ -722,8 +725,8 @@ void CalypFrame::fillRGBBuffer()
     ClpPel* pU;
     ClpPel* pV;
     int iY, iU, iV, iR, iG, iB;
-    unsigned int* pARGBLine = pARGB;
-    unsigned int* pARGB;
+    uint32_t* pARGBLine = pARGB;
+    uint32_t* pARGBAux;
 
     unsigned int y, x;
     int i, j;
@@ -734,7 +737,7 @@ void CalypFrame::fillRGBBuffer()
         pY = pLineY;
         pU = pLineU;
         pV = pLineV;
-        pARGB = pARGBLine;
+        pARGBAux = pARGBLine;
         for( x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
           iU = *pU++;
@@ -746,7 +749,7 @@ void CalypFrame::fillRGBBuffer()
             iY = *pY++;
             iY >>= shiftBits;
             YUV2RGB( iY, iU, iV, iR, iG, iB );
-            *pARGB++ = PEL_RGB( iR, iG, iB );
+            *pARGBAux++ = PEL_RGB( iR, iG, iB );
           }
         }
         pLineY += d->m_uiWidth;

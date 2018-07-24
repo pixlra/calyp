@@ -554,7 +554,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
     }
   }
 
-    // VISIBLE ZOOM RECT
+  // VISIBLE ZOOM RECT
 #if 0
 	if( m_visibleZoomRect && m_zoomWinTimer.isActive() )
 	{
@@ -808,12 +808,12 @@ void ViewArea::mouseMoveEvent( QMouseEvent* event )
 {
   event->accept();
 
-#ifndef _MSC_VER
-  // Add this code line to avoid slow navigation with some specific mouses
-  // This seems to always appear on windows
-  if( qApp->hasPendingEvents() )
-    return;
-#endif
+  //#ifndef _MSC_VER
+  //  // Add this code line to avoid slow navigation with some specific mouses
+  //  // This seems to always appear on windows
+  //  if( qApp->hasPendingEvents() )
+  //    return;
+  //#endif
 
   QPoint actualPos = windowToView( event->pos() );
   QRect updateRect;

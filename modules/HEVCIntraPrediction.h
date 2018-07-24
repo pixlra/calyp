@@ -38,12 +38,14 @@ private:
   unsigned int m_uiBlockSize;
   unsigned int m_uiXpel;
   unsigned int m_uiYpel;
+  ClpPel* m_referenceMem;
 
 public:
   HEVCIntraPrediction();
   virtual ~HEVCIntraPrediction() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
+  bool keyPressed( enum Module_Key_Supported value );
   void destroy();
 };
 

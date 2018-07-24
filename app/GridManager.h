@@ -52,6 +52,8 @@ public:
 
   GridManager();
 
+  void setGridSize( int newsize );
+
   void drawGrid( QPixmap& image, const QRect& area, QPainter* painter );
 
   /**

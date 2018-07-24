@@ -72,7 +72,11 @@ public:
    */
   void setTool( unsigned int view );
 
+  /**
+   * Grid options
+   */
   void setGridVisible( bool enable );
+  void setGridSize( int size );
 
   /**
    * Clears any mask content.

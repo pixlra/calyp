@@ -137,6 +137,12 @@ void ViewArea::setGridVisible( bool enable )
   update();
 }
 
+void ViewArea::setGridSize( int size )
+{
+  m_grid.setGridSize( size );
+  update();
+}
+
 void ViewArea::clearMask()
 {
   m_mask.clear();
@@ -579,9 +585,9 @@ void ViewArea::paintEvent( QPaintEvent* event )
     //painter.fillRect( cImgWinRect, QBrush( QColor( 128, 128, 128, 128 ) ) );
     painter.setPen( QColor( 50, 50, 50, 128 ) );
     //painter.drawRect( cImgWinRect );
-    painter.setOpacity(0.7);
+    painter.setOpacity( 0.7 );
     painter.drawPixmap( cImgWinRect, m_pixmap );
-    painter.setOpacity(1);
+    painter.setOpacity( 1 );
 
     cVisibleWinRect.moveTopLeft( cImgWinRect.topLeft() + cVisibleWinRect.topLeft() );
 

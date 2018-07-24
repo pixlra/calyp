@@ -120,9 +120,9 @@ void VideoHandle::createActions()
   m_pcFrameSlider->setTracking( false );
   connect( m_pcFrameSlider, SIGNAL( valueChanged( int ) ), this, SLOT( seekSliderEvent( int ) ) );
 
-  // ------------ Tools ------------
-  actionGroupTools = new QActionGroup( this );
-  actionGroupTools->setExclusive( true );
+  // ------------ Image ------------
+  m_actionGroupTools = new QActionGroup( this );
+  m_actionGroupTools->setExclusive( true );
 
   m_mapperTools = new QSignalMapper( this );
   connect( m_mapperTools, SIGNAL( mapped( int ) ), this, SLOT( setTool( int ) ) );
@@ -133,7 +133,7 @@ void VideoHandle::createActions()
   m_arrayActions[NAVIGATION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[NAVIGATION_TOOL_ACT]->setChecked( true );
   m_arrayActions[NAVIGATION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_1 );
-  actionGroupTools->addAction( m_arrayActions[NAVIGATION_TOOL_ACT] );
+  m_actionGroupTools->addAction( m_arrayActions[NAVIGATION_TOOL_ACT] );
   connect( m_arrayActions[NAVIGATION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[NAVIGATION_TOOL_ACT], ViewArea::NavigationView );
 
@@ -141,7 +141,7 @@ void VideoHandle::createActions()
   m_arrayActions[SELECTION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[SELECTION_TOOL_ACT]->setChecked( false );
   m_arrayActions[SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_2 );
-  actionGroupTools->addAction( m_arrayActions[SELECTION_TOOL_ACT] );
+  m_actionGroupTools->addAction( m_arrayActions[SELECTION_TOOL_ACT] );
   connect( m_arrayActions[SELECTION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[SELECTION_TOOL_ACT], ViewArea::NormalSelectionView );
 
@@ -149,9 +149,24 @@ void VideoHandle::createActions()
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setChecked( false );
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_3 );
-  actionGroupTools->addAction( m_arrayActions[BLOCK_SELECTION_TOOL_ACT] );
+  m_actionGroupTools->addAction( m_arrayActions[BLOCK_SELECTION_TOOL_ACT] );
   connect( m_arrayActions[BLOCK_SELECTION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[BLOCK_SELECTION_TOOL_ACT], ViewArea::BlockSelectionView );
+
+  m_mapperGrid = new QSignalMapper( this );
+  m_actionGroupGrid = new QActionGroup( this );
+  m_actionGroupGrid->setExclusive( true );
+  m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "8x8" ), 8 );
+  m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "16x16" ), 16 );
+  m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "64x64" ), 64 );
+
+  for( int i = 0; i < m_actionGroupGrid->actions().size(); i++ )
+  {
+    m_actionGroupGrid->actions().at( i )->setCheckable( true );
+    connect( m_actionGroupGrid->actions().at( i ), SIGNAL( triggered() ), m_mapperGrid, SLOT( map() ) );
+  }
+  m_actionGroupGrid->actions().at( 2 )->setChecked( true );
+  connect( m_mapperGrid, SIGNAL( mapped( int ) ), this, SLOT( setGridSize( int ) ) );
 
   m_arrayActions[SHOW_GRID_ACT] = new QAction( "Show grid", this );
   m_arrayActions[SHOW_GRID_ACT]->setCheckable( true );
@@ -182,6 +197,8 @@ QMenu* VideoHandle::createImageMenu()
   m_pcMenuImage->addAction( m_arrayActions[BLOCK_SELECTION_TOOL_ACT] );
   m_pcMenuImage->addSeparator();
   m_pcMenuImage->addAction( m_arrayActions[SHOW_GRID_ACT] );
+  QMenu* gridSizeMenu = m_pcMenuImage->addMenu( "Grid size" );
+  gridSizeMenu->addActions( m_actionGroupGrid->actions() );
   return m_pcMenuImage;
 }
 
@@ -282,6 +299,8 @@ void VideoHandle::readSettings()
 
   m_uiViewTool = appSettings.value( "VideoHandle/SelectedTool", ViewArea::NavigationView ).toUInt();
   setTool( m_uiViewTool );
+
+  m_arrayActions[SHOW_GRID_ACT]->setChecked( appSettings.value( "VideoHandle/ShowGrid", false ).toBool() );
 }
 
 void VideoHandle::writeSettings()
@@ -291,6 +310,7 @@ void VideoHandle::writeSettings()
   appSettings.setValue( "VideoHandle/VideoZoomLock", m_arrayActions[VIDEO_ZOOM_LOCK_ACT]->isChecked() );
   appSettings.setValue( "VideoHandle/FrameProperties", m_pcFramePropertiesSideBar->isVisible() );
   appSettings.setValue( "VideoHandle/SelectedTool", m_uiViewTool );
+  appSettings.setValue( "VideoHandle/ShowGrid", m_arrayActions[SHOW_GRID_ACT]->isChecked() );
 }
 
 void VideoHandle::update()
@@ -809,7 +829,7 @@ void VideoHandle::videoSelectionButtonEvent()
 void VideoHandle::setTool( int tool )
 {
   m_uiViewTool = tool;
-  actionGroupTools->actions().at( m_uiViewTool )->setChecked( true );
+  m_actionGroupTools->actions().at( m_uiViewTool )->setChecked( true );
   QList<SubWindowAbstract*> subWindowList = m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
   for( int i = 0; i < subWindowList.size(); i++ )
   {
@@ -823,5 +843,14 @@ void VideoHandle::toggleGrid( bool checked )
   for( int i = 0; i < subWindowList.size(); i++ )
   {
     qobject_cast<VideoSubWindow*>( subWindowList.at( i ) )->getViewArea()->setGridVisible( checked );
+  }
+}
+
+void VideoHandle::setGridSize( int size )
+{
+  QList<SubWindowAbstract*> subWindowList = m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
+  for( int i = 0; i < subWindowList.size(); i++ )
+  {
+    qobject_cast<VideoSubWindow*>( subWindowList.at( i ) )->getViewArea()->setGridSize( size );
   }
 }

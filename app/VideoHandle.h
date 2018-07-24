@@ -97,10 +97,14 @@ private:
   QSlider* m_pcFrameSlider;
   FrameNumberWidget* m_pcFrameNumInfo;
 
-  // Tools Actions;
-  QActionGroup* actionGroupTools;
+  // Tools Actions
+  QActionGroup* m_actionGroupTools;
   QSignalMapper* m_mapperTools;
   unsigned int m_uiViewTool;
+
+  // Grid Actions
+  QSignalMapper* m_mapperGrid;
+  QActionGroup* m_actionGroupGrid;
 
   QMenu* m_pcMenuVideo;
   QMenu* m_pcMenuImage;
@@ -145,6 +149,7 @@ private Q_SLOTS:
   void videoSelectionButtonEvent();
   void setTool( int tool );
   void toggleGrid( bool checked );
+  void setGridSize( int size );
 };
 
 #endif  // __VIDEOHANDLE_H__

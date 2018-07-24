@@ -38,12 +38,14 @@ HEVCIntraPrediction::HEVCIntraPrediction()
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW |
                            CLP_MODULE_USES_KEYS |
+                           CLP_MODULES_HAS_INFO |
                            CLP_MODULE_REQUIRES_OPTIONS;
 
   m_cModuleOptions.addOptions()                         /**/
       ( "mode", m_uiMode, "Intra mode (26-34) [26]" )   /**/
       ( "block_size", m_uiBlockSize, "Block size [4]" ) /**/
-      ( "x_pel", m_uiXpel, "X coordinate [1]" ) /**/ ( "y_pel", m_uiXpel, "Y coordinate [1]" );
+      ( "x_pel", m_uiXpel, "X coordinate [1]" )         /**/
+      ( "y_pel", m_uiYpel, "Y coordinate [1]" );
 
   m_pcPredBlock = NULL;
   m_referenceMem = NULL;
@@ -82,10 +84,6 @@ int getInverseAngularParam( int angular_param )
       return g_InverAngularParamLookup[1][i];
   }
   assert( 0 );
-}
-
-ClpPel getNegativeReferenceSample( int ref_pos )
-{
 }
 
 CalypFrame* HEVCIntraPrediction::process( std::vector<CalypFrame*> apcFrameList )
@@ -185,6 +183,11 @@ bool HEVCIntraPrediction::keyPressed( enum Module_Key_Supported value )
     return true;
   }
   return false;
+}
+
+ClpString HEVCIntraPrediction::moduleInfo()
+{
+  return ClpString( "Intra mode: " ) + std::to_string( m_uiMode );
 }
 
 void HEVCIntraPrediction::destroy()

@@ -227,6 +227,7 @@ void VideoSubWindow::keyPressEvent( QKeyEvent* event )
       if( bRet )
       {
         refreshFrame();
+        updateVideoWindowInfo();
         return;
       }
     }
@@ -388,21 +389,25 @@ void VideoSubWindow::updateVideoWindowInfo()
   {
     m_cStreamInformation = "Module";
     QList<VideoSubWindow*> arraySubWindows = m_pcCurrentDisplayModule->getSubWindowList();
-    QStringList sourceWindowList;
+    QStringList windowInfoList;
     if( arraySubWindows.size() > 0 )
     {
       for( int i = 0; i < arraySubWindows.size(); i++ )
       {
         if( arraySubWindows.at( i )->getWindowName() != getWindowName() )
         {
-          sourceWindowList.append( QString( "Input %1 - " + arraySubWindows.at( i )->getWindowName() ).arg( i + 1 ) );
+          windowInfoList.append( QString( "Input %1 - " + arraySubWindows.at( i )->getWindowName() ).arg( i + 1 ) );
         }
       }
     }
-    // qDebug( ) << sourceWindowList;
-    if( sourceWindowList.size() > 0 )
+    if( m_pcCurrentDisplayModule->getModuleRequirements() & CLP_MODULES_HAS_INFO )
     {
-      m_pcVideoInfo->setInformationTopLeft( sourceWindowList );
+      windowInfoList.append( QString::fromStdString( m_pcCurrentDisplayModule->moduleInfo() ) );
+    }
+    // qDebug( ) << sourceWindowList;
+    if( windowInfoList.size() > 0 )
+    {
+      m_pcVideoInfo->setInformationTopLeft( windowInfoList );
     }
   }
   else if( m_pCurrStream )

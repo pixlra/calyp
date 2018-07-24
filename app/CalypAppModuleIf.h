@@ -100,6 +100,7 @@ public:
 
   CalypModuleIf* getModule() { return m_pcModule; }
   unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
+  ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
   void update();
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool isRunning();

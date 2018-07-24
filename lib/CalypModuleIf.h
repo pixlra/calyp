@@ -86,6 +86,7 @@ enum Module_Features
   CLP_MODULE_REQUIRES_NEW_WINDOW = 4,
   CLP_MODULE_USES_KEYS = 8,
   CLP_MODULES_VARIABLE_NUM_FRAMES = 16,
+  CLP_MODULES_HAS_INFO = 32,
   CLP_MODULE_REQURES_MAX = 1024,
 };
 
@@ -147,6 +148,7 @@ public:
   virtual CalypFrame* process( std::vector<CalypFrame*> ) { return NULL; }
   virtual double measure( std::vector<CalypFrame*> ) { return 0; }
   virtual bool keyPressed( enum Module_Key_Supported ) { return false; }
+  virtual ClpString moduleInfo() { return ClpString(); }
 };
 
 #endif  // __CALYPMODULESIF_H__

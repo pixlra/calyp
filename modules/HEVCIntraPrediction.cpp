@@ -41,11 +41,13 @@ HEVCIntraPrediction::HEVCIntraPrediction()
                            CLP_MODULES_HAS_INFO |
                            CLP_MODULE_REQUIRES_OPTIONS;
 
-  m_cModuleOptions.addOptions()                         /**/
-      ( "mode", m_uiMode, "Intra mode (26-34) [26]" )   /**/
-      ( "block_size", m_uiBlockSize, "Block size [4]" ) /**/
-      ( "x_pel", m_uiXpel, "X coordinate [1]" )         /**/
-      ( "y_pel", m_uiYpel, "Y coordinate [1]" );
+  m_cModuleOptions.addOptions()                                      /**/
+      ( "mode", m_uiMode, "Intra mode (26-34) [26]" )                /**/
+      ( "block_size", m_uiBlockSize, "Block size [4]" )              /**/
+      ( "x_pel", m_uiXpel, "X coordinate [1]" )                      /**/
+      ( "y_pel", m_uiYpel, "Y coordinate [1]" )                      /**/
+      ( "recon", m_bShowResidue, "Show prediction residue [false]" ) /**/
+      ;
 
   m_pcPredBlock = NULL;
   m_referenceMem = NULL;
@@ -154,6 +156,17 @@ CalypFrame* HEVCIntraPrediction::process( std::vector<CalypFrame*> apcFrameList 
       int ref_pos = *main_coordinate + 1 + ( ( ( *sub_cordinate + 1 ) * angular_param ) >> 5 );
       int fract = ( ( *sub_cordinate + 1 ) * angular_param ) & 31;
       predBlock[y + 1][x + 1] = ( ( 32 - fract ) * refArray[ref_pos] + fract * refArray[ref_pos + 1] + 16 ) >> 5;
+    }
+  }
+
+  if( m_bShowResidue )
+  {
+    for( y = 0; y < m_uiBlockSize; y++ )
+    {
+      for( x = 0; x < m_uiBlockSize; x++ )
+      {
+        predBlock[y + 1][x + 1] = abs( refFrame[m_uiYpel + y - 1][m_uiXpel + x - 1] - predBlock[y + 1][x + 1] );
+      }
     }
   }
 

@@ -96,7 +96,7 @@ bool StreamHandlerLibav::openHandler( ClpString strFilename, bool bInput )
   /* open input file, and allocate format context */
   if( avformat_open_input( &m_cFmtCtx, filename, NULL, NULL ) < 0 )
   {
-    std::cout << " Could not open source file %s !!!" << filename << std::endl;
+    std::cout << "Could not open source file %s !!!" << filename << std::endl;
 
     return false;
   }
@@ -104,7 +104,7 @@ bool StreamHandlerLibav::openHandler( ClpString strFilename, bool bInput )
   /* retrieve stream information */
   if( avformat_find_stream_info( m_cFmtCtx, NULL ) < 0 )
   {
-    std::cout << " Could not find stream information !!!" << std::endl;
+    std::cout << "Could not find stream information !!!" << std::endl;
     return false;
   }
 

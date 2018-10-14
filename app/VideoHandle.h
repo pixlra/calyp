@@ -34,7 +34,7 @@
 #include <QVector>
 #include <QWidget>
 
-#define _CONTROL_PLAYING_TIME_ 0
+#define _CONTROL_PLAYING_TIME_ 1
 
 class QToolBar;
 class QDockWidget;
@@ -124,7 +124,7 @@ private:
 
 #if( _CONTROL_PLAYING_TIME_ == 1 )
   unsigned int m_uiNumberPlayedFrames;
-  Double m_dAverageFps;
+  double m_dAverageFps;
   QElapsedTimer* m_pcPlayControlTimer;
 #endif
 

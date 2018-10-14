@@ -729,6 +729,8 @@ void ViewArea::wheelEvent( QWheelEvent* event )
   double scale;
   double usedScale;
 
+  event->accept();
+
   if( event->modifiers() & Qt::ControlModifier )
   {
     scale = 0.001 * event->delta();

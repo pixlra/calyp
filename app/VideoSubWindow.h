@@ -132,7 +132,6 @@ public:
 
   void setCurrFrame( CalypFrame* pcCurrFrame );
 
-  QScrollArea* getScroll() { return m_pcScrollArea; }
   CalypFileInfo getStreamInfo() { return m_sStreamInfo; }
   QString getStreamInformation() { return m_cStreamInformation; }
   CalypStream* getInputStream() { return m_pCurrStream; }
@@ -219,7 +218,7 @@ public Q_SLOTS:
   void updatePixelValueStatusBar( const QPoint& pos );
 };
 
-Q_DECLARE_METATYPE( CalypFileInfo );
-Q_DECLARE_METATYPE( CalypFileInfoVector );
+Q_DECLARE_METATYPE( CalypFileInfo )
+Q_DECLARE_METATYPE( CalypFileInfoVector )
 
 #endif  // __VIDEOSUBWINDOW_H__

@@ -35,9 +35,9 @@ class HEVCIntraPrediction : public CalypModuleIf
 private:
   CalypFrame* m_pcPredBlock;
   unsigned int m_uiMode;
-  unsigned int m_uiBlockSize;
   unsigned int m_uiXpel;
   unsigned int m_uiYpel;
+  int m_iBlockSize;
   ClpPel* m_referenceMem;
 
 public:

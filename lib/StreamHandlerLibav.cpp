@@ -460,6 +460,7 @@ bool StreamHandlerLibav::seek( unsigned long long int iFrameNum )
   {
     return false;
   }
+  avcodec_flush_buffers( m_cCodedCtx );
   m_uiCurrFrameFileIdx = iFrameNum;
   return true;
 }

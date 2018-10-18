@@ -80,6 +80,7 @@ public:
       , m_uiTotalNumberFrames( 0 )
       , m_pStreamBuffer( NULL )
       , m_uiNBytesPerFrame( 0 )
+      , m_isEOF( false )
   {
   }
   virtual ~CalypStreamHandlerIf() {}
@@ -115,6 +116,7 @@ protected:
   unsigned long m_uiTotalNumberFrames;
   ClpByte* m_pStreamBuffer;
   unsigned long m_uiNBytesPerFrame;
+  bool m_isEOF;
 };
 
 #endif  // __CALYPSTREAMHANDLERIF_H__

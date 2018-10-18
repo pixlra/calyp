@@ -336,11 +336,12 @@ bool StreamHandlerLibav::configureBuffer( CalypFrame* pcFrame )
 void StreamHandlerLibav::calculateFrameNumber()
 {
   unsigned long long int num_frames;
-  if( m_cStream->nb_frames )
+  /*if( m_cStream->nb_frames )
   {
     num_frames = m_cStream->nb_frames;
   }
-  else if( m_cFmtCtx->duration != AV_NOPTS_VALUE )
+  else */
+  if( m_cFmtCtx->duration != AV_NOPTS_VALUE )
   {
     long long int duration = m_cFmtCtx->duration + 5000;
     m_uiSecs = duration / AV_TIME_BASE;
@@ -371,6 +372,8 @@ bool StreamHandlerLibav::read( CalypFrame* pcFrame )
         bReadPkt = true;
       else
         return false;
+      //if( iRet == AVERROR_EOF )
+      //  m_isEOF = true;
     }
     else
     {
@@ -397,7 +400,14 @@ bool StreamHandlerLibav::read( CalypFrame* pcFrame )
       bReadPkt = false;
       av_packet_unref( &m_cOrgPacket );
       if( ( iRet = av_read_frame( m_cFmtCtx, &m_cPacket ) ) < 0 )
+      {
+        if( iRet == AVERROR_EOF )
+        {
+          m_isEOF = true;
+          return true;
+        }
         return false;
+      }
       m_cOrgPacket = m_cPacket;
 #ifdef FF_SEND_RECEIVE_API
       if( m_cPacket.stream_index == m_iStreamIdx )

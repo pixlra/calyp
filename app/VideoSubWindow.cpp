@@ -32,6 +32,8 @@
 
 #include <cassert>
 
+#define QT_NO_CONCURRENT
+
 /**
  * \brief Functions to control data stream from stream information
  */

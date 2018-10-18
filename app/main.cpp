@@ -47,9 +47,9 @@ int main( int argc, char* argv[] )
   qRegisterMetaTypeStreamOperators<CalypStandardResolutionVector>();
 
   QApplication application( argc, argv );
-  QApplication::setApplicationName( "Calyp" );
-  QApplication::setApplicationVersion( CALYP_VERSION_STRING );
-  QApplication::setOrganizationName( "PixLRA" );
+  QApplication::setApplicationName( QStringLiteral( "Calyp" ) );
+  QApplication::setApplicationVersion( QStringLiteral( CALYP_VERSION_STRING ) );
+  QApplication::setOrganizationName( QStringLiteral( "PixLRA" ) );
 
 #ifdef USE_QTDBUS
   /**
@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
     QStringList filenameList;
     for( int i = 1; i < argc; i++ )
     {
-      filenameList.append( QFileInfo( QString( argv[i] ) ).absoluteFilePath() );
+      filenameList.append( QFileInfo( QLatin1String( argv[i] ) ).absoluteFilePath() );
     }
     if( filenameList.isEmpty() )
     {
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] )
     bool foundRunningService = false;
     if( !force_new )
     {
-      QDBusReply<bool> there = sessionBusinterface->isServiceRegistered( CALYP_DBUS_SESSION_NAME );
+      QDBusReply<bool> there = sessionBusinterface->isServiceRegistered( QStringLiteral( CALYP_DBUS_SESSION_NAME ) );
       foundRunningService = there.isValid() && there.value();
 
       if( foundRunningService )
@@ -82,7 +82,7 @@ int main( int argc, char* argv[] )
 
         // open given session
         QDBusMessage m = QDBusMessage::createMethodCall(
-            CALYP_DBUS_SESSION_NAME, QStringLiteral( CALYP_DBUS_PATH ),
+            QStringLiteral( CALYP_DBUS_SESSION_NAME ), QStringLiteral( CALYP_DBUS_PATH ),
             QStringLiteral( CALYP_DBUS_SESSION_NAME ), QStringLiteral( "activate" ) );
 
         QDBusConnection::sessionBus().call( m );
@@ -96,7 +96,7 @@ int main( int argc, char* argv[] )
         foreach( const QString& file, filenameList )
         {
           QDBusMessage m = QDBusMessage::createMethodCall(
-              CALYP_DBUS_SESSION_NAME, QStringLiteral( CALYP_DBUS_PATH ),
+              QStringLiteral( CALYP_DBUS_SESSION_NAME ), QStringLiteral( CALYP_DBUS_PATH ),
               QStringLiteral( CALYP_DBUS_SESSION_NAME ), QStringLiteral( "loadFile" ) );
 
           QList<QVariant> dbusargs;
@@ -130,7 +130,7 @@ int main( int argc, char* argv[] )
   /**
    * if we arrive here, we need to start a new calyp instance!
    */
-  QDBusConnection::sessionBus().registerService( CALYP_DBUS_SESSION_NAME );
+  QDBusConnection::sessionBus().registerService( QStringLiteral( CALYP_DBUS_SESSION_NAME ) );
 #endif
   MainWindow mainwindow;
   mainwindow.show();

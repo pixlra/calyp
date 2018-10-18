@@ -144,7 +144,7 @@ SET( CMAKE_CXX_FLAGS "" )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 ######################################################################################
-# Configure targets
+# Compiler options
 ######################################################################################
 
 SET(CMAKE_CXX_STANDARD 14)
@@ -159,12 +159,35 @@ ENDIF()
 
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
 
+ADD_DEFINITIONS(-DQT_NO_CAST_TO_ASCII
+                #-DQT_NO_CAST_FROM_ASCII
+                -DQT_NO_URL_CAST_FROM_STRING
+                -DQT_NO_CAST_FROM_BYTEARRAY
+                #-DQT_NO_SIGNALS_SLOTS_KEYWORDS
+                #-DQT_USE_QSTRINGBUILDER
+               )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0.0")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wlogical-op" )
+   endif()
+endif()
+
 IF( USE_WERROR )
   SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" )
 ENDIF()
 
 SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0" )
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2" )
+
+
+######################################################################################
+# Configure targets
+######################################################################################
 
 ADD_FEATURE_INFO(CalypApp     BUILD_APP    "Build Graphical interface")
 ADD_FEATURE_INFO(CalypTools   BUILD_TOOLS  "Build Command line tool"  )

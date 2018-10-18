@@ -660,8 +660,8 @@ void VideoHandle::playEvent()
 {
   bool bEndOfSequence = false;
 #if( _CONTROL_PLAYING_TIME_ == 1 )
-  m_dAverageFps = Double( m_dAverageFps * m_uiNumberPlayedFrames + m_pcPlayControlTimer->elapsed() ) /
-                  Double( m_uiNumberPlayedFrames + 1 );
+  m_dAverageFps = double( m_dAverageFps * m_uiNumberPlayedFrames + m_pcPlayControlTimer->elapsed() ) /
+                  double( m_uiNumberPlayedFrames + 1 );
   m_uiNumberPlayedFrames++;
   m_pcPlayControlTimer->restart();
 #endif

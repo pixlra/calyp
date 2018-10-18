@@ -669,6 +669,7 @@ void CalypFrame::frameToBuffer( ClpByte* output_buffer, int iEndianness )
   }
 }
 
+
 void CalypFrame::fillRGBBuffer()
 {
 #define PEL_ARGB( a, r, g, b ) ( ( a & 0xff ) << 24 ) | ( ( r & 0xff ) << 16 ) | ( ( g & 0xff ) << 8 ) | ( b & 0xff )
@@ -694,7 +695,7 @@ void CalypFrame::fillRGBBuffer()
     unsigned char finalPel;
     for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
     {
-      finalPel = (*pY++) >> shiftBits;
+      finalPel = ( *pY++ ) >> shiftBits;
       *pARGB++ = PEL_RGB( finalPel, finalPel, finalPel );
     }
   }

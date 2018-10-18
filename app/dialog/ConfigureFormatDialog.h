@@ -81,7 +81,7 @@ private:
   QSpinBox* m_spinBoxFrameRate;
 };
 
-Q_DECLARE_METATYPE( CalypStandardResolution );
-Q_DECLARE_METATYPE( CalypStandardResolutionVector );
+Q_DECLARE_METATYPE( CalypStandardResolution )
+Q_DECLARE_METATYPE( CalypStandardResolutionVector )
 
 #endif  // __CONFIGUREFORMATDIALOG_H__

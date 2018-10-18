@@ -155,10 +155,10 @@ struct CalypStreamPrivate
 
   CalypStreamPrivate()
   {
-    isInit = false;
-    pfctCreateHandler = NULL;
     handler = NULL;
+    pfctCreateHandler = NULL;
     isInput = true;
+    isInit = false;
     bLoadAll = false;
     iCurrFrameNum = -1;
     cFilename = "";

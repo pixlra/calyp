@@ -34,7 +34,7 @@ OPTION( BUILD_APP               "Build GUI Application"                 ON  )
 OPTION( BUILD_TOOLS             "Build Command Line Application"        ON  )
 OPTION( BUILD_EXAMPLES          "Build Examples"                        OFF )
 OPTION( BUILD_DOC               "Build Documentation"                   OFF )
-OPTION( BUILD_TESTS             "Build Google Tests"                    ON  )
+OPTION( BUILD_TESTS             "Build Google Tests"                    OFF )
 
 OPTION( USE_FERVOR              "Add Fervor support"                    OFF )
 

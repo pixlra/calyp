@@ -45,8 +45,8 @@ private:
 
   enum Axis
   {
-    HORIZONTAL,
-    VERTICAL,
+    AXIS_HORIZONTAL,
+    AXIS_VERTICAL,
   };
   double m_aAxisRange[2][2];
   double m_dScaleFactor;
@@ -78,6 +78,7 @@ public:
 
   void setAxisRange( const QLine& axisLimits );
   void setAxisRange( PlotSubWindow::Axis eAxis, const int& axisStart, const int& axisEnd );
+  void appendAxisLimit( PlotSubWindow::Axis eAxis, const int& axisStart, const int& axisEnd );
 
   void setKey( const QString& key );
 

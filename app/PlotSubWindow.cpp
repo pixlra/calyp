@@ -114,6 +114,11 @@ PlotSubWindow::PlotSubWindow( const QString& windowTitle, QWidget* parent )
   m_cPlotPen.setWidthF( 2 );
 
   setWidget( m_cPlotArea );
+
+  m_aAxisRange[AXIS_HORIZONTAL][0] = 99999;
+  m_aAxisRange[AXIS_HORIZONTAL][1] = 0;
+  m_aAxisRange[AXIS_VERTICAL][0] = 99999;
+  m_aAxisRange[AXIS_VERTICAL][1] = 0;
 }
 
 PlotSubWindow::~PlotSubWindow()
@@ -123,8 +128,8 @@ PlotSubWindow::~PlotSubWindow()
 
 void PlotSubWindow::normalSize()
 {
-  m_cPlotArea->xAxis->setRange( m_aAxisRange[HORIZONTAL][0], m_aAxisRange[HORIZONTAL][1] );
-  m_cPlotArea->yAxis->setRange( m_aAxisRange[VERTICAL][0], m_aAxisRange[VERTICAL][1] );
+  m_cPlotArea->xAxis->setRange( m_aAxisRange[AXIS_HORIZONTAL][0], m_aAxisRange[AXIS_HORIZONTAL][1] );
+  m_cPlotArea->yAxis->setRange( m_aAxisRange[AXIS_VERTICAL][0], m_aAxisRange[AXIS_VERTICAL][1] );
   m_cPlotArea->replot();
   m_dScaleFactor = 1;
 }
@@ -187,26 +192,40 @@ void PlotSubWindow::setAxisName( const QString& nameAxisX, const QString& nameAx
 
 void PlotSubWindow::setAxisRange( const QLine& axisLimits )
 {
-  setAxisRange( HORIZONTAL, axisLimits.x1(), axisLimits.x2() );
-  setAxisRange( VERTICAL, axisLimits.y1(), axisLimits.y2() );
+  setAxisRange( AXIS_HORIZONTAL, axisLimits.x1(), axisLimits.x2() );
+  setAxisRange( AXIS_VERTICAL, axisLimits.y1(), axisLimits.y2() );
 }
 
 void PlotSubWindow::setAxisRange( PlotSubWindow::Axis eAxis, const int& axisStart, const int& axisEnd )
 {
-  if( eAxis == HORIZONTAL )
+  if( eAxis == AXIS_HORIZONTAL )
   {
     m_cPlotArea->xAxis->setRange( axisStart, axisEnd );
     // horizontalScrollBar()->setRange( axisStart * 100, axisEnd * 100 );
-    m_aAxisRange[HORIZONTAL][0] = axisStart;
-    m_aAxisRange[HORIZONTAL][1] = axisEnd;
+    m_aAxisRange[AXIS_HORIZONTAL][0] = axisStart;
+    m_aAxisRange[AXIS_HORIZONTAL][1] = axisEnd;
   }
-  if( eAxis == VERTICAL )
+  if( eAxis == AXIS_VERTICAL )
   {
     m_cPlotArea->yAxis->setRange( axisStart, axisEnd );
     // verticalScrollBar()->setRange( axisStart * 100, axisEnd * 100 );
-    m_aAxisRange[VERTICAL][0] = axisStart;
-    m_aAxisRange[VERTICAL][1] = axisEnd;
+    m_aAxisRange[AXIS_VERTICAL][0] = axisStart;
+    m_aAxisRange[AXIS_VERTICAL][1] = axisEnd;
   }
+  m_cPlotArea->replot();
+}
+
+void PlotSubWindow::appendAxisLimit( PlotSubWindow::Axis eAxis, const int& axisStart, const int& axisEnd )
+{
+  m_aAxisRange[eAxis][0] = std::min<double>( m_aAxisRange[eAxis][0], axisStart );
+  m_aAxisRange[eAxis][1] = std::max<double>( m_aAxisRange[eAxis][1], axisEnd );
+
+  if( eAxis == AXIS_HORIZONTAL )
+    m_cPlotArea->xAxis->setRange( m_aAxisRange[AXIS_HORIZONTAL][0], m_aAxisRange[AXIS_HORIZONTAL][1] );
+
+  if( eAxis == AXIS_VERTICAL )
+    m_cPlotArea->xAxis->setRange( m_aAxisRange[AXIS_VERTICAL][0], m_aAxisRange[AXIS_VERTICAL][1] );
+
   m_cPlotArea->replot();
 }
 
@@ -232,10 +251,8 @@ void PlotSubWindow::addPlot( const QVector<double>& arrayX, const QVector<double
     newPlot->setName( key );
   }
 
-  m_aAxisRange[HORIZONTAL][0] = m_cPlotArea->xAxis->range().lower;
-  m_aAxisRange[HORIZONTAL][1] = m_cPlotArea->xAxis->range().upper;
-  m_aAxisRange[VERTICAL][0] = m_cPlotArea->yAxis->range().lower;
-  m_aAxisRange[VERTICAL][1] = m_cPlotArea->yAxis->range().upper;
+  appendAxisLimit( AXIS_HORIZONTAL, m_cPlotArea->xAxis->range().lower, m_cPlotArea->xAxis->range().upper );
+  appendAxisLimit( AXIS_VERTICAL, m_cPlotArea->yAxis->range().lower, m_cPlotArea->yAxis->range().upper );
 
   m_iNumberPlots++;
 }

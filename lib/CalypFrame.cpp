@@ -1154,6 +1154,15 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
   };
 }
 
+std::vector<ClpString> CalypFrame::supportedQualityMetricsUnitsList()
+{
+  return std::vector<ClpString>{
+      "dB",
+      "",
+      "",
+  };
+}
+
 double CalypFrame::getQuality( int Metric, CalypFrame* Org, unsigned int component )
 {
   if( component >= getNumberChannels() )

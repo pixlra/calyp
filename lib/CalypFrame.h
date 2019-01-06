@@ -357,6 +357,7 @@ public:
   };
 
   static std::vector<ClpString> supportedQualityMetricsList();
+  static std::vector<ClpString> supportedQualityMetricsUnitsList();
   double getQuality( int Metric, CalypFrame* Org, unsigned int component );
   double getMSE( CalypFrame* Org, unsigned int component );
   double getPSNR( CalypFrame* Org, unsigned int component );

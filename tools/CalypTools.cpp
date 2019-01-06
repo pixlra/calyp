@@ -1,5 +1,5 @@
 /*    This file is a part of Calyp project
- *    Copyright (C) 2014-2018  by Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -141,8 +141,8 @@ int CalypTools::Open( int argc, char* argv[] )
   // check requirements
   if( CalypPixel::getMaxNumberOfComponents() > MAX_NUMBER_CHANNELS )
   {
-      log( CLP_LOG_ERROR, "Cannot parse the maximum number of components!" );
-      return -1;
+    log( CLP_LOG_ERROR, "Cannot parse the maximum number of components!" );
+    return -1;
   }
   if( ( iRet = parseToolsArgs( argc, argv ) ) < 0 )
   {
@@ -150,7 +150,7 @@ int CalypTools::Open( int argc, char* argv[] )
   }
   if( iRet == 1 )
   {
-      return iRet;
+    return iRet;
   }
 
   if( ( iRet = openInputs() ) < 0 )

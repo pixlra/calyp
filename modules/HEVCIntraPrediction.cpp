@@ -1,5 +1,5 @@
 /*    This file is a part of Calyp project
- *    Copyright (C) 2014-2018  by Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ HEVCIntraPrediction::HEVCIntraPrediction()
 
   m_cModuleOptions.addOptions()                                      /**/
       ( "mode", m_uiMode, "Intra mode (26-34) [26]" )                /**/
-      ( "block_size", m_iBlockSize, "Block size [4]" )              /**/
+      ( "block_size", m_iBlockSize, "Block size [4]" )               /**/
       ( "x_pel", m_uiXpel, "X coordinate [1]" )                      /**/
       ( "y_pel", m_uiYpel, "Y coordinate [1]" )                      /**/
       ( "recon", m_bShowResidue, "Show prediction residue [false]" ) /**/

@@ -1,5 +1,5 @@
 /*    This file is a part of Calyp project
- *    Copyright (C) 2014-2018  by Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -668,7 +668,6 @@ void CalypFrame::frameToBuffer( ClpByte* output_buffer, int iEndianness )
     }
   }
 }
-
 
 void CalypFrame::fillRGBBuffer()
 {

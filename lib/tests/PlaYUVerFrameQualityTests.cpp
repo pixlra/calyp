@@ -1,6 +1,6 @@
 /*    This file is a part of plaYUVer project
- *    Copyright (C) 2014-2017  by Luis Lucas      (luisfrlucas@gmail.com)
- *                                Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
+ *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -22,13 +22,13 @@
  * \brief    CalypFrame quality metrics tests
  */
 
-#include "gtest/gtest.h"
-#include "CalypStream.h"
 #include "CalypFrame.h"
+#include "CalypStream.h"
+#include "gtest/gtest.h"
 
 class CalypFrameQualityTest : public ::testing::Test
 {
- protected:
+protected:
   // Per-test-case set-up.
   // Called before the first test in this test case.
   // Can be omitted if not needed.

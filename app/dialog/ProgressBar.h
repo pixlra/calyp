@@ -37,7 +37,7 @@ class ProgressBar : public QWidget
   Q_OBJECT
 
 public:
-  ProgressBar( QWidget* parent, unsigned int maxValue );
+  ProgressBar( QWidget* parent, unsigned long long int maxValue );
 
   void incrementProgress( unsigned int );
 

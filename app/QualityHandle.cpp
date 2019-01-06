@@ -156,13 +156,12 @@ void QualityHandle::update( VideoSubWindow* currSubWindow )
 
 void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
 {
-  QVector<double>* padQualityValues;
-  unsigned int numberOfWindows = apcWindowList.size();
+  int numberOfWindows = apcWindowList.size();
   unsigned long long int currFrames = 0;
   unsigned long long int numberOfFrames = INT_MAX;
 
   //! Check reference window
-  for( unsigned int i = 0; i < numberOfWindows; i++ )
+  for( int i = 0; i < numberOfWindows; i++ )
   {
     if( !apcWindowList.at( i )->getRefSubWindow() )
     {
@@ -172,7 +171,7 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
   VideoSubWindow* pcReferenceWindow = apcWindowList.at( 0 )->getRefSubWindow();
 
   numberOfFrames = pcReferenceWindow->getInputStream()->getFrameNum();
-  for( unsigned int i = 0; i < numberOfWindows; i++ )
+  for( int i = 0; i < numberOfWindows; i++ )
   {
     currFrames = apcWindowList.at( i )->getInputStream()->getFrameNum();
     if( currFrames < numberOfFrames )
@@ -183,7 +182,14 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
 
   ProgressBar* pcProgressBar = new ProgressBar( m_pcParet, numberOfFrames );
 
-  padQualityValues = new QVector<double>[numberOfWindows + 1];
+  QVector<double>* padQualityValues = new QVector<double>[numberOfWindows + 1];
+  double* padAverageQuality = new double[numberOfWindows + 1];
+  double dCurrentQuality;
+
+  for( unsigned int i = 0; i < numberOfWindows + 1; i++ )
+  {
+    padAverageQuality[i] = 0;
+  }
 
   CalypFrame* pcReferenceFrame;
   CalypFrame* pcCurrFrame;
@@ -194,7 +200,9 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
     for( unsigned int i = 0; i < numberOfWindows; i++ )
     {
       pcCurrFrame = apcWindowList.at( i )->getCurrFrame();
-      padQualityValues[i + 1].append( pcCurrFrame->getQuality( m_iQualityMetricIdx, pcReferenceFrame, CLP_LUMA ) );
+      dCurrentQuality = pcCurrFrame->getQuality( m_iQualityMetricIdx, pcReferenceFrame, CLP_LUMA );
+      padAverageQuality[i + 1] = ( padAverageQuality[i + 1] * double( f ) + dCurrentQuality ) / double( f + 1 );
+      padQualityValues[i + 1].append( dCurrentQuality );
       apcWindowList.at( i )->seekRelativeEvent( true );
     }
     pcReferenceWindow->seekRelativeEvent( true );
@@ -206,27 +214,23 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
   }
   pcReferenceWindow->stop();
 
+  QString qualityName = QString::fromStdString( CalypFrame::supportedQualityMetricsList()[m_iQualityMetricIdx] );
+  QString qualityUnits = QString::fromStdString( CalypFrame::supportedQualityMetricsUnitsList()[m_iQualityMetricIdx] );
+
   QString plotWindowTitle( QStringLiteral( "Quality" ) );
   if( apcWindowList.size() == 1 )
   {
     plotWindowTitle += " - " + apcWindowList.at( 0 )->getWindowName();
   }
   PlotSubWindow* pcPlotWindow = new PlotSubWindow( plotWindowTitle );
-  pcPlotWindow->setAxisName(
-      "Frame Number", QString::fromStdString( CalypFrame::supportedQualityMetricsList()[m_iQualityMetricIdx] ) );
+  pcPlotWindow->setAxisName( "Frame Number", QString( "%1 [%2]" ).arg( qualityName ).arg( qualityUnits ) );
 
-  if( apcWindowList.size() > 1 )
+  QString key;
+  for( unsigned int i = 0; i < numberOfWindows; i++ )
   {
-    QString key;
-    for( unsigned int i = 0; i < numberOfWindows; i++ )
-    {
-      key = apcWindowList.at( i )->getWindowName();
-      pcPlotWindow->addPlot( padQualityValues[0], padQualityValues[i + 1], key );
-    }
-  }
-  else
-  {
-    pcPlotWindow->addPlot( padQualityValues[0], padQualityValues[1] );
+    key = apcWindowList.at( i )->getWindowName();
+    key = QString( "[%1 %2] " ).arg( padAverageQuality[i + 1] ).arg( qualityUnits ) + key;
+    pcPlotWindow->addPlot( padQualityValues[0], padQualityValues[i + 1], key );
   }
 
   m_pcMainWindowManager->addSubWindow( pcPlotWindow );

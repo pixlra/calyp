@@ -178,23 +178,6 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_BGR24,
-        {
-            "BGR",
-            CLP_COLOR_RGB,
-            3,
-            1,
-            0,
-            0,
-            ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_BGR24 ),
-            {
-                {0, 2, 3}, /* R */
-                {0, 2, 2}, /* G */
-                {0, 2, 1}, /* B */
-            },
-        },
-    },
-    {
         CLP_RGBA32,
         {
             "RGBA",

@@ -593,10 +593,10 @@ void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness )
   {
     ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
     ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    step = d->m_pcPelFormat->comp[ch].step_minus1;
+    step = ( d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
 
     pPel = d->m_pppcInputPel[ch][0];
-    pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 );
+    pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
 
     for( i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); i++ )
     {

@@ -84,6 +84,7 @@ private:
   std::vector<CalypStream*> m_apcOutputStreams;
 
   int openInputs();
+  std::vector<CalypFrame*> readInput();
 
   typedef int ( CalypTools::*FpProcess )();
   FpProcess m_fpProcess;
@@ -98,7 +99,7 @@ private:
   int QualityOperation();
 
   CalypModuleIf* m_pcCurrModuleIf;
-  CalypFrame* applyFrameModule();
+  //CalypFrame* applyFrameModule();
   int ModuleOperation();
 };
 

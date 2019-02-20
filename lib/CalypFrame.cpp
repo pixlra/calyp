@@ -514,7 +514,7 @@ void CalypFrame::setPixel( unsigned int xPos, unsigned int yPos, CalypPixel pixe
 
 void CalypFrame::copyFrom( const CalypFrame& other )
 {
-  if( haveSameFmt( other, MATCH_ALL ) )
+  if( !haveSameFmt( other, MATCH_ALL ) )
     return;
   d->m_bHasRGBPel = false;
   d->m_bHasHistogram = false;
@@ -529,7 +529,7 @@ void CalypFrame::copyFrom( const CalypFrame* other )
 
 void CalypFrame::copyFrom( const CalypFrame& other, unsigned int xPos, unsigned int yPos )
 {
-  if( haveSameFmt( other, MATCH_ALL ) )
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
     return;
   ClpPel*** pInput = other.getPelBufferYUV();
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )

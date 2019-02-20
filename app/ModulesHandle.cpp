@@ -422,7 +422,7 @@ void ModulesHandle::activateModule()
 
   // Create Module
   bool moduleCreated = false;
-  if( pcCurrAppModuleIf->m_pcModule->m_iModuleAPI == CLP_MODULE_API_2 )
+  if( pcCurrAppModuleIf->m_pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
   {
     std::vector<CalypFrame*> apcFrameList;
     for( int i = 0; i < videoSubWindowList.size(); i++ )

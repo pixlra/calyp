@@ -125,7 +125,7 @@ void CalypAppModuleIf::run()
 
   if( m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
   {
-    if( m_pcModule->m_iModuleAPI == CLP_MODULE_API_2 )
+    if( m_pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
     {
       m_pcProcessedFrame = m_pcModule->process( apcFrameList );
     }
@@ -136,7 +136,7 @@ void CalypAppModuleIf::run()
   }
   else if( m_pcModule->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
   {
-    if( m_pcModule->m_iModuleAPI == CLP_MODULE_API_2 )
+    if( m_pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
     {
       m_dMeasurementResult = m_pcModule->measure( apcFrameList );
     }

@@ -50,6 +50,11 @@ public:                                              \
     if( !apcFrameList[i] )                                \
       return false;
 
+#define _BASIC_MODULE_API_3_BREAK_CONDITION_ \
+  if( m_iFrameBufferCount == 0 )             \
+    if( apcFrameList.size() <= 0 )           \
+      return NULL;
+
 /** Module_API_Version Enum
  * \ingroup Calyp_Modules
  * Version of the modules API required
@@ -59,6 +64,7 @@ enum Module_API_Version
 {
   CLP_MODULE_API_1,
   CLP_MODULE_API_2,
+  CLP_MODULE_API_3,
 };
 
 /** Module_Type Enum
@@ -118,6 +124,8 @@ public:
   //! Features/Requirements
   unsigned int m_uiModuleRequirements;
 
+  unsigned int m_iFrameBufferCount;
+
   CalypOptions m_cModuleOptions;
 
   CalypModuleIf()
@@ -149,6 +157,9 @@ public:
   virtual double measure( std::vector<CalypFrame*> ) { return 0; }
   virtual bool keyPressed( enum Module_Key_Supported ) { return false; }
   virtual ClpString moduleInfo() { return ClpString(); }
+
+  virtual bool needFrame() { return true; };
+  virtual bool flush() { return false; };
 };
 
 #endif  // __CALYPMODULESIF_H__

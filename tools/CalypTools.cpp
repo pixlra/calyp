@@ -313,7 +313,7 @@ int CalypTools::Open( int argc, char* argv[] )
     {
       apcFrameList.push_back( m_apcInputStreams[i]->getCurrFrame() );
     }
-    if( m_pcCurrModuleIf->m_iModuleAPI == CLP_MODULE_API_2 )
+    if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
     {
       moduleCreated = m_pcCurrModuleIf->create( apcFrameList );
     }
@@ -338,13 +338,14 @@ int CalypTools::Open( int argc, char* argv[] )
       if( outputFileNames.size() == 1 )
       {
         CalypFrame* pcModFrame;
-        if( m_pcCurrModuleIf->m_iModuleAPI == CLP_MODULE_API_2 )
+        if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         {
           pcModFrame = m_pcCurrModuleIf->process( apcFrameList );
+          m_pcCurrModuleIf->flush();
         }
         else
         {
-          pcModFrame = applyFrameModule();
+          pcModFrame = m_pcCurrModuleIf->process( m_apcInputStreams[0]->getCurrFrame() );
         }
         CalypStream* pcModStream = new CalypStream;
         try
@@ -520,73 +521,100 @@ int CalypTools::QualityOperation()
   return 0;
 }
 
-CalypFrame* CalypTools::applyFrameModule()
+//CalypFrame* CalypTools::applyFrameModule()
+//{
+//  CalypFrame* pcProcessedFrame = NULL;
+//  if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+//  {
+
+//  }
+//  return pcProcessedFrame;
+//}
+
+std::vector<CalypFrame*> CalypTools::readInput()
 {
-  CalypFrame* pcProcessedFrame = NULL;
-  if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+  std::vector<CalypFrame*> apcFrameList;
+  apcFrameList.clear();
+  // Check EOF and read next frame
+  bool abEOF[MAX_NUMBER_INPUTS];
+  for( unsigned int s = 0; s < m_apcInputStreams.size(); s++ )
   {
-    pcProcessedFrame = m_pcCurrModuleIf->process( m_apcInputStreams[0]->getCurrFrame() );
+    abEOF[s] = m_apcInputStreams[s]->setNextFrame();
+    if( abEOF[s] )
+    {
+      return apcFrameList;
+    }
+    m_apcInputStreams[s]->readNextFrame();
   }
-  return pcProcessedFrame;
+  for( unsigned int i = 0; i < m_pcCurrModuleIf->m_uiNumberOfFrames; i++ )
+  {
+    apcFrameList.push_back( m_apcInputStreams[i]->getCurrFrame() );
+  }
+  return apcFrameList;
 }
 
 int CalypTools::ModuleOperation()
 {
-  std::vector<CalypFrame*> apcFrameList;
   log( CLP_LOG_INFO, "  Applying Module %s/%s ...\n", m_pcCurrModuleIf->m_pchModuleCategory,
        m_pcCurrModuleIf->m_pchModuleName );
 
   CalypFrame* pcProcessedFrame = NULL;
   double dMeasurementResult = 0.0;
   double dAveragedMeasurementResult = 0;
-  bool abEOF[MAX_NUMBER_INPUTS];
 
-  for( unsigned int s = 0; s < m_apcInputStreams.size(); s++ )
+  std::vector<CalypFrame*> apcFrameList;
+  for( unsigned int i = 0; i < m_pcCurrModuleIf->m_uiNumberOfFrames; i++ )
   {
-    abEOF[s] = false;
+    apcFrameList.push_back( m_apcInputStreams[i]->getCurrFrame() );
   }
 
   for( unsigned int frame = 0; frame < m_uiNumberOfFrames; frame++ )
   {
-    apcFrameList.clear();
-    for( unsigned int i = 0; i < m_pcCurrModuleIf->m_uiNumberOfFrames; i++ )
+    bool bReadFrame = true;
+    if( apcFrameList.size() == 0 )
     {
-      apcFrameList.push_back( m_apcInputStreams[i]->getCurrFrame() );
+      break;
     }
     if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
     {
-      if( m_pcCurrModuleIf->m_iModuleAPI == CLP_MODULE_API_2 )
-      {
+      if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
-      }
       else
-      {
-        pcProcessedFrame = applyFrameModule();
-      }
-      m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
+        pcProcessedFrame = m_pcCurrModuleIf->process( m_apcInputStreams[0]->getCurrFrame() );
+
+      if( pcProcessedFrame )
+        m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
     }
     else if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
     {
-      if( m_pcCurrModuleIf->m_iModuleAPI == CLP_MODULE_API_2 )
-      {
+      if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         dMeasurementResult = m_pcCurrModuleIf->measure( apcFrameList );
-      }
       else
-      {
         dMeasurementResult = m_pcCurrModuleIf->measure( m_apcInputStreams[0]->getCurrFrame() );
-      }
       log( CLP_LOG_INFO, "   %3d", frame );
       log( CLP_LOG_RESULT, "  %8.3f \n", dMeasurementResult );
       dAveragedMeasurementResult =
           ( dAveragedMeasurementResult * double( frame ) + dMeasurementResult ) / double( frame + 1 );
     }
-
-    for( unsigned int s = 0; s < m_apcInputStreams.size(); s++ )
+    apcFrameList.clear();
+    if( m_pcCurrModuleIf->m_iModuleAPI == CLP_MODULE_API_3 )
     {
-      abEOF[s] = m_apcInputStreams[s]->setNextFrame();
-      if( !abEOF[s] )
+      bReadFrame = m_pcCurrModuleIf->needFrame();
+    }
+    if( bReadFrame )
+      apcFrameList = readInput();
+  }
+
+  if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_3 )
+  {
+    while( true )
+    {
+      if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
       {
-        m_apcInputStreams[s]->readNextFrame();
+        pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
+        if( !pcProcessedFrame )
+          break;
+        m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
       }
     }
   }

@@ -390,7 +390,17 @@ unsigned int CalypFrame::getHeight( int channel ) const
 
 unsigned int CalypFrame::getPixels( int channel ) const
 {
-  return getWidth( channel ) * getWidth( channel );
+  return getWidth( channel ) * getHeight( channel );
+}
+
+unsigned long CalypFrame::getTotalNumberOfPixels() const
+{
+  unsigned long numberPixels = 0;
+  for( int i = 0; i < getNumberChannels(); i++ )
+  {
+    numberPixels += getPixels( i );
+  }
+  return numberPixels;
 }
 
 unsigned char CalypFrame::getChromaWidthRatio() const
@@ -518,7 +528,7 @@ void CalypFrame::copyFrom( const CalypFrame& other )
     return;
   d->m_bHasRGBPel = false;
   d->m_bHasHistogram = false;
-  memcpy( *d->m_pppcInputPel[CLP_LUMA], other.getPelBufferYUV()[CLP_LUMA][0], getBytesPerFrame() * sizeof( ClpPel ) );
+  memcpy( *d->m_pppcInputPel[CLP_LUMA], other.getPelBufferYUV()[CLP_LUMA][0], getTotalNumberOfPixels() * sizeof( ClpPel ) );
 }
 
 void CalypFrame::copyFrom( const CalypFrame* other )

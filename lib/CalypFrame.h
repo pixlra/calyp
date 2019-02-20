@@ -203,6 +203,12 @@ public:
   unsigned int getPixels( int channel = 0 ) const;
 
   /**
+   * Get the total number of pixels of the frame
+   * @return number of pixels
+   */
+  unsigned long getTotalNumberOfPixels() const;
+
+  /**
 	 * Get chroma width ratio
 	 * @return ratio multiple of 2
 	 */

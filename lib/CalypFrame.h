@@ -110,7 +110,7 @@ public:
 	 *
 	 * @note this function might misbehave if the pixel format enum is not correct
 	 */
-  CalypFrame( unsigned int width, unsigned int height, int pelFormat, int bitsPixel = 8 );
+  CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
 
   /**
 	 * Copy contructor

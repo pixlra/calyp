@@ -341,8 +341,12 @@ int CalypTools::Open( int argc, char* argv[] )
         CalypFrame* pcModFrame;
         if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         {
-          pcModFrame = m_pcCurrModuleIf->process( apcFrameList );
-          m_pcCurrModuleIf->flush();
+          pcModFrame = m_pcCurrModuleIf->getProcessedFrame();
+          if( !pcModFrame )
+          {
+            pcModFrame = m_pcCurrModuleIf->process( apcFrameList );
+            m_pcCurrModuleIf->flush();
+          }
         }
         else
         {

@@ -119,7 +119,7 @@ public:
 	 * @param pel_format pixel format index (always use PixelFormats enum)
 	 *
 	 */
-  void init( unsigned int width, unsigned int height, int pel_format, int bitsPixel )
+  void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel )
   {
     m_bInit = false;
     m_bHasRGBPel = false;
@@ -252,7 +252,7 @@ public:
  * \brief Constructors
  */
 
-CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, int bitsPixel )
+CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel )
     : d( new CalypFramePrivate )
 {
   d->init( width, height, pelFormat, bitsPixel );

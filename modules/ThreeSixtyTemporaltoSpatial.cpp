@@ -22,17 +22,17 @@
  * \brief    Frame Difference module
  */
 
-#include "ThreeSixtySpatialtoTemporal.h"
+#include "ThreeSixtyTemporaltoSpatial.h"
 
-ThreeSixtySpatialtoTemporal::ThreeSixtySpatialtoTemporal()
+ThreeSixtyTemporaltoSpatial::ThreeSixtyTemporaltoSpatial()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_3;
   m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
   m_pchModuleCategory = "360Video";
-  m_pchModuleLongName = "Spatial to Temporal";
-  m_pchModuleName = "SpatialtoTemporal";
-  m_pchModuleTooltip = "Convert 360 video from Cube Map Projection to temporal frames";
+  m_pchModuleLongName = "Temporal to Spatial";
+  m_pchModuleName = "TemporaltoSpatial";
+  m_pchModuleTooltip = "Convert 360 video from temporal frames to Cube Map Projection";
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY;
 
@@ -42,73 +42,60 @@ ThreeSixtySpatialtoTemporal::ThreeSixtySpatialtoTemporal()
   flush();
 }
 
-bool ThreeSixtySpatialtoTemporal::flush()
+bool ThreeSixtyTemporaltoSpatial::flush()
 {
   CalypModuleIf::flush();
   m_uiCopyX = 0;
   m_uiCopyY = 0;
+  m_uiFacesCount = 0;
   return true;
 };
 
-bool ThreeSixtySpatialtoTemporal::needFrame()
+bool ThreeSixtyTemporaltoSpatial::needFrame()
 {
-  if( m_iFrameBufferCount == 0 )
-  {
-    return true;
-  }
-  return false;
+  return CalypModuleIf::needFrame();
 };
 
-bool ThreeSixtySpatialtoTemporal::create( std::vector<CalypFrame*> apcFrameList )
+bool ThreeSixtyTemporaltoSpatial::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
 
   unsigned int iWidth;
   unsigned int iHeight;
 
-  iWidth = apcFrameList[0]->getWidth() / m_uiFacesX;
-  iHeight = apcFrameList[0]->getHeight() / m_uiFacesY;
+  iWidth = apcFrameList[0]->getWidth() * m_uiFacesX;
+  iHeight = apcFrameList[0]->getHeight() * m_uiFacesY;
 
   m_pcOutputFrame = new CalypFrame( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
                                        apcFrameList[0]->getBitsPel() );
-
-  m_pcTmpFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(),
-                                 apcFrameList[0]->getBitsPel() );
   return true;
 }
 
-CalypFrame* ThreeSixtySpatialtoTemporal::process( std::vector<CalypFrame*> apcFrameList )
+CalypFrame* ThreeSixtyTemporaltoSpatial::process( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_3_BREAK_CONDITION_
 
-  if( m_iFrameBufferCount == 0 )
-  {
-    m_pcTmpFrame->copyFrom( apcFrameList[0] );
-    m_uiCopyX = 0;
-    m_uiCopyY = 0;
+  m_pcOutputFrame->copyTo( apcFrameList[0], m_uiCopyX, m_uiCopyY );
 
-    m_iFrameBufferCount = m_uiFacesX * m_uiFacesY;
-  }
-
-  m_pcOutputFrame->copyFrom( m_pcTmpFrame, m_uiCopyX, m_uiCopyY );
-  m_iFrameBufferCount--;
-
-  m_uiCopyX += m_pcOutputFrame->getWidth();
-  if( m_uiCopyX >= m_pcTmpFrame->getWidth() )
+  m_uiCopyX += apcFrameList[0]->getWidth();
+  if( m_uiCopyX >= m_pcOutputFrame->getWidth() )
   {
     m_uiCopyX = 0;
-    m_uiCopyY += m_pcOutputFrame->getHeight();
+    m_uiCopyY += apcFrameList[0]->getHeight();
   }
-
+  if( ++m_uiFacesCount < (m_uiFacesX * m_uiFacesY) )
+  {
+    return NULL;
+  }
+  m_uiCopyX = 0;
+  m_uiCopyY = 0;
+  m_uiFacesCount = 0;
   return m_pcOutputFrame;
 }
 
-void ThreeSixtySpatialtoTemporal::destroy()
+void ThreeSixtyTemporaltoSpatial::destroy()
 {
   if( m_pcOutputFrame )
     delete m_pcOutputFrame;
   m_pcOutputFrame = NULL;
-  if( m_pcTmpFrame )
-    delete m_pcTmpFrame;
-  m_pcTmpFrame = NULL;
 }

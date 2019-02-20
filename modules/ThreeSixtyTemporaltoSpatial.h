@@ -22,26 +22,26 @@
  * \brief    Module to aapply a mask to an image
  */
 
-#ifndef __THREESIXTYSPATIALTOTEMPORAL_H__
-#define __THREESIXTYSPATIALTOTEMPORAL_H__
+#ifndef __THREESIXTYTEMPORALTOSPATIAL_H__
+#define __THREESIXTYTEMPORALTOSPATIAL_H__
 
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class ThreeSixtySpatialtoTemporal : public CalypModuleIf
+class ThreeSixtyTemporaltoSpatial : public CalypModuleIf
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtySpatialtoTemporal )
+  REGISTER_CLASS_FACTORY( ThreeSixtyTemporaltoSpatial )
 
 private:
-  CalypFrame* m_pcTmpFrame;
   unsigned int m_uiFacesX;
   unsigned int m_uiFacesY;
   unsigned int m_uiCopyX;
   unsigned int m_uiCopyY;
+  unsigned int m_uiFacesCount;
 
 public:
-  ThreeSixtySpatialtoTemporal();
-  virtual ~ThreeSixtySpatialtoTemporal() {}
+  ThreeSixtyTemporaltoSpatial();
+  virtual ~ThreeSixtyTemporaltoSpatial() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
   bool needFrame();
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
@@ -49,4 +49,4 @@ public:
   void destroy();
 };
 
-#endif  // __THREESIXTYSPATIALTOTEMPORAL_H__
+#endif  // __THREESIXTYTEMPORALTOSPATIAL_H__

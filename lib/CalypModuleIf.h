@@ -125,6 +125,7 @@ public:
   unsigned int m_uiModuleRequirements;
 
   unsigned int m_iFrameBufferCount;
+  CalypFrame* m_pcOutputFrame;
 
   CalypOptions m_cModuleOptions;
 
@@ -133,6 +134,8 @@ public:
     m_iModuleAPI = CLP_MODULE_API_1;
     m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
     m_pchModuleLongName = NULL;
+    m_pcOutputFrame = NULL;
+    m_iFrameBufferCount = 0;
   }
   virtual ~CalypModuleIf() {}
   virtual void Delete() = 0;
@@ -157,8 +160,11 @@ public:
   virtual double measure( std::vector<CalypFrame*> ) { return 0; }
   virtual bool keyPressed( enum Module_Key_Supported ) { return false; }
   virtual ClpString moduleInfo() { return ClpString(); }
-
-  virtual bool needFrame() { return true; };
+  /**
+   * Module API version 3
+   */
+  virtual CalypFrame* getProcessedFrame() { return m_pcOutputFrame; }
+  virtual bool needFrame() { return m_iFrameBufferCount == 0? true : false; };
   virtual bool flush()
   {
     m_iFrameBufferCount = 0;

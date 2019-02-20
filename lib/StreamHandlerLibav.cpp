@@ -335,7 +335,7 @@ bool StreamHandlerLibav::configureBuffer( CalypFrame* pcFrame )
 
 void StreamHandlerLibav::calculateFrameNumber()
 {
-  unsigned long long int num_frames;
+  ClpULong num_frames;
   /*if( m_cStream->nb_frames )
   {
     num_frames = m_cStream->nb_frames;
@@ -442,7 +442,7 @@ bool StreamHandlerLibav::write( CalypFrame* pcFrame )
   return false;
 }
 
-bool StreamHandlerLibav::seek( unsigned long long int iFrameNum )
+bool StreamHandlerLibav::seek( ClpULong iFrameNum )
 {
   if( m_uiTotalNumberFrames == 1 )
     return true;

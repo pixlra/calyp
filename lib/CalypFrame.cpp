@@ -388,15 +388,15 @@ unsigned int CalypFrame::getHeight( int channel ) const
   return CHROMASHIFT( d->m_uiHeight, channel > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0 );
 }
 
-unsigned int CalypFrame::getPixels( int channel ) const
+ClpULong CalypFrame::getPixels( int channel ) const
 {
   return getWidth( channel ) * getHeight( channel );
 }
 
-unsigned long CalypFrame::getTotalNumberOfPixels() const
+ClpULong CalypFrame::getTotalNumberOfPixels() const
 {
-  unsigned long numberPixels = 0;
-  for( int i = 0; i < getNumberChannels(); i++ )
+  ClpULong numberPixels = 0;
+  for( unsigned i = 0; i < getNumberChannels(); i++ )
   {
     numberPixels += getPixels( i );
   }
@@ -413,7 +413,7 @@ unsigned char CalypFrame::getChromaHeightRatio() const
   return d->m_pcPelFormat->log2ChromaHeight;
 }
 
-unsigned int CalypFrame::getChromaLength() const
+ClpULong CalypFrame::getChromaLength() const
 {
   return getWidth( 1 ) * getHeight( 1 );
 }
@@ -423,12 +423,12 @@ unsigned int CalypFrame::getBitsPel() const
   return d->m_uiBitsPel;
 }
 
-unsigned long CalypFrame::getBytesPerFrame()
+ClpULong CalypFrame::getBytesPerFrame()
 {
   return getBytesPerFrame( d->m_uiWidth, d->m_uiHeight, d->m_iPixelFormat, d->m_uiBitsPel );
 }
 
-unsigned long CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel )
+ClpULong CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel )
 {
   const CalypPixelFormatDescriptor* pcPelFormat = &( g_CalypPixFmtDescriptorsMap.at( iPixelFormat ) );
   unsigned int bytesPerPixel = ( bitsPixel - 1 ) / 8 + 1;
@@ -541,6 +541,7 @@ void CalypFrame::copyFrom( const CalypFrame& other, unsigned int xPos, unsigned 
 {
   if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
     return;
+  // TODO: Protect width and height
   ClpPel*** pInput = other.getPelBufferYUV();
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
@@ -560,6 +561,32 @@ void CalypFrame::copyFrom( const CalypFrame* other, unsigned int x, unsigned int
 {
   if( other )
     copyFrom( *other, x, y );
+}
+
+void CalypFrame::copyTo( const CalypFrame& other, unsigned int xPos, unsigned int yPos )
+{
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
+    return;
+  ClpPel*** pInput = other.getPelBufferYUV();
+  // TODO: Protect width and height
+  for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  {
+    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
+    for( unsigned int i = 0; i < CHROMASHIFT( other.getHeight(), ratioH ); i++ )
+    {
+      memcpy( &( d->m_pppcInputPel[ch][( yPos >> ratioH ) + i][( xPos >> ratioW )] ), &( pInput[ch][i][0] ),
+              ( other.getWidth() >> ratioW ) * sizeof( ClpPel ) );
+    }
+  }
+  d->m_bHasRGBPel = false;
+  d->m_bHasHistogram = false;
+}
+
+void CalypFrame::copyTo( const CalypFrame* other, unsigned int x, unsigned int y )
+{
+  if( other )
+    copyTo( *other, x, y );
 }
 
 void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness, unsigned long uiBuffSize )

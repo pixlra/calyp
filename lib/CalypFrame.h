@@ -200,13 +200,13 @@ public:
 	 * @param channel/component
 	 * @return number of pixels
 	 */
-  unsigned int getPixels( int channel = 0 ) const;
+  ClpULong getPixels( int channel = 0 ) const;
 
   /**
    * Get the total number of pixels of the frame
    * @return number of pixels
    */
-  unsigned long getTotalNumberOfPixels() const;
+  ClpULong getTotalNumberOfPixels() const;
 
   /**
 	 * Get chroma width ratio
@@ -224,7 +224,7 @@ public:
 	 * Get number of pixels in each chroma channel
 	 * @return number of pixels
 	 */
-  unsigned int getChromaLength() const;
+  ClpULong getChromaLength() const;
 
   /**
 	 * Get number of bits per pixel
@@ -236,13 +236,13 @@ public:
 	 * Get number of bytes per frame of an existing frame
 	 * @return number of bytes per frame
 	 */
-  unsigned long getBytesPerFrame();
+  ClpULong getBytesPerFrame();
 
   /**
 	 * Get number of bytes per frame of a specific pixel format
 	 * @return number of bytes per frame
 	 */
-  static unsigned long getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
+  static ClpULong getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
 
   /**
 	 * Reset frame pixels to zero
@@ -300,6 +300,9 @@ public:
   void copyFrom( const CalypFrame* );
   void copyFrom( const CalypFrame&, unsigned int, unsigned int );
   void copyFrom( const CalypFrame*, unsigned int, unsigned int );
+
+  void copyTo( const CalypFrame&, unsigned int, unsigned int );
+  void copyTo( const CalypFrame*, unsigned int, unsigned int );
 
   void frameFromBuffer( ClpByte*, int, unsigned long );
   void frameFromBuffer( ClpByte*, int );

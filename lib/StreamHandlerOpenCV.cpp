@@ -119,7 +119,7 @@ bool StreamHandlerOpenCV::configureBuffer( CalypFrame* pcFrame )
   return true;
 }
 
-bool StreamHandlerOpenCV::seek( unsigned long long int iFrameNum )
+bool StreamHandlerOpenCV::seek( ClpULong iFrameNum )
 {
   // m_uiCurrFrameFileIdx =
   return true;

@@ -70,13 +70,13 @@ public:
   CalypStreamHandlerIf()
       : m_bIsInput( true )
       , m_bNative( true )
-      , m_uiCurrFrameFileIdx( 0 )
       , m_uiWidth( 0 )
       , m_uiHeight( 0 )
       , m_iPixelFormat( -1 )
       , m_uiBitsPerPixel( 8 )
       , m_iEndianness( -1 )
       , m_dFrameRate( 30 )
+      , m_uiCurrFrameFileIdx( 0 )
       , m_uiTotalNumberFrames( 0 )
       , m_pStreamBuffer( NULL )
       , m_uiNBytesPerFrame( 0 )
@@ -89,7 +89,7 @@ public:
   virtual bool openHandler( ClpString strFilename, bool bInput ) = 0;
   virtual void closeHandler() = 0;
   virtual bool configureBuffer( CalypFrame* pcFrame ) = 0;
-  virtual bool seek( unsigned long long int iFrameNum ) = 0;
+  virtual bool seek( ClpULong iFrameNum ) = 0;
   virtual bool read( CalypFrame* pcFrame ) = 0;
   virtual bool write( CalypFrame* pcFrame ) = 0;
 
@@ -105,7 +105,6 @@ protected:
   ClpString m_strCodecName;
   bool m_bIsInput;
   bool m_bNative;
-  unsigned long m_uiCurrFrameFileIdx;
   ClpString m_cFilename;
   unsigned int m_uiWidth;
   unsigned int m_uiHeight;
@@ -113,9 +112,10 @@ protected:
   unsigned int m_uiBitsPerPixel;
   int m_iEndianness;
   double m_dFrameRate;
-  unsigned long m_uiTotalNumberFrames;
+  ClpULong m_uiCurrFrameFileIdx;
+  ClpULong m_uiTotalNumberFrames;
   ClpByte* m_pStreamBuffer;
-  unsigned long m_uiNBytesPerFrame;
+  ClpULong m_uiNBytesPerFrame;
   bool m_isEOF;
 };
 

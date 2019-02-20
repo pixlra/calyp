@@ -38,7 +38,7 @@ public:
   bool openHandler( ClpString strFilename, bool bInput );
   void closeHandler();
   bool configureBuffer( CalypFrame* pcFrame );
-  bool seek( unsigned long long int iFrameNum );
+  bool seek( ClpULong iFrameNum );
   bool read( CalypFrame* pcFrame );
   bool write( CalypFrame* pcFrame );
 

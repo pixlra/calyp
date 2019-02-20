@@ -159,7 +159,11 @@ public:
   virtual ClpString moduleInfo() { return ClpString(); }
 
   virtual bool needFrame() { return true; };
-  virtual bool flush() { return false; };
+  virtual bool flush()
+  {
+    m_iFrameBufferCount = 0;
+    return true;
+  };
 };
 
 #endif  // __CALYPMODULESIF_H__

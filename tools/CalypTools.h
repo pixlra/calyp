@@ -78,7 +78,7 @@ private:
     MODULE_OPERATION,
   };
 
-  unsigned int m_uiNumberOfFrames;
+  ClpULong m_uiNumberOfFrames;
   unsigned int m_uiNumberOfComponents;
   std::vector<CalypStream*> m_apcInputStreams;
   std::vector<CalypStream*> m_apcOutputStreams;

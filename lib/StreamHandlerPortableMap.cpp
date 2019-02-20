@@ -123,7 +123,7 @@ bool StreamHandlerPortableMap::configureBuffer( CalypFrame* pcFrame )
   return getMem1D<ClpByte>( &m_pStreamBuffer, pcFrame->getBytesPerFrame() );
 }
 
-bool StreamHandlerPortableMap::seek( unsigned long long int iFrameNum )
+bool StreamHandlerPortableMap::seek( ClpULong iFrameNum )
 {
   // m_uiCurrFrameFileIdx =
   return true;

@@ -128,7 +128,7 @@ private:
   QElapsedTimer* m_pcPlayControlTimer;
 #endif
 
-  unsigned long long int getMaxFrameNumber();
+  unsigned long getMaxFrameNumber();
   void setTimerStatus();
 
 Q_SIGNALS:

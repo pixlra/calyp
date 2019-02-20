@@ -66,7 +66,7 @@ public:
   void closeHandler();
   bool configureBuffer( CalypFrame* pcFrame );
   void calculateFrameNumber();
-  bool seek( unsigned long long int iFrameNum );
+  bool seek( ClpULong iFrameNum );
   bool read( CalypFrame* pcFrame );
   bool write( CalypFrame* pcFrame );
 

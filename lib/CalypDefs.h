@@ -32,6 +32,7 @@
 
 typedef unsigned short ClpPel;  ///< 16-bit pixel type
 typedef unsigned char ClpByte;
+typedef unsigned long long ClpULong;
 
 typedef std::string ClpString;
 

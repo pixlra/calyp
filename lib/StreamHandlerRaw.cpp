@@ -78,13 +78,13 @@ void StreamHandlerRaw::calculateFrameNumber()
   if( m_pFile && m_uiNBytesPerFrame > 0 )
   {
     fseek( m_pFile, 0, SEEK_END );
-    unsigned long long int fileSize = ftell( m_pFile );
+    unsigned long long fileSize = ftell( m_pFile );
     fseek( m_pFile, 0, SEEK_SET );
     m_uiTotalNumberFrames = fileSize / m_uiNBytesPerFrame;
   }
 }
 
-bool StreamHandlerRaw::seek( unsigned long long int iFrameNum )
+bool StreamHandlerRaw::seek( ClpULong iFrameNum )
 {
   if( m_bIsInput && m_pFile )
   {

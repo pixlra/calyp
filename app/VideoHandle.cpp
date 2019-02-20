@@ -320,8 +320,8 @@ void VideoHandle::update()
     CalypStream* pcStream = m_pcCurrentVideoSubWindow->getInputStream();
     CalypFrame* pcFrame = m_pcCurrentVideoSubWindow->getCurrFrame();
 
-    int frame_num = 0;
-    unsigned long long int total_frame_num = 1;
+    unsigned long frame_num = 0;
+    unsigned long total_frame_num = 1;
 
     m_pcVideoFormatLabel->setText( m_pcCurrentVideoSubWindow->getStreamInformation() );
 
@@ -519,10 +519,10 @@ void VideoHandle::moveAllScrollBars( const double& horRatio, const double& verRa
 }
 #endif
 
-unsigned long long int VideoHandle::getMaxFrameNumber()
+unsigned long VideoHandle::getMaxFrameNumber()
 {
-  unsigned int currFrames;
-  unsigned long long int maxFrames = INT_MAX;
+  unsigned long currFrames;
+  unsigned long maxFrames = INT_MAX;
   if( m_pcCurrentVideoSubWindow )
   {
     if( m_acPlayingSubWindows.contains( m_pcCurrentVideoSubWindow ) )

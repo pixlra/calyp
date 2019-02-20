@@ -156,12 +156,12 @@ void QualityHandle::update( VideoSubWindow* currSubWindow )
 
 void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
 {
-  int numberOfWindows = apcWindowList.size();
-  unsigned long long int currFrames = 0;
-  unsigned long long int numberOfFrames = INT_MAX;
+  unsigned numberOfWindows = apcWindowList.size();
+  ClpULong currFrames = 0;
+  ClpULong numberOfFrames = -1;
 
   //! Check reference window
-  for( int i = 0; i < numberOfWindows; i++ )
+  for( unsigned i = 0; i < numberOfWindows; i++ )
   {
     if( !apcWindowList.at( i )->getRefSubWindow() )
     {
@@ -171,7 +171,7 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
   VideoSubWindow* pcReferenceWindow = apcWindowList.at( 0 )->getRefSubWindow();
 
   numberOfFrames = pcReferenceWindow->getInputStream()->getFrameNum();
-  for( int i = 0; i < numberOfWindows; i++ )
+  for( unsigned i = 0; i < numberOfWindows; i++ )
   {
     currFrames = apcWindowList.at( i )->getInputStream()->getFrameNum();
     if( currFrames < numberOfFrames )
@@ -186,7 +186,7 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
   double* padAverageQuality = new double[numberOfWindows + 1];
   double dCurrentQuality;
 
-  for( unsigned int i = 0; i < numberOfWindows + 1; i++ )
+  for( unsigned i = 0; i < numberOfWindows + 1; i++ )
   {
     padAverageQuality[i] = 0;
   }

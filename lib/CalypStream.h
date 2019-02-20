@@ -79,11 +79,11 @@ public:
 
   bool isNative();
   ClpString getFileName();
-  unsigned int getFrameNum();
+  ClpULong getFrameNum();
   unsigned int getWidth() const;
   unsigned int getHeight() const;
   int getEndianess() const;
-  int getCurrFrameNum();
+  long getCurrFrameNum();
   double getFrameRate();
   void getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
                   unsigned int& rFrameRate );

@@ -118,13 +118,13 @@ int CalypTools::openInputs()
     }
   }
 
-  m_uiNumberOfFrames = UINT_MAX;
+  m_uiNumberOfFrames = -1;
   if( Opts().hasOpt( "frames" ) )
   {
     m_uiNumberOfFrames = m_iFrames;
   }
 
-  m_uiNumberOfComponents = UINT_MAX;
+  m_uiNumberOfComponents = -1;
   for( unsigned int i = 0; i < m_apcInputStreams.size(); i++ )
   {
     m_uiNumberOfFrames = std::min( m_uiNumberOfFrames, m_apcInputStreams[i]->getFrameNum() );

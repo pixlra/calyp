@@ -562,8 +562,8 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
   if( pcCurrModuleIf->m_pcModuleStream )
   {
     unsigned int numberOfWindows = pcCurrModuleIf->m_pcModule->m_uiNumberOfFrames;
-    unsigned long long int currFrames = 0;
-    unsigned long long int numberOfFrames = INT_MAX;
+    ClpULong currFrames = 0;
+    ClpULong numberOfFrames = -1;
     for( unsigned int i = 0; i < numberOfWindows; i++ )
     {
       currFrames = pcCurrModuleIf->m_pcSubWindow[i]->getInputStream()->getFrameNum();

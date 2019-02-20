@@ -401,7 +401,7 @@ bool CalypStream::isNative()
   return d->handler->m_bNative;
 }
 
-unsigned int CalypStream::getFrameNum()
+ClpULong CalypStream::getFrameNum()
 {
   return d->handler->m_uiTotalNumberFrames;
 }
@@ -422,7 +422,7 @@ double CalypStream::getFrameRate()
   return d->handler->m_dFrameRate;
 }
 
-int CalypStream::getCurrFrameNum()
+long CalypStream::getCurrFrameNum()
 {
   return d->iCurrFrameNum;
 }

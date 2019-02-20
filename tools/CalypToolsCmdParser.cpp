@@ -64,7 +64,7 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
       ( "output,o", m_strOutput, "output file" )                                         /**/
       ( "size,s", m_strResolution, "size (WxH)" )                                        /**/
       ( "pel_fmt,p", m_strPelFmt, "pixel format" )                                       /**/
-      ( "bits_pel", m_uiBitsPerPixel, "bits per pixel" )                                 /**/
+      ( "bits_pel", m_strBitsPerPixel, "bits per pixel" )                                /**/
       ( "endianness", m_strEndianness, "File endianness (big, little)" )                 /**/
       ( "frames,f", m_iFrames, "number of frames to parse" )                             /**/
       ( "quality", m_strQualityMetric, "select a quality metric" )                       /**/

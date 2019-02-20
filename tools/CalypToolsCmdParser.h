@@ -67,7 +67,7 @@ protected:
   std::vector<ClpString> m_apcInputs;
   std::vector<ClpString> m_strResolution;
   std::vector<ClpString> m_strPelFmt;
-  std::vector<unsigned int> m_uiBitsPerPixel;
+  std::vector<ClpString> m_strBitsPerPixel;
   std::vector<ClpString> m_strEndianness;
   ClpString m_strOutput;
   long m_iFrames;

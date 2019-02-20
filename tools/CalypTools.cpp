@@ -27,6 +27,7 @@
 
 #include <climits>
 #include <cstring>
+#include <iostream>
 
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
@@ -69,7 +70,7 @@ int CalypTools::openInputs()
 
     ClpString resolutionString( "" );
     ClpString fmtString( "yuv420p" );
-    unsigned int uiBitPerPixel = 8;
+    unsigned int uiBitsPerPixel = 8;
     unsigned int uiEndianness = 0;
 
     CalypStream* pcStream;
@@ -85,7 +86,7 @@ int CalypTools::openInputs()
       }
       if( Opts().hasOpt( "bits_pel" ) )
       {
-        uiBitPerPixel = GET_PARAM( m_uiBitsPerPixel, i );
+        uiBitsPerPixel = std::stoi( GET_PARAM( m_strBitsPerPixel, i ).c_str() );
       }
       if( Opts().hasOpt( "endianness" ) )
       {
@@ -93,7 +94,7 @@ int CalypTools::openInputs()
         {
           uiEndianness = 0;
         }
-        if( GET_PARAM( m_strEndianness, i ) == "little" )
+        else if( GET_PARAM( m_strEndianness, i ) == "little" )
         {
           uiEndianness = 1;
         }
@@ -101,7 +102,7 @@ int CalypTools::openInputs()
       pcStream = new CalypStream;
       try
       {
-        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitPerPixel, uiEndianness, 1, true ) )
+        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, 1, true ) )
         {
           log( CLP_LOG_ERROR, "Cannot open input stream %s! ", inputFileNames[i].c_str() );
           return -1;

@@ -83,7 +83,7 @@ CalypFrame* ThreeSixtySpatialtoTemporal::process( std::vector<CalypFrame*> apcFr
 
   if( m_iFrameBufferCount == 0 )
   {
-    m_pcTmpFrame->copyFrom( apcFrameList[0] );
+    m_pcTmpFrame->copyFrom( apcFrameList[0], 0, 0 );
     m_uiCopyX = 0;
     m_uiCopyY = 0;
 

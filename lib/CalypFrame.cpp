@@ -528,7 +528,7 @@ void CalypFrame::copyFrom( const CalypFrame& other )
     return;
   d->m_bHasRGBPel = false;
   d->m_bHasHistogram = false;
-  memcpy( *d->m_pppcInputPel[CLP_LUMA], other.getPelBufferYUV()[CLP_LUMA][0], getTotalNumberOfPixels() * sizeof( ClpPel ) );
+  memcpy( &( d->m_pppcInputPel[CLP_LUMA][0][0]), &(other.getPelBufferYUV()[CLP_LUMA][0][0]), getTotalNumberOfPixels() * sizeof( ClpPel ) );
 }
 
 void CalypFrame::copyFrom( const CalypFrame* other )
@@ -542,15 +542,23 @@ void CalypFrame::copyFrom( const CalypFrame& other, unsigned int xPos, unsigned 
   if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
     return;
   // TODO: Protect width and height
-  ClpPel*** pInput = other.getPelBufferYUV();
+   ClpPel*** pInput = other.getPelBufferYUV();
+//  ClpPel* pInput;
+//  ClpPel* pOutput;
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
     int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
     int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
     for( unsigned int i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ); i++ )
     {
-      memcpy( d->m_pppcInputPel[ch][i], &( pInput[ch][( yPos >> ratioH ) + i][( xPos >> ratioW )] ),
+      memcpy( &(d->m_pppcInputPel[ch][i][0]), &( pInput[ch][( yPos >> ratioH ) + i][( xPos >> ratioW )] ),
               ( d->m_uiWidth >> ratioW ) * sizeof( ClpPel ) );
+//      pOutput = d->m_pppcInputPel[ch][i];
+//      pInput = other.getPelBufferYUV()[ch][( yPos >> ratioH ) + i] + ( xPos >> ratioW );
+//      for( unsigned int j = 0; j < CHROMASHIFT( d->m_uiWidth, ratioW ); j++ )
+//      {
+//        *pOutput++ = *pInput++;
+//      }
     }
   }
   d->m_bHasRGBPel = false;
@@ -611,7 +619,7 @@ void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness )
   int b;
   int maxval = pow( 2, d->m_uiBitsPel ) - 1;
 
-  if( iEndianness == 0 )
+  if( iEndianness == CLP_BIG_ENDIAN )
   {
     startByte = bytesPixel - 1;
     endByte = -1;
@@ -669,7 +677,7 @@ void CalypFrame::frameToBuffer( ClpByte* output_buffer, int iEndianness )
   int incByte = 1;
   int b;
 
-  if( iEndianness == 0 )
+  if( iEndianness == CLP_BIG_ENDIAN )
   {
     startByte = bytesPixel - 1;
     endByte = -1;
@@ -688,7 +696,7 @@ void CalypFrame::frameToBuffer( ClpByte* output_buffer, int iEndianness )
   {
     ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
     ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    step = d->m_pcPelFormat->comp[ch].step_minus1;
+    step = ( d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
 
     pTmpPel = d->m_pppcInputPel[ch][0];
     pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane];

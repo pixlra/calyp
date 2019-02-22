@@ -52,7 +52,7 @@ bool ThreeSixtySpatialtoTemporal::flush()
 
 bool ThreeSixtySpatialtoTemporal::needFrame()
 {
-  if( m_iFrameBufferCount == 0 )
+  if( m_iFrameBufferCount <= 0 )
   {
     return true;
   }
@@ -70,7 +70,7 @@ bool ThreeSixtySpatialtoTemporal::create( std::vector<CalypFrame*> apcFrameList 
   iHeight = apcFrameList[0]->getHeight() / m_uiFacesY;
 
   m_pcOutputFrame = new CalypFrame( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
-                                       apcFrameList[0]->getBitsPel() );
+                                    apcFrameList[0]->getBitsPel() );
 
   m_pcTmpFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(),
                                  apcFrameList[0]->getBitsPel() );

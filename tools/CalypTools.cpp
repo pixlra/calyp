@@ -573,13 +573,9 @@ int CalypTools::ModuleOperation()
     apcFrameList.push_back( m_apcInputStreams[i]->getCurrFrame() );
   }
 
-  for( unsigned int frame = 0; frame < m_uiNumberOfFrames; frame++ )
+  for( unsigned int frame = 0; frame < m_uiNumberOfFrames; )
   {
     bool bReadFrame = true;
-    if( apcFrameList.size() == 0 )
-    {
-      break;
-    }
     if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
     {
       if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
@@ -607,7 +603,10 @@ int CalypTools::ModuleOperation()
       bReadFrame = m_pcCurrModuleIf->needFrame();
     }
     if( bReadFrame )
+    {
       apcFrameList = readInput();
+      frame++;
+    }
   }
 
   if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_3 )

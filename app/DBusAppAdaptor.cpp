@@ -35,8 +35,8 @@ DBusAppAdaptor::DBusAppAdaptor( MainWindow* app )
     : QDBusAbstractAdaptor( app ), m_app( app )
 {
   // application dbus interface
-  bool isRegistered = QDBusConnection::sessionBus().registerObject( QStringLiteral( CALYP_DBUS_PATH ), this,
-                                                                    QDBusConnection::ExportAllSlots );
+  bool isRegistered = QDBusConnection::sessionBus().registerObject( QStringLiteral( CALYP_DBUS_PATH ), QStringLiteral( CALYP_DBUS_SESSION_NAME ),
+                                                                    this, QDBusConnection::ExportAllSlots );
 
   Q_ASSERT( isRegistered == true );
 }

@@ -575,6 +575,7 @@ int CalypTools::ModuleOperation()
 
   for( unsigned int frame = 0; frame < m_uiNumberOfFrames; )
   {
+    log( CLP_LOG_INFO, "  Processing frame %3d\n", frame );
     bool bReadFrame = true;
     if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
     {
@@ -584,7 +585,10 @@ int CalypTools::ModuleOperation()
         pcProcessedFrame = m_pcCurrModuleIf->process( m_apcInputStreams[0]->getCurrFrame() );
 
       if( pcProcessedFrame )
+      {
         m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
+
+      }
     }
     else if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
     {
@@ -606,6 +610,7 @@ int CalypTools::ModuleOperation()
     {
       apcFrameList = readInput();
       frame++;
+
     }
   }
 

@@ -60,7 +60,7 @@ private:
   bool m_bUseHH;
   int m_uiNumberOfDisparities;
   unsigned int m_uiBlockSize;
-#if( CV_MAJOR_VERSION == 3 )
+#if( CV_MAJOR_VERSION >= 3 )
   cv::Ptr<cv::StereoSGBM> m_cStereoMatch;
 #else
   cv::StereoSGBM m_cStereoMatch;

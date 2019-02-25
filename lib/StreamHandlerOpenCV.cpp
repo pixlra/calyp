@@ -29,6 +29,9 @@
 
 #include <cstdio>
 #include <opencv2/opencv.hpp>
+#if CV_MAJOR_VERSION >= 4
+#include <opencv2/videoio.hpp>
+#endif
 
 using cv::Mat;
 using cv::VideoCapture;
@@ -78,8 +81,13 @@ bool StreamHandlerOpenCV::openHandler( ClpString strFilename, bool bInput )
       m_strFormatName = "DEV";
       m_strCodecName = "Raw Video";
       pcVideoCapture = new VideoCapture( iDeviceId );
+      #if CV_MAJOR_VERSION >= 4
+      m_uiWidth = pcVideoCapture->get( cv::CAP_PROP_FRAME_WIDTH );
+      m_uiHeight = pcVideoCapture->get( cv::CAP_PROP_FRAME_HEIGHT );
+      #else
       m_uiWidth = pcVideoCapture->get( CV_CAP_PROP_FRAME_WIDTH );
       m_uiHeight = pcVideoCapture->get( CV_CAP_PROP_FRAME_HEIGHT );
+      #endif
       m_dFrameRate = 25;
     }
     else

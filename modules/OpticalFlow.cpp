@@ -166,7 +166,11 @@ bool OpticalFlowDualTVL1::create( std::vector<CalypFrame*> apcFrameList )
   bool bRet = commonCreate( apcFrameList );
   if( !bRet )
     return bRet;
+  #if CV_MAJOR_VERSION >= 4
+  m_cOpticalFlow = cv::optflow::createOptFlow_DualTVL1();
+  #else
   m_cOpticalFlow = cv::createOptFlow_DualTVL1();
+  #endif
   return bRet;
 }
 

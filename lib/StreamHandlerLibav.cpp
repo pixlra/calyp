@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <iostream>
 
-#if( ( LIBAVCODEC_VERSION_MAJOR >= 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )
+#if( ( LIBAVCODEC_VERSION_MAJOR > 57 ) || ( LIBAVCODEC_VERSION_MAJOR == 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )
 #define FF_SEND_RECEIVE_API
 #define FF_USER_CODEC_PARAM
 #endif

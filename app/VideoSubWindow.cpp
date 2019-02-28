@@ -334,8 +334,15 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
         return false;
       }
     }
-    bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate,
-                                true );
+    try
+    {
+      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, true );
+    }
+    catch( CalypFailure& e )
+    {
+      if( iPass == 1 )
+        throw( e );
+    }
   }
 
   m_sStreamInfo.m_cFilename = cFilename;

@@ -49,13 +49,11 @@ bool AbsoluteFrameDifference::create( std::vector<CalypFrame*> apcFrameList )
   _BASIC_MODULE_API_2_CHECK_
 
   for( unsigned int i = 1; i < apcFrameList.size(); i++ )
-    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE |
-                                                            CalypFrame::MATCH_RESOLUTION |
-                                                            CalypFrame::MATCH_BITS ) )
+    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY
+        | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
       return false;
 
-  m_pcFrameDifference =
-      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
+  m_pcFrameDifference = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY, apcFrameList[0]->getBitsPel() );
   return true;
 }
 
@@ -68,13 +66,18 @@ CalypFrame* AbsoluteFrameDifference::process( std::vector<CalypFrame*> apcFrameL
   ClpPel* pOutputPelYUV = m_pcFrameDifference->getPelBufferYUV()[0][0];
   int aux_pel_1, aux_pel_2;
 
-  for( unsigned int y = 0; y < m_pcFrameDifference->getHeight(); y++ )
-    for( unsigned int x = 0; x < m_pcFrameDifference->getWidth(); x++ )
+  for( unsigned int ch = 0; ch < m_pcFrameDifference->getNumberChannels(); ch++ )
+  {
+    for( unsigned int y = 0; y < m_pcFrameDifference->getHeight(); y++ )
     {
-      aux_pel_1 = *pInput1PelYUV++;
-      aux_pel_2 = *pInput2PelYUV++;
-      *pOutputPelYUV++ = abs( aux_pel_1 - aux_pel_2 );
+      for( unsigned int x = 0; x < m_pcFrameDifference->getWidth(); x++ )
+      {
+        aux_pel_1 = *pInput1PelYUV++;
+        aux_pel_2 = *pInput2PelYUV++;
+        *pOutputPelYUV++ = abs( aux_pel_1 - aux_pel_2 );
+      }
     }
+  }
   return m_pcFrameDifference;
 }
 

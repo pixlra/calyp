@@ -490,7 +490,7 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
       QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
       if( resolutionMatch.hasMatch() )
       {
-        QString resolutionString = resolutionMatch.captured( 0 );
+        QString resolutionString = resolutionMatch.captured( resolutionMatch.lastCapturedIndex() );
         if( resolutionString.startsWith( "_" ) || resolutionString.endsWith( "_" ) )
         {
           resolutionString.remove( "_" );
@@ -539,7 +539,7 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
     QRegularExpressionMatch BppMatch = QRegularExpression( "_\\d*bpp" ).match( FilenameShort );
     if( BppMatch.hasMatch() )
     {
-      QString matchString = BppMatch.captured( 0 );
+      QString matchString = BppMatch.captured( BppMatch.lastCapturedIndex() );
       matchString.remove( "_" );
       matchString.remove( "bpp" );
       rBitsPerPixel = matchString.toUInt();
@@ -553,7 +553,7 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
     QRegularExpressionMatch FpsMatch = QRegularExpression( "_\\d*fps" ).match( FilenameShort );
     if( FpsMatch.hasMatch() )
     {
-      QString matchString = FpsMatch.captured( 0 );
+      QString matchString = FpsMatch.captured( FpsMatch.lastCapturedIndex() );
       matchString.remove( "_" );
       matchString.remove( "fps" );
       rFrameRate = matchString.toUInt();

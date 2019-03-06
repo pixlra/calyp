@@ -78,6 +78,7 @@ std::vector<CalypStandardResolution> CalypStream::stdResolutionSizes()
 
   std::vector<CalypStandardResolution> stdResList;
   CalypStandardResolution stdResElement;
+  REGIST_CALYP_STANDARD_RESOLUTION( "QCIF", 176, 144 );
   REGIST_CALYP_STANDARD_RESOLUTION( "CIF", 352, 288 );
   REGIST_CALYP_STANDARD_RESOLUTION( "VGA", 640, 480 );
   REGIST_CALYP_STANDARD_RESOLUTION( "WVGA", 832, 480 );

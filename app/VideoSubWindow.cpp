@@ -321,8 +321,9 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   {
     m_pCurrStream = new CalypStream;
   }
-
-  bool bConfig = guessFormat( cFilename, Width, Height, InputFormat, BitsPel, Endianness, FrameRate ) || bForceDialog;
+  bool bConfig = true;
+  if( !bForceDialog )
+    bConfig = guessFormat( cFilename, Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
   bool bRet = false;
   for( int iPass = 0; iPass < 2 && !bRet; iPass++ )
   {

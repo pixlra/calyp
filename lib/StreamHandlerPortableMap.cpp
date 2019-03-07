@@ -33,7 +33,7 @@
 std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedReadFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
-  //REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable BitMap ", "pbm" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable BitMap ", "pbm" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable GrayMap ", "pgm" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable PixMap ", "ppm" );
   END_REGIST_CALYP_SUPPORTED_FMT;
@@ -42,7 +42,9 @@ std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedReadFormats()
 std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedWriteFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable BitMap ", "pbm" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable GrayMap ", "pgm" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerPortableMap::Create, "Portable PixMap ", "ppm" );
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 

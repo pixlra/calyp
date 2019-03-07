@@ -48,7 +48,6 @@ std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedReadFormats()
 std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedWriteFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
-  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Portable PixMap ", "ppm" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Portable Network Graphics", "png" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Joint Photographic Experts Group", "jpg" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Windows Bitmap", "bmp" );

@@ -86,18 +86,20 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
   }
   else
   {
+    int colorSpace = CalypFrame::pelformatColorSpace( m_iPixelFormat );
     m_iMaxValue = ( 1 << m_uiBitsPerPixel ) - 1;
     if( m_uiBitsPerPixel == 1 )
     {
       m_iMagicNumber = 4;
     }
-    else if( m_iPixelFormat == CLP_GRAY )
+    else if( colorSpace == CLP_COLOR_GRAY )
     {
       m_iMagicNumber = 5;
     }
-    else if( m_iPixelFormat == CLP_RGB24 )
+    else if( colorSpace == CLP_COLOR_RGB )
     {
       m_iMagicNumber = 6;
+      m_iPixelFormat = CalypFrame::findPixelFormat("RGB");
     }
     else
     {
@@ -105,7 +107,7 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
       return false;
     }
   }
-  m_iEndianness = 0;
+  m_iEndianness = CLP_BIG_ENDIAN;
   m_dFrameRate = 1;
   m_uiTotalNumberFrames = 1;
   return true;
@@ -143,13 +145,16 @@ bool StreamHandlerPortableMap::read( CalypFrame* pcFrame )
 
 bool StreamHandlerPortableMap::write( CalypFrame* pcFrame )
 {
+  CalypFrame pcRGBFrame( pcFrame->getWidth(), pcFrame->getHeight(),
+                        m_iPixelFormat, pcFrame->getBitsPel() );
+  pcRGBFrame.copyFrom( pcFrame );
   fseek( m_pFile, 0, SEEK_SET );
   fprintf( m_pFile, "P%d\n%d %d\n", m_iMagicNumber, m_uiWidth, m_uiHeight );
   if( m_iMagicNumber > 4 )
   {
     fprintf( m_pFile, "%d\n", m_iMaxValue );
   }
-  pcFrame->frameToBuffer( m_pStreamBuffer, CLP_BIG_ENDIAN );
+  pcRGBFrame.frameToBuffer( m_pStreamBuffer, m_iEndianness );
   unsigned long long int processed_bytes = fwrite( m_pStreamBuffer, sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;

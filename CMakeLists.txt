@@ -157,7 +157,7 @@ IF (NOT CMAKE_BUILD_TYPE )
     SET(CMAKE_BUILD_TYPE "Release")
 ENDIF()
 
-SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-declarations" )
+SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
 
 ADD_DEFINITIONS(-DQT_NO_CAST_TO_ASCII
                 #-DQT_NO_CAST_FROM_ASCII
@@ -175,6 +175,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0.0")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wlogical-op" )
    endif()
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations" )
 endif()
 
 IF( USE_WERROR )

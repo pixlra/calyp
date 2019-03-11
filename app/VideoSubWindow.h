@@ -192,7 +192,7 @@ private:
   bool goToNextFrame( bool bThreaded = false );
 
   static bool guessFormat( QString filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
-                           int& rEndianness );
+                           int& rEndianness, unsigned int& rFrameRate );
 
   bool hasRunningModule();
 

@@ -321,8 +321,9 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   {
     m_pCurrStream = new CalypStream;
   }
-
-  bool bConfig = guessFormat( cFilename, Width, Height, InputFormat, BitsPel, Endianness ) || bForceDialog;
+  bool bConfig = true;
+  if( !bForceDialog )
+    bConfig = guessFormat( cFilename, Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
   bool bRet = false;
   for( int iPass = 0; iPass < 2 && !bRet; iPass++ )
   {
@@ -334,8 +335,15 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
         return false;
       }
     }
-    bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate,
-                                true );
+    try
+    {
+      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, true );
+    }
+    catch( CalypFailure& e )
+    {
+      if( iPass == 1 )
+        throw( e );
+    }
   }
 
   m_sStreamInfo.m_cFilename = cFilename;
@@ -435,7 +443,7 @@ void VideoSubWindow::updateVideoWindowInfo()
 }
 
 bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
-                                  int& rEndianness )
+                                  int& rEndianness, unsigned int& rFrameRate )
 {
   std::vector<CalypStandardResolution> stdResList = CalypStream::stdResolutionSizes();
   bool bGuessed = true;
@@ -483,7 +491,7 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
       QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
       if( resolutionMatch.hasMatch() )
       {
-        QString resolutionString = resolutionMatch.captured( 0 );
+        QString resolutionString = resolutionMatch.captured( resolutionMatch.lastCapturedIndex() );
         if( resolutionString.startsWith( "_" ) || resolutionString.endsWith( "_" ) )
         {
           resolutionString.remove( "_" );
@@ -532,13 +540,27 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
     QRegularExpressionMatch BppMatch = QRegularExpression( "_\\d*bpp" ).match( FilenameShort );
     if( BppMatch.hasMatch() )
     {
-      QString matchString = BppMatch.captured( 0 );
+      QString matchString = BppMatch.captured( BppMatch.lastCapturedIndex() );
       matchString.remove( "_" );
       matchString.remove( "bpp" );
       rBitsPerPixel = matchString.toUInt();
       if( !( rBitsPerPixel > 0 && rBitsPerPixel < 16 ) )
       {
         rBitsPerPixel = -1;
+      }
+    }
+
+    // Guess frame rate - match %dbpp
+    QRegularExpressionMatch FpsMatch = QRegularExpression( "_\\d*fps" ).match( FilenameShort );
+    if( FpsMatch.hasMatch() )
+    {
+      QString matchString = FpsMatch.captured( FpsMatch.lastCapturedIndex() );
+      matchString.remove( "_" );
+      matchString.remove( "fps" );
+      rFrameRate = matchString.toUInt();
+      if( rFrameRate < 0 )
+      {
+        rFrameRate = 30;
       }
     }
 

@@ -52,8 +52,7 @@ bool FrameDifference::create( std::vector<CalypFrame*> apcFrameList )
   unsigned int uiMaxBitsPixel = 0;
   for( unsigned int i = 0; i < apcFrameList.size(); i++ )
   {
-    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0],
-                                       CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION ) )
+    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_PEL_FMT | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION ) )
       return false;
     if( apcFrameList[i]->getBitsPel() > uiMaxBitsPixel )
     {
@@ -70,7 +69,7 @@ bool FrameDifference::create( std::vector<CalypFrame*> apcFrameList )
   m_iMaxDiffValue = ( 1 << ( m_uiBitsPixel - 1 ) );
 
   m_pcFrameDifference = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(),
-                                        CLP_GRAY, m_uiBitsPixel );
+                                        apcFrameList[0]->getPelFormat(), m_uiBitsPixel );
   return true;
 }
 
@@ -82,19 +81,20 @@ CalypFrame* FrameDifference::process( std::vector<CalypFrame*> apcFrameList )
   int aux_pel_1, aux_pel_2;
   int diff = 0;
 
-  for( unsigned int y = 0; y < m_pcFrameDifference->getHeight(); y++ )
-    for( unsigned int x = 0; x < m_pcFrameDifference->getWidth(); x++ )
-    {
-      aux_pel_1 = *pInput1PelYUV++;
-      aux_pel_2 = *pInput2PelYUV++;
-      diff = aux_pel_1 - aux_pel_2;
-      diff = m_iDiffBitShift > 0 ? diff >> m_iDiffBitShift : diff << m_iDiffBitShift;
-      diff = std::min( diff, m_iMaxDiffValue - 1 );
-      diff = std::max( diff, -m_iMaxDiffValue );
+  for( unsigned int ch = 0; ch < m_pcFrameDifference->getNumberChannels(); ch++ )
+    for( unsigned int y = 0; y < m_pcFrameDifference->getHeight(); y++ )
+      for( unsigned int x = 0; x < m_pcFrameDifference->getWidth(); x++ )
+      {
+        aux_pel_1 = *pInput1PelYUV++;
+        aux_pel_2 = *pInput2PelYUV++;
+        diff = aux_pel_1 - aux_pel_2;
+        diff = m_iDiffBitShift > 0 ? diff >> m_iDiffBitShift : diff << m_iDiffBitShift;
+        diff = std::min( diff, m_iMaxDiffValue - 1 );
+        diff = std::max( diff, -m_iMaxDiffValue );
 
-      diff += m_iMaxDiffValue;
-      *pOutputPelYUV++ = diff;
-    }
+        diff += m_iMaxDiffValue;
+        *pOutputPelYUV++ = diff;
+      }
   return m_pcFrameDifference;
 }
 

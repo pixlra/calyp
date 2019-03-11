@@ -100,6 +100,7 @@ public:
   static std::vector<ClpString> supportedPixelFormatListNames( int colorSpace );
   static int numberOfFormats();
   static int findPixelFormat( const ClpString& name );
+  static int pelformatColorSpace( const int idx );
 
   /**
 	 * Creates a new frame using the following configuration
@@ -145,6 +146,7 @@ public:
     MATCH_PEL_FMT = 4,
     MATCH_BITS = 8,
     MATCH_COLOR_SPACE_IGNORE_GRAY = 16,
+    MATCH_BYTES_PER_FRAME = 32,
     MATCH_ALL = 0xFFFF,
   };
 
@@ -236,7 +238,7 @@ public:
 	 * Get number of bytes per frame of an existing frame
 	 * @return number of bytes per frame
 	 */
-  ClpULong getBytesPerFrame();
+  ClpULong getBytesPerFrame() const;
 
   /**
 	 * Get number of bytes per frame of a specific pixel format

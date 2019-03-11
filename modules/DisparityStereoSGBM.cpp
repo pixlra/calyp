@@ -58,7 +58,7 @@ bool DisparityStereoSGBM::create( std::vector<CalypFrame*> apcFrameList )
   }
   m_uiNumberOfDisparities = ( ( apcFrameList[0]->getWidth() / 8 ) + 15 ) & -16;
   int cn = apcFrameList[0]->getNumberChannels();
-#if( CV_MAJOR_VERSION == 3 )
+#if( CV_MAJOR_VERSION >= 3 )
   m_cStereoMatch = cv::StereoSGBM::create( 0, 16, m_uiBlockSize );
   m_cStereoMatch->setPreFilterCap( 63 );
 
@@ -99,7 +99,7 @@ CalypFrame* DisparityStereoSGBM::process( std::vector<CalypFrame*> apcFrameList 
     return m_pcDisparityFrame;
   }
   cv::Mat disparityImage, disparityImage8;
-#if( CV_MAJOR_VERSION == 3 )
+#if( CV_MAJOR_VERSION >= 3 )
   m_cStereoMatch->compute( leftImage, rightImage, disparityImage );
 #else
   m_cStereoMatch( leftImage, rightImage, disparityImage );

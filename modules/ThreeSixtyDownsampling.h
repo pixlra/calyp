@@ -32,8 +32,9 @@ class ThreeSixtyDownsampling : public CalypModuleIf
 {
   REGISTER_CLASS_FACTORY( ThreeSixtyDownsampling )
 private:
-  bool m_bDownsampling;
   bool m_isOdd;
+  bool m_bDownsampling;
+  int m_iInterpolation;
 
 public:
   ThreeSixtyDownsampling();

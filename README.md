@@ -1,6 +1,12 @@
 # Calyp
 ## Enhanced YUV video player based on Qt focusing on image/video analysis
 
+## Build Status
+
+Master branch | Development branch
+------------ | -------------
+[![Build Status](https://travis-ci.org/pixlra/calyp.svg?branch=master)](https://travis-ci.org/pixlra/calyp.svg?branch=master)  | Comming soon!
+
 
 ## Features
 - Support for libavformat and libavcodec;

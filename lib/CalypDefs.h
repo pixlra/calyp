@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <iterator>
 
 typedef unsigned short ClpPel;  ///< 16-bit pixel type
 typedef unsigned char ClpByte;

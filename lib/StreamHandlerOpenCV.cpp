@@ -29,7 +29,7 @@
 
 #include <cstdio>
 #include <opencv2/opencv.hpp>
-#if CV_MAJOR_VERSION >= 4
+#if CV_MAJOR_VERSION >= 3
 #include <opencv2/videoio.hpp>
 #endif
 

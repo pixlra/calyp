@@ -30,8 +30,6 @@ ADD_MODULE( FrameCrop "FrameCrop" )
 ADD_MODULE( LumaAverage "LumaAverage" )
 ADD_MODULE( WeightedPSNR "WeightedPSNR" )
 ADD_MODULE( HEVCIntraPrediction "HEVCIntraPrediction" )
-ADD_MODULE( ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" )
-ADD_MODULE( ThreeSixtyTemporaltoSpatial "ThreeSixtyTemporaltoSpatial" )
 
 ADD_MODULE_USE_OPENCV( MeasureOpticalFlowDualTVL1 "MeasureOpticalFlowDualTVL1" VERSION 2.4.13.0 MODULES video )
 ADD_MODULE_USE_OPENCV( DisparityStereoBM "DisparityStereoBM" VERSION 2.4.13.0 MODULES calib3d )
@@ -44,7 +42,9 @@ ADD_MODULE_USE_OPENCV( SaliencyDetectionSpectral "SaliencyDetection" VERSION 3.3
 ADD_MODULE_USE_OPENCV( SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 ADD_MODULE_USE_OPENCV( SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 
-ADD_MODULE_USE_OPENCV( ThreeSixtyDownsampling "ThreeSixtyDownsampling" VERSION  3.1.0 MODULES )
+ADD_MODULE_USE_OPENCV( ThreeSixtyDownsampling "ThreeSixtyDownsampling" VERSION  3.1.0 MODULES core )
+ADD_MODULE_USE_OPENCV( ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" VERSION  3.1.0 MODULES core )
+ADD_MODULE_USE_OPENCV( ThreeSixtyTemporaltoSpatial "ThreeSixtyTemporaltoSpatial" VERSION  3.1.0 MODULES core )
 
 #
 # Create header and auxiliar files

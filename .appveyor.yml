@@ -2,30 +2,44 @@ image: Visual Studio 2017
 configuration: Release
 platform:
   - x64
-clone_folder: C:\projects\calyp
+environment:
+  access_token:
+    secure: WAV5LfCSAtwE1JuZh4HrDlxOOClimLoslYAJlf5KRgc3f7WIkX591PrSSua/Zo2C
+    
+clone_folder: C:\Projects\calyp
 
-#init:
-  #- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
+init:
+  - ps: Add-Content "$HOME\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+  - git config --global credential.helper store
+  - git config --global user.email "jfmcarreira@gmail.com"
+  - git config --global user.name "AppVeyor" 
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  
 install:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
   #- '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - choco install nsis
   - choco install opencv
   - 'C:\Tools\opencv\build\setup_vars_opencv4.cmd'
-  - cd C:\projects
+  - cd C:\Projects
   - ps: Start-FileDownload 'https://ffmpeg.zeranoe.com/builds/win64/dev/ffmpeg-4.1.1-win64-dev.zip'
   - 7z x ffmpeg-4.1.1-win64-dev.zip -y
+  - git clone https://github.com/pixlra/calyp-deployment.git
   
-
+  
 build_script:
-  - cd C:\projects\calyp
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include -DAVCODEC_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include   -DAVUTIL_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include -DSWSCALE_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include   -G "Visual Studio 15 2017 Win64" ..
+  - mv C:\Projects\calyp C:\Projects\calyp-deployment\cmake-helper\
+  - mkdir C:\Projects\calyp-build
+  - cd C:\Projects\calyp-build
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -DAVCODEC_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include   -DAVUTIL_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -DSWSCALE_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -G "Visual Studio 15 2017 Win64" C:\Projects\calyp-deployment\cmake-helper
   - cmake --build . --target ALL_BUILD -- /p:Configuration=Release > log_build
   - cmake --build . --target INSTALL -- /p:Configuration=Release > log_install
   - cmake --build . --target PACKAGE -- /p:Configuration=Release > log_pkg
 
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+after_build:
+  - IF "%APPVEYOR_REPO_BRANCH%" == "master" (CALL ..\calyp-deployment\scripts\deploy-to-github.bat)
+
+  
+on_failure:
+ - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+

@@ -23,9 +23,9 @@ build_script:
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include -DAVCODEC_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include   -DAVUTIL_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include -DSWSCALE_LIBRARIES=C:/projects/ffmpeg-4.1.1-win64-dev/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/projects/ffmpeg-4.1.1-win64-dev/include   -G "Visual Studio 15 2017 Win64" ..
-  - cmake --build . --target ALL_BUILD > log_build
-  - cmake --build . --target INSTALL > log_install
-  - cmake --build . --target PACKAGE > log_pkg
+  - cmake --build . --target ALL_BUILD -- /p:Configuration=Release > log_build
+  - cmake --build . --target INSTALL -- /p:Configuration=Release > log_install
+  - cmake --build . --target PACKAGE -- /p:Configuration=Release > log_pkg
 
 on_finish:
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

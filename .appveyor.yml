@@ -27,5 +27,5 @@ build_script:
   - cmake --build . --target INSTALL -- /p:Configuration=Release > log_install
   - cmake --build . --target PACKAGE -- /p:Configuration=Release > log_pkg
 
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

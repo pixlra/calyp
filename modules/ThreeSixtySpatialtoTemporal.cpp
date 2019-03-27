@@ -18,8 +18,8 @@
  */
 
 /**
- * \file     FrameRotate.cpp
- * \brief    Frame Difference module
+ * \file     ThreeSixtySpatialtoTemporal.cpp
+ * \brief    Convert 360 videos from spatial to temporal
  */
 
 #include "ThreeSixtySpatialtoTemporal.h"

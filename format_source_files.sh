@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export LC_ALL=en_GB.utf8
 export LANG=C
@@ -8,7 +8,7 @@ MY_NAME="$(basename "$0")"
 SET_VERBOSE=0
 ALL_FILES=0
 
-function parsearguments {
+function parsearguments() {
 	local ARGS=$(getopt -o "h" -l "verbose,all,help" -n "${MY_NAME}" -- "$@")
 	local PRINT_HELP=0
 

@@ -18,8 +18,8 @@
  */
 
 /**
- * \file     FrameRotate.h
- * \brief    Module to aapply a mask to an image
+ * \file     ThreeSixtySpatialtoTemporal.h
+ * \brief    Convert 360 videos from spatial to temporal
  */
 
 #ifndef __THREESIXTYSPATIALTOTEMPORAL_H__

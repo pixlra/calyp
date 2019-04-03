@@ -43,11 +43,8 @@ ENDMACRO()
 #
 # Create header
 #
-
 MACRO(CREATE_MODULE_MACROS )
-
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/ModulesListHeader.h   "// This files add the header files of each module\n"
-
                                                               "#ifndef __MODULESLISTHEADER_H__\n#define __MODULESLISTHEADER_H__\n" )
 
   foreach(module ${MODULES_LIST_FILES})
@@ -60,5 +57,4 @@ MACRO(CREATE_MODULE_MACROS )
   endforeach(module ${MODULES_LIST_NAME})
 
   file( APPEND ${CMAKE_CURRENT_BINARY_DIR}/ModulesListHeader.h   "\n#endif // __MODULESLISTHEADER_H__\n" )
-
 ENDMACRO()

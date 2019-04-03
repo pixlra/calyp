@@ -90,6 +90,7 @@ CalypFrame* DisparityStereoBM::process( std::vector<CalypFrame*> apcFrameList )
   {
     return m_pcDisparityFrame;
   }
+
   cv::Mat disparityImage, disparityImage8;
 
 #if( CV_MAJOR_VERSION == 2 )
@@ -99,7 +100,6 @@ CalypFrame* DisparityStereoBM::process( std::vector<CalypFrame*> apcFrameList )
 #endif
 
   disparityImage.convertTo( disparityImage8, CV_8U );
-
   m_pcDisparityFrame->fromMat( disparityImage8 );
   return m_pcDisparityFrame;
 }

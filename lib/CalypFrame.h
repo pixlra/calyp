@@ -347,8 +347,8 @@ public:
   /**
 	 * interface with OpenCV lib
 	 */
-  bool toMat( cv::Mat& cvMat, bool convertToGray = false );
-  bool fromMat( cv::Mat& cvMat );
+  bool toMat( cv::Mat& cvMat, bool convertToGray = false, unsigned channel = 0 );
+  bool fromMat( cv::Mat& cvMat, int iChannel = -1 );
 
   /**
 	 * \ingroup	 CalypFrameGrp

@@ -33,7 +33,7 @@
 
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #endif
 
 std::vector<ClpString> CalypFrame::supportedColorSpacesListNames()

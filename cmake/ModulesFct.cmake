@@ -1,11 +1,9 @@
 
 MACRO(ADD_EXTRA_MODULES dir)
-  IF(EXISTS ${dir})
-    SET( MODULE_LOCATION  "${dir}/" )
-    ADD_SUBDIRECTORY( ${dir} ${CMAKE_CURRENT_BINARY_DIR}/extra-modules )
-    INCLUDE_DIRECTORIES( ${dir} )
-    SET( MODULE_LOCATION  "${dir}/" PARENT_SCOPE )
-  ENDIF()
+  SET( MODULE_LOCATION  "${dir}/" )
+  ADD_SUBDIRECTORY( ${dir} ${CMAKE_CURRENT_BINARY_DIR}/extra-modules )
+  INCLUDE_DIRECTORIES( ${dir} )
+  SET( MODULE_LOCATION  "${dir}/" PARENT_SCOPE )
 ENDMACRO()
 
 MACRO(ADD_MODULE name file )

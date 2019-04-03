@@ -45,7 +45,9 @@ ADD_MODULE_USE_OPENCV( SaliencyDetectionSpectral "SaliencyDetection" VERSION 3.3
 ADD_MODULE_USE_OPENCV( SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 ADD_MODULE_USE_OPENCV( SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 
-ADD_EXTRA_MODULES( ${CALYP_EXTRA_MODULES} )
+IF(EXISTS ${CALYP_EXTRA_MODULES_DIR} )
+  ADD_EXTRA_MODULES( ${CALYP_EXTRA_MODULES_DIR} )
+ENDIF()
 
 #
 # Create header and auxiliar files

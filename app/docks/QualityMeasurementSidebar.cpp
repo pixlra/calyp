@@ -185,6 +185,8 @@ void QualityMeasurementSidebar::updateSidebarData()
     VideoSubWindow* refSubWindow = m_pcCurrentVideoSubWindow->getRefSubWindow();
     if( refSubWindow )
     {
+      QApplication::setOverrideCursor( Qt::WaitCursor );
+
       CalypFrame* currFrame = m_pcCurrentVideoSubWindow->getCurrFrame();
       CalypFrame* refFrame = refSubWindow->getCurrFrame();
       double quality;
@@ -199,6 +201,7 @@ void QualityMeasurementSidebar::updateSidebarData()
       {
         m_ppcLabelQualityValue[component]->setText( zeroValue );
       }
+      QApplication::restoreOverrideCursor();
       return;
     }
     else

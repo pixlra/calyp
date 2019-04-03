@@ -364,6 +364,7 @@ public:
     PSNR_METRIC = 0,
     MSE_METRIC,
     SSIM_METRIC,
+    WSPSNR_METRIC,
     NUMBER_METRICS,
   };
 
@@ -373,7 +374,7 @@ public:
   double getMSE( CalypFrame* Org, unsigned int component );
   double getPSNR( CalypFrame* Org, unsigned int component );
   double getSSIM( CalypFrame* Org, unsigned int component );
-
+  double getWSPNR( CalypFrame* Org, unsigned int component );
   /** @} */
 
 private:

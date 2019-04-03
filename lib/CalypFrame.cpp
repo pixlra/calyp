@@ -1194,7 +1194,7 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
   else
     channel = 0;
 
-  if( cvMat.channels() != numChannels )
+  if( cvMat.channels() != int( numChannels ) )
   {
     return false;
   }
@@ -1205,7 +1205,6 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
   cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
   if( numChannels > 0 )
   {
-    unsigned color_space = getColorSpace();
     switch( getColorSpace() )
     {
     case CLP_COLOR_YUV:
@@ -1253,6 +1252,7 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
       "PSNR",
       "MSE",
       "SSIM",
+      "WS-PSNR",
   };
 }
 
@@ -1262,6 +1262,7 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsUnitsList()
       "dB",
       "",
       "",
+      "dB",
   };
 }
 
@@ -1281,6 +1282,9 @@ double CalypFrame::getQuality( int Metric, CalypFrame* Org, unsigned int compone
     break;
   case SSIM_METRIC:
     return getSSIM( Org, component );
+    break;
+  case WSPSNR_METRIC:
+    return getWSPNR( Org, component );
     break;
   default:
     assert( 0 );
@@ -1413,4 +1417,31 @@ double CalypFrame::getSSIM( CalypFrame* Org, unsigned int component )
                           getHeight( component ), 4, 4, 255, 4 );
   }
   return dSSIM;
+}
+
+double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
+{
+  ClpPel* pPelYUV = getPelBufferYUV()[component][0];
+  ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
+
+  unsigned height = getHeight( component );
+  unsigned width = getWidth( component );
+  double ssd = 0;
+  double weight_sum = 0;
+
+  for( unsigned y = 0; y < height; y++ )
+    for( unsigned x = 0; x < width; x++ )
+    {
+      int diff = ( *pPelYUV++ ) - ( *pOrgPelYUV++ );
+      double weight = cos( ( y + 0.5 - height / 2 ) * 3.1415926 / height );
+      ssd += (double)( diff * diff ) * weight * 100000;
+      weight_sum += weight;
+    }
+
+  if( ssd == 0.0 )
+  {
+    return 100.00;
+  }
+  unsigned long uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
+  return 10 * log10( double( uiMaxValue * uiMaxValue ) * weight_sum / ssd / 100000 );
 }

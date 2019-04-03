@@ -3,7 +3,7 @@
 ###
 
 OPTION( CALYP_THREADED_MODULES "Use threads for modules"  OFF )
-SET( CALYP_EXTRA_MODULES "CALYP_EXTRA_MODULES" CACHE PATH "Location of extra Calyp modules")
+SET( CALYP_EXTRA_MODULES_DIR "CALYP_EXTRA_MODULES_DIR" CACHE PATH "Location of extra Calyp modules")
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -14,6 +14,8 @@ set(Calyp_Mod_SRCS
 #
 # Modules List
 #
+# SET( MODULE_LOCATION  "")
+
 ADD_MODULE( FilterComponentLuma "FilterComponent" )
 ADD_MODULE( FilterComponentChromaU "FilterComponent" )
 ADD_MODULE( FilterComponentChromaV "FilterComponent" )
@@ -43,9 +45,7 @@ ADD_MODULE_USE_OPENCV( SaliencyDetectionSpectral "SaliencyDetection" VERSION 3.3
 ADD_MODULE_USE_OPENCV( SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 ADD_MODULE_USE_OPENCV( SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 
-IF(EXISTS ${CALYP_EXTRA_MODULES})
-  ADD_SUBDIRECTORY( ${CALYP_EXTRA_MODULES} ${CMAKE_CURRENT_BINARY_DIR}/extra-modules )
-ENDIF()
+ADD_EXTRA_MODULES( ${CALYP_EXTRA_MODULES} )
 
 #
 # Create header and auxiliar files

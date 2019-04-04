@@ -1108,6 +1108,7 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
   unsigned int cvPrecision = getBitsPel() > 8 ? CV_16U : CV_8U;
   unsigned numBytes = getBitsPel() > 8 ? 2 : 1;
   unsigned numChannels = getNumberChannels();
+
   if( convertToGray )
   {
     channel = channel >= numChannels ? 0 : channel;
@@ -1118,42 +1119,50 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
   unsigned imgHeight = getHeight( channel );
 
   cvMat.create( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
-  cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
-
-  unsigned char* cv_data = tmpMat.data;
-  unsigned int cv_step = tmpMat.step;
-  CalypPixel currPel;
-  for( unsigned int y = 0; y < imgHeight; y++ )
+  if( numChannels > 1 )
   {
-    for( unsigned int x = 0; x < imgWidth; x++ )
+    cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
+
+    unsigned char* cv_data = tmpMat.data;
+    unsigned int cv_step = tmpMat.step;
+    CalypPixel currPel;
+    for( unsigned int y = 0; y < imgHeight; y++ )
     {
-      currPel = getPixel( x, y );
-      for( unsigned int ch = 0; ch < numChannels; ch++ )
+      for( unsigned int x = 0; x < imgWidth; x++ )
       {
-        for( unsigned b = 0; b < numBytes; b++ )
+        currPel = getPixel( x, y );
+        for( unsigned int ch = 0; ch < numChannels; ch++ )
         {
-          *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) = currPel[ch] >> ( 8 * b );
+          for( unsigned b = 0; b < numBytes; b++ )
+          {
+            *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) = currPel[ch] >> ( 8 * b );
+          }
         }
       }
     }
-  }
-
-  if( !convertToGray && getNumberChannels() >= 1 )
-  {
-    // TODO: check for other formats
-    switch( getColorSpace() )
+    if( getNumberChannels() >= 1 )
     {
-    case CLP_COLOR_YUV:
-      cv::cvtColor( tmpMat, cvMat, cv::COLOR_YCrCb2RGB );
-      break;
+      // TODO: check for other formats
+      switch( getColorSpace() )
+      {
+      case CLP_COLOR_YUV:
+        cv::cvtColor( tmpMat, cvMat, cv::COLOR_YCrCb2RGB );
+        break;
+      }
     }
   }
   else
   {
-    tmpMat.copyTo( cvMat );
+    unsigned char* cv_data = cvMat.data;
+    ClpPel* pel = getPelBufferYUV()[channel][0];
+    for( unsigned int y = 0; y < imgHeight * imgWidth; y++ )
+    {
+      for( unsigned b = 0; b < numBytes; b++ )
+        *cv_data++ = ( *pel ) >> ( 8 * b );
+      pel++;
+    }
   }
   bRet = true;
-
 #endif
   return bRet;
 }
@@ -1202,39 +1211,48 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
   unsigned imgWidth = getWidth( channel );
   unsigned imgHeight = getHeight( channel );
 
-  cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
-  if( numChannels > 0 )
+  if( numChannels > 1 )
   {
+    cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
     switch( getColorSpace() )
     {
     case CLP_COLOR_YUV:
       cv::cvtColor( tmpMat, cvMat, cv::COLOR_RGB2YCrCb );
       break;
     }
+    unsigned char* cv_data = tmpMat.data;
+    unsigned int cv_step = tmpMat.step;
+    CalypPixel currPel;
+    for( unsigned int y = 0; y < imgHeight; y++ )
+    {
+      for( unsigned int x = 0; x < imgWidth; x++ )
+      {
+        for( unsigned int ch = 0; ch < numChannels; ch++ )
+        {
+          currPel[ch] = 0;
+          for( unsigned b = 0; b < numBytes; b++ )
+          {
+            currPel[ch] = currPel[ch] + ( *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) << ( 8 * b ) );
+          }
+        }
+        setPixel( x, y, currPel );
+      }
+    }
   }
   else
   {
-    cvMat.copyTo( tmpMat );
-  }
-
-  unsigned char* cv_data = tmpMat.data;
-  unsigned int cv_step = tmpMat.step;
-  CalypPixel currPel;
-  for( unsigned int y = 0; y < imgHeight; y++ )
-  {
-    for( unsigned int x = 0; x < imgWidth; x++ )
+    unsigned char* cv_data = cvMat.data;
+    ClpPel curr_pel;
+    ClpPel* pel = getPelBufferYUV()[channel][0];
+    for( unsigned int y = 0; y < imgHeight * imgWidth; y++ )
     {
-      for( unsigned int ch = 0; ch < numChannels; ch++ )
-      {
-        currPel[ch] = 0;
-        for( unsigned b = 0; b < numBytes; b++ )
-        {
-          currPel[ch] = currPel[ch] + ( *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) << ( 8 * b ) );
-        }
-      }
-      setPixel( x, y, currPel );
+      curr_pel = 0;
+      for( unsigned b = 0; b < numBytes; b++ )
+        curr_pel += (*cv_data++) << ( 8 * b );
+      *pel++ = curr_pel;
     }
   }
+
   bRet = true;
 #endif
   return bRet;

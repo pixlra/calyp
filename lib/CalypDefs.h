@@ -102,6 +102,9 @@ enum CLP_Endianness
   CLP_LITTLE_ENDIAN = 1,
 };
 
+static const double S_PI = 3.14159265358979323846;
+static const double S_PI_2 = 1.57079632679489661923;
+
 inline ClpString clpLowercase( const ClpString& in )
 {
   ClpString out;

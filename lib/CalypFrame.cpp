@@ -1248,7 +1248,7 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
     {
       curr_pel = 0;
       for( unsigned b = 0; b < numBytes; b++ )
-        curr_pel += (*cv_data++) << ( 8 * b );
+        curr_pel += ( *cv_data++ ) << ( 8 * b );
       *pel++ = curr_pel;
     }
   }
@@ -1314,43 +1314,27 @@ double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
 {
   ClpPel* pPelYUV = getPelBufferYUV()[component][0];
   ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
-
-  int aux_pel_1, aux_pel_2;
-  int diff = 0;
-  double ssd = 0;
-
-  unsigned int numberOfPixels = 0;
-  if( component == CLP_LUMA )
-  {
-    numberOfPixels = Org->getHeight() * Org->getWidth();
-  }
-  else
-  {
-    numberOfPixels = getChromaLength();
-  }
-
+  ClpULong numberOfPixels = Org->getHeight( component ) * Org->getWidth( component );
+  ClpULong ssd = 0;
   for( unsigned int i = 0; i < numberOfPixels; i++ )
   {
-    aux_pel_1 = *pPelYUV++;
-    aux_pel_2 = *pOrgPelYUV++;
-    diff = aux_pel_1 - aux_pel_2;
-    ssd += (double)( diff * diff );
+    int diff = int( *pPelYUV++ ) - int( *pOrgPelYUV++ );
+    ssd += diff * diff;
   }
   if( ssd == 0.0 )
   {
     return 0.0;
   }
-  return ssd / double( numberOfPixels );
+  return double( ssd ) / double( numberOfPixels );
 }
 
 double CalypFrame::getPSNR( CalypFrame* Org, unsigned int component )
 {
-  unsigned int uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
-  double uiMaxValueSquare = uiMaxValue * uiMaxValue;
+  ClpULong uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
   double dPSNR = 100;
   double dMSE = getMSE( Org, component );
   if( dMSE != 0 )
-    dPSNR = 10 * log10( uiMaxValueSquare / dMSE );
+    dPSNR = 10 * log10( double( uiMaxValue * uiMaxValue ) / dMSE );
   return dPSNR;
 }
 
@@ -1450,10 +1434,10 @@ double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
   for( unsigned y = 0; y < height; y++ )
     for( unsigned x = 0; x < width; x++ )
     {
-      int diff = ( *pPelYUV++ ) - ( *pOrgPelYUV++ );
-      double weight = cos( ( y + 0.5 - height / 2 ) * 3.1415926 / height );
-      ssd += (double)( diff * diff ) * weight * 100000;
-      weight_sum += weight;
+      int diff = int( *pPelYUV++ ) - int( *pOrgPelYUV++ );
+      double weight = cos( double( ( y + 0.5 - height / 2.0 ) * S_PI / height ) );
+      ssd += (double)( diff * diff * 1000) * weight;
+      weight_sum += weight * 1000;
     }
 
   if( ssd == 0.0 )
@@ -1461,5 +1445,5 @@ double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
     return 100.00;
   }
   unsigned long uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
-  return 10 * log10( double( uiMaxValue * uiMaxValue ) * weight_sum / ssd / 100000 );
+  return 10 * log10( double( uiMaxValue * uiMaxValue ) * weight_sum / ssd );
 }

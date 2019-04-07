@@ -62,7 +62,7 @@ class boolOption : public OptionBase
 {
 public:
   boolOption( const ClpString& name, const ClpString& desc )
-      : OptionBase( name, desc ) { is_binary = true; }
+      : OptionBase( name, desc, "(1-0)" ) { is_binary = true; }
   void parse( const ClpString& arg ) { arg_count++; }
 };
 
@@ -71,8 +71,8 @@ template <typename T>
 class StandardOption : public OptionBase
 {
 public:
-  StandardOption( const ClpString& name, T& storage, const ClpString& desc )
-      : OptionBase( name, desc ), opt_storage( storage )
+  StandardOption( const ClpString& name, T& storage, const ClpString& desc, const ClpString& def )
+      : OptionBase( name, desc, def ), opt_storage( storage )
   {
     is_binary = false;
   }
@@ -160,8 +160,8 @@ struct FunctionOption : public OptionBase
 public:
   typedef void( Func )( CalypOptions&, const ClpString& );
 
-  FunctionOption( const ClpString& name, CalypOptions& parent_, Func* func_, const ClpString& desc )
-      : OptionBase( name, desc ), parent( parent_ ), func( func_ )
+  FunctionOption( const ClpString& name, CalypOptions& parent_, Func* func_, const ClpString& desc, const ClpString& def )
+      : OptionBase( name, desc, def ), parent( parent_ ), func( func_ )
   {
     is_binary = false;
   }
@@ -198,6 +198,13 @@ CalypOptions& CalypOptions::operator()( const ClpString& name, const ClpString& 
  */
 template <typename T>
 CalypOptions& CalypOptions::operator()( const ClpString& name, T& storage, const ClpString& desc )
+{
+  addOption( new StandardOption<T>( name, storage, desc, ClpString( "" ) ) );
+  return *this;
+}
+
+template <typename T>
+CalypOptions& CalypOptions::operator()( const ClpString& name, T& storage, const ClpString& desc, const ClpString& defaults )
 {
   addOption( new StandardOption<T>( name, storage, desc ) );
   return *this;

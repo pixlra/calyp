@@ -55,8 +55,8 @@
 class OptionBase
 {
 public:
-  OptionBase( const ClpString& name, const ClpString& desc )
-      : arg_count( 0 ), opt_string( name ), opt_desc( desc ) {}
+  OptionBase( const ClpString& name, const ClpString& desc, const ClpString& def )
+      : arg_count( 0 ), opt_string( name ), opt_desc( desc ), opt_defaults( def ) {}
   virtual ~OptionBase() {}
   /* parse argument arg, to obtain a value for the option */
   virtual void parse( const ClpString& arg ) = 0;
@@ -65,6 +65,7 @@ public:
   int arg_count;
   ClpString opt_string;
   ClpString opt_desc;
+  ClpString opt_defaults;
   bool is_binary;
 };
 
@@ -117,10 +118,13 @@ public:
    * Add option described by name to the parent Options list,
    *   with storage for the option's value
    *   with default_val as the default value
-   *   with desc as an optional help description
+   *   description and range along with default value
    */
   template <typename T>
   CalypOptions& operator()( const ClpString& name, T& storage, const ClpString& desc );
+
+  template <typename T>
+  CalypOptions& operator()( const ClpString& name, T& storage, const ClpString& desc, const ClpString& defaults );
 
   bool checkListingOpts();
 

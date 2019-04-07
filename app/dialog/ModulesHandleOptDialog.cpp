@@ -44,7 +44,8 @@ public:
     m_pcChecked = NULL;
     m_cName = option->opt_string;
     m_pcDescription = new QLabel;
-    m_pcDescription->setText( QString::fromStdString( option->opt_desc ) );
+    QString desc = QString::fromStdString( option->opt_desc );
+    m_pcDescription->setText( desc );
     QHBoxLayout* layout = new QHBoxLayout;
     layout->addWidget( m_pcDescription, 0, Qt::AlignLeft );
     if( !option->isBinary() )

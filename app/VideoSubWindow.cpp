@@ -412,7 +412,8 @@ void VideoSubWindow::updateVideoWindowInfo()
     }
     if( m_pcCurrentDisplayModule->getModuleRequirements() & CLP_MODULES_HAS_INFO )
     {
-      windowInfoList.append( QString::fromStdString( m_pcCurrentDisplayModule->moduleInfo() ) );
+      QStringList list = QString::fromStdString( m_pcCurrentDisplayModule->moduleInfo() ).split( '\n' );
+      windowInfoList.append( list );
     }
     // qDebug( ) << sourceWindowList;
     if( windowInfoList.size() > 0 )

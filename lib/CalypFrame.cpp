@@ -547,7 +547,7 @@ void CalypFrame::copyFrom( const CalypFrame* other )
 
 void CalypFrame::copyFrom( const CalypFrame& other, unsigned int xPos, unsigned int yPos )
 {
-  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BYTES_PER_FRAME | MATCH_BITS ) )
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BITS ) )
     return;
   // TODO: Protect width and height
   ClpPel*** pInput = other.getPelBufferYUV();

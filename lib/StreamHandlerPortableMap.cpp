@@ -52,15 +52,11 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
 {
   m_bIsInput = bInput;
   m_pFile = NULL;
-  m_pFile = fopen( strFilename.c_str(), bInput ? "rb" : "wb" );
-  if( m_pFile == NULL )
-  {
-    return false;
-  }
   m_strFormatName = "PGM";
   m_strCodecName = "Raw Video";
   if( m_bIsInput )
   {
+    m_pFile = fopen( strFilename.c_str(), "rb" );
     char line[101];
     while( fgets( line, 100, m_pFile ) && line[0] == '#' )
       ;
@@ -69,7 +65,7 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
       ;
     sscanf( line, "%u %u", &m_uiWidth, &m_uiHeight );
 
-    if( m_iMagicNumber == 1 || m_iMagicNumber == 4 )
+    if( m_iMagicNumber == 1 )
     {
       m_uiBitsPerPixel = 1;
       m_iMaxValue = 1;
@@ -90,11 +86,13 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
     m_iMaxValue = ( 1 << m_uiBitsPerPixel ) - 1;
     if( m_uiBitsPerPixel == 1 )
     {
-      m_iMagicNumber = 4;
+      m_iMagicNumber = 1;
+      m_iPixelFormat = CalypFrame::findPixelFormat("GRAY");
     }
     else if( colorSpace == CLP_COLOR_GRAY )
     {
       m_iMagicNumber = 5;
+      m_iPixelFormat = CalypFrame::findPixelFormat("GRAY");
     }
     else if( colorSpace == CLP_COLOR_RGB )
     {
@@ -104,12 +102,19 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
     else
     {
       closeHandler();
+      throw CalypFailure( "CalypStream", "Invalid format for portable map" );
       return false;
     }
+    m_pFile = fopen( strFilename.c_str(), "wb" );
   }
   m_iEndianness = CLP_BIG_ENDIAN;
   m_dFrameRate = 1;
   m_uiTotalNumberFrames = 1;
+  if( m_pFile == NULL )
+  {
+      closeHandler();
+      return false;
+  }
   return true;
 }
 

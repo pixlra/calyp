@@ -40,7 +40,8 @@ std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedReadFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
 #if( CV_MAJOR_VERSION >= 3 )
-  REGIST_CALYP_SUPPORTED_ABSTRACT_FMT( &StreamHandlerOpenCV::Create, "Device", "/dev/video*" );
+  REGIST_CALYP_SUPPORTED_ABSTRACT_FMT( &StreamHandlerOpenCV::Create, "Device",
+                                       "/dev/video*" );
 #endif
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
@@ -48,9 +49,12 @@ std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedReadFormats()
 std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedWriteFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
-  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Portable Network Graphics", "png" );
-  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Joint Photographic Experts Group", "jpg" );
-  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Windows Bitmap", "bmp" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create,
+                              "Portable Network Graphics", "png" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create,
+                              "Joint Photographic Experts Group", "jpg" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerOpenCV::Create, "Windows Bitmap",
+                              "bmp" );
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 
@@ -80,19 +84,20 @@ bool StreamHandlerOpenCV::openHandler( ClpString strFilename, bool bInput )
       m_strFormatName = "DEV";
       m_strCodecName = "Raw Video";
       pcVideoCapture = new VideoCapture( iDeviceId );
-      #if CV_MAJOR_VERSION >= 4
+#if CV_MAJOR_VERSION >= 4
       m_uiWidth = pcVideoCapture->get( cv::CAP_PROP_FRAME_WIDTH );
       m_uiHeight = pcVideoCapture->get( cv::CAP_PROP_FRAME_HEIGHT );
-      #else
+#else
       m_uiWidth = pcVideoCapture->get( CV_CAP_PROP_FRAME_WIDTH );
       m_uiHeight = pcVideoCapture->get( CV_CAP_PROP_FRAME_HEIGHT );
-      #endif
+#endif
       m_dFrameRate = 25;
     }
     else
 #endif
     {
-      m_strCodecName = m_strFormatName = clpUppercase( strFilename.substr( strFilename.find_last_of( "." ) + 1 ) );
+      m_strCodecName = m_strFormatName =
+          clpUppercase( strFilename.substr( strFilename.find_last_of( "." ) + 1 ) );
       Mat cvMat = cv::imread( m_cFilename );
       m_uiWidth = cvMat.cols;
       m_uiHeight = cvMat.rows;
@@ -156,10 +161,9 @@ bool StreamHandlerOpenCV::write( CalypFrame* pcFrame )
 {
   bool bRet = false;
   Mat cvFrame;
-  bRet = pcFrame->toMat( cvFrame );
-  if( bRet )
-  {
-    bRet = cv::imwrite( m_cFilename, cvFrame );
-  }
+  bRet = pcFrame->toMat( cvFrame, false, true );
+  if( !bRet )
+    return bRet;
+  bRet = cv::imwrite( m_cFilename, cvFrame );
   return bRet;
 }

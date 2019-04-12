@@ -33,6 +33,7 @@
 
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #endif
 
@@ -1096,7 +1097,7 @@ double CalypFrame::getHistogramValue( int channel, unsigned int bin )
  **************************************************************
  */
 
-bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
+bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned channel )
 {
   bool bRet = false;
 #ifdef USE_OPENCV
@@ -1108,6 +1109,7 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
   unsigned int cvPrecision = getBitsPel() > 8 ? CV_16U : CV_8U;
   unsigned numBytes = getBitsPel() > 8 ? 2 : 1;
   unsigned numChannels = getNumberChannels();
+  unsigned scaleFactor = 1 << ( numBytes * 8 - getBitsPel() );
 
   if( convertToGray )
   {
@@ -1126,18 +1128,18 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
     unsigned char* cv_data = tmpMat.data;
     unsigned int cv_step = tmpMat.step;
     CalypPixel currPel;
-    for( unsigned int y = 0; y < imgHeight; y++ )
+    for( unsigned y = 0; y < imgHeight; y++ )
     {
-      for( unsigned int x = 0; x < imgWidth; x++ )
+      for( unsigned x = 0; x < imgWidth; x++ )
       {
-        currPel = getPixel( x, y );
+        currPel = getPixel( x, y ) * scaleFactor;
         for( unsigned int ch = 0; ch < numChannels; ch++ )
-        {
           for( unsigned b = 0; b < numBytes; b++ )
           {
-            *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) = currPel[ch] >> ( 8 * b );
+            unsigned char pel = currPel[ch] >> ( 8 * b );
+            //*( cv_data + y * cv_step + x * numChannels * numBytes + ch * numBytes + b ) = currPel[ch] >> ( 8 * b );
+            *cv_data++ = pel;
           }
-        }
       }
     }
     if( getNumberChannels() >= 1 )
@@ -1155,11 +1157,11 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, unsigned channel )
   {
     unsigned char* cv_data = cvMat.data;
     ClpPel* pel = getPelBufferYUV()[channel][0];
-    for( unsigned int y = 0; y < imgHeight * imgWidth; y++ )
+    for( unsigned y = 0; y < imgHeight * imgWidth; y++ )
     {
+      ClpPel currPel = ( *pel++ ) * scaleFactor;
       for( unsigned b = 0; b < numBytes; b++ )
-        *cv_data++ = ( *pel ) >> ( 8 * b );
-      pel++;
+        *cv_data++ = currPel >> ( 8 * b );
     }
   }
   bRet = true;
@@ -1436,7 +1438,7 @@ double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
     {
       int diff = int( *pPelYUV++ ) - int( *pOrgPelYUV++ );
       double weight = cos( double( ( y + 0.5 - height / 2.0 ) * S_PI / height ) );
-      ssd += (double)( diff * diff * 1000) * weight;
+      ssd += (double)( diff * diff * 1000 ) * weight;
       weight_sum += weight * 1000;
     }
 

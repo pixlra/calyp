@@ -1126,7 +1126,6 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
     cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
 
     unsigned char* cv_data = tmpMat.data;
-    unsigned int cv_step = tmpMat.step;
     CalypPixel currPel;
     for( unsigned y = 0; y < imgHeight; y++ )
     {
@@ -1137,7 +1136,6 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
           for( unsigned b = 0; b < numBytes; b++ )
           {
             unsigned char pel = currPel[ch] >> ( 8 * b );
-            //*( cv_data + y * cv_step + x * numChannels * numBytes + ch * numBytes + b ) = currPel[ch] >> ( 8 * b );
             *cv_data++ = pel;
           }
       }

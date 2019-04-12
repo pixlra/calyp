@@ -37,7 +37,7 @@
   formatElem.formatName = name;                          \
   formatElem.formatExt = clpLowercase( ext );            \
   formatElem.formatFct = handler;                        \
-  formatsList.push_back( formatElem );
+  formatsList.push_back( formatElem )
 
 #define REGIST_CALYP_SUPPORTED_ABSTRACT_FMT( handler, name, pattern ) \
   formatElem.formatPattern = pattern;                                 \

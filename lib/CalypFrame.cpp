@@ -1110,7 +1110,8 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
   unsigned numBytes = getBitsPel() > 8 ? 2 : 1;
   unsigned numChannels = getNumberChannels();
   unsigned scaleFactor = 1 << ( numBytes * 8 - getBitsPel() );
-
+  if( !scale )
+    scaleFactor = 1;
   if( convertToGray )
   {
     channel = channel >= numChannels ? 0 : channel;

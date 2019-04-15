@@ -546,61 +546,54 @@ void CalypFrame::copyFrom( const CalypFrame* other )
     copyFrom( *other );
 }
 
-void CalypFrame::copyFrom( const CalypFrame& other, unsigned int xPos, unsigned int yPos )
+void CalypFrame::copyFrom( const CalypFrame& other, unsigned x, unsigned y )
 {
   if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BITS ) )
     return;
   // TODO: Protect width and height
   ClpPel*** pInput = other.getPelBufferYUV();
-  //  ClpPel* pInput;
-  //  ClpPel* pOutput;
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
     int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
     int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
     for( unsigned int i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ); i++ )
     {
-      memcpy( &( d->m_pppcInputPel[ch][i][0] ), &( pInput[ch][( yPos >> ratioH ) + i][( xPos >> ratioW )] ),
+      memcpy( &( d->m_pppcInputPel[ch][i][0] ), &( pInput[ch][( y >> ratioH ) + i][( x >> ratioW )] ),
               ( d->m_uiWidth >> ratioW ) * sizeof( ClpPel ) );
-      //      pOutput = d->m_pppcInputPel[ch][i];
-      //      pInput = other.getPelBufferYUV()[ch][( yPos >> ratioH ) + i] + ( xPos >> ratioW );
-      //      for( unsigned int j = 0; j < CHROMASHIFT( d->m_uiWidth, ratioW ); j++ )
-      //      {
-      //        *pOutput++ = *pInput++;
-      //      }
     }
   }
   d->m_bHasRGBPel = false;
   d->m_bHasHistogram = false;
 }
 
-void CalypFrame::copyFrom( const CalypFrame* other, unsigned int x, unsigned int y )
+void CalypFrame::copyFrom( const CalypFrame* other, unsigned x, unsigned y )
 {
   if( other )
     copyFrom( *other, x, y );
 }
 
-void CalypFrame::copyTo( const CalypFrame& other, unsigned int xPos, unsigned int yPos )
+void CalypFrame::copyTo( const CalypFrame& other, unsigned x, unsigned y )
 {
   if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
     return;
   ClpPel*** pInput = other.getPelBufferYUV();
+  unsigned width = other.getWidth();
   // TODO: Protect width and height
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
     int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
     int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    for( unsigned int i = 0; i < CHROMASHIFT( other.getHeight(), ratioH ); i++ )
+    for( unsigned int i = 0; i < other.getHeight( ch ); i++ )
     {
-      memcpy( &( d->m_pppcInputPel[ch][( yPos >> ratioH ) + i][( xPos >> ratioW )] ), &( pInput[ch][i][0] ),
-              ( other.getWidth() >> ratioW ) * sizeof( ClpPel ) );
+      memcpy( &( d->m_pppcInputPel[ch][( y >> ratioH ) + i][( x >> ratioW )] ), &( pInput[ch][i][0] ),
+              ( width >> ratioW ) * sizeof( ClpPel ) );
     }
   }
   d->m_bHasRGBPel = false;
   d->m_bHasHistogram = false;
 }
 
-void CalypFrame::copyTo( const CalypFrame* other, unsigned int x, unsigned int y )
+void CalypFrame::copyTo( const CalypFrame* other, unsigned x, unsigned y )
 {
   if( other )
     copyTo( *other, x, y );

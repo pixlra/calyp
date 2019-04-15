@@ -298,13 +298,32 @@ public:
 	 */
   void setPixel( unsigned int xPos, unsigned int yPos, CalypPixel pixel );
 
-  void copyFrom( const CalypFrame& );
-  void copyFrom( const CalypFrame* );
-  void copyFrom( const CalypFrame&, unsigned int, unsigned int );
-  void copyFrom( const CalypFrame*, unsigned int, unsigned int );
+  /**
+     * Copy a frame into the current buffer
+     * @param other frame to be copied
+     */
+  void copyFrom( const CalypFrame& other );
+  void copyFrom( const CalypFrame* other );
 
-  void copyTo( const CalypFrame&, unsigned int, unsigned int );
-  void copyTo( const CalypFrame*, unsigned int, unsigned int );
+  /**
+     * Copy a region from a reference corresponding to the size
+     * of the size of the current frame
+     * @param other frame to be copied
+     * @param x x position on the reference frame
+     * @param y y position on the reference frame
+     */
+  void copyFrom( const CalypFrame& other, unsigned x, unsigned y );
+  void copyFrom( const CalypFrame* other, unsigned x, unsigned y );
+
+  /**
+     * Copy a reference frame to a specific location on the current frame
+     * The whole reference frame is copied
+     * @param other frame to be copied
+     * @param x x position on the current frame
+     * @param y y position on the current frame
+     */
+  void copyTo( const CalypFrame& other, unsigned x, unsigned y );
+  void copyTo( const CalypFrame* other, unsigned x, unsigned y );
 
   void frameFromBuffer( ClpByte*, int, unsigned long );
   void frameFromBuffer( ClpByte*, int );

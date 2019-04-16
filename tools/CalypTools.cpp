@@ -59,6 +59,13 @@ CalypTools::~CalypTools()
 
 #define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
 
+void reportStreamInfo( const CalypStream& stream )
+{
+  log( CLP_LOG_INFO, "Found input: %s ", stream.getFileName() );
+  log( CLP_LOG_INFO, " resolution: %s ", stream.getWidth(), stream.getHeight(), stream.getFrameRate() );
+  log( CLP_LOG_INFO, "   bits/pel: %d (%s)", stream.getEndianess() == 1 ? "big" : "little" );
+}
+
 int CalypTools::openInputs()
 {
   /**
@@ -587,7 +594,6 @@ int CalypTools::ModuleOperation()
       if( pcProcessedFrame )
       {
         m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
-
       }
     }
     else if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
@@ -610,7 +616,6 @@ int CalypTools::ModuleOperation()
     {
       apcFrameList = readInput();
       frame++;
-
     }
   }
 

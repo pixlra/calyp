@@ -59,11 +59,11 @@ CalypTools::~CalypTools()
 
 #define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
 
-void reportStreamInfo( const CalypStream& stream )
+void CalypTools::reportStreamInfo( const CalypStream* stream )
 {
-  log( CLP_LOG_INFO, "Found input: %s ", stream.getFileName() );
-  log( CLP_LOG_INFO, " resolution: %s ", stream.getWidth(), stream.getHeight(), stream.getFrameRate() );
-  log( CLP_LOG_INFO, "   bits/pel: %d (%s)", stream.getEndianess() == 1 ? "big" : "little" );
+  log( CLP_LOG_INFO, "Stream name: %s \n", stream->getFileName().c_str() );
+  log( CLP_LOG_INFO, "Resolution: %dx%d@%d \n", stream->getWidth(), stream->getHeight(), stream->getFrameRate() );
+  log( CLP_LOG_INFO, "Bits/pel: %d (%s)\n", stream->getBitsPerPixel(), stream->getEndianess() == CLP_BIG_ENDIAN ? "BE" : "LE" );
 }
 
 int CalypTools::openInputs()
@@ -115,6 +115,8 @@ int CalypTools::openInputs()
           return -1;
         }
         m_apcInputStreams.push_back( pcStream );
+        log( CLP_LOG_INFO, "Found input %d \n", m_apcInputStreams.size() );
+        reportStreamInfo( pcStream );
       }
       catch( const char* msg )
       {
@@ -145,6 +147,8 @@ int CalypTools::openInputs()
 int CalypTools::Open( int argc, char* argv[] )
 {
   int iRet = 0;
+
+  log( CLP_LOG_ERROR, "calypTools - The command line interface for Calyp modules! \n" );
 
   // check requirements
   if( CalypPixel::getMaxNumberOfComponents() > MAX_NUMBER_CHANNELS )
@@ -232,6 +236,8 @@ int CalypTools::Open( int argc, char* argv[] )
       pcOutputStream->open( m_pcOutputFileNames[0], pcInputFrame->getWidth(), pcInputFrame->getHeight(),
                             pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel(), CLP_LITTLE_ENDIAN, 1,
                             false );
+      log( CLP_LOG_INFO, "Output stream from rate-reduction!\n" );
+      reportStreamInfo( pcOutputStream );
     }
     catch( const char* msg )
     {
@@ -364,6 +370,8 @@ int CalypTools::Open( int argc, char* argv[] )
         {
           pcModStream->open( outputFileNames[0], pcModFrame->getWidth(), pcModFrame->getHeight(),
                              pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), CLP_LITTLE_ENDIAN, 1, false );
+          log( CLP_LOG_INFO, "Output stream from module!\n" );
+          reportStreamInfo( pcModStream );
         }
         catch( const char* msg )
         {

@@ -57,6 +57,7 @@ bool StreamHandlerRaw::openHandler( ClpString strFilename, bool bInput )
   calculateFrameNumber();
   m_strFormatName = "YUV";
   m_strCodecName = "Raw Video";
+  m_dFrameRate = 30;
   return true;
 }
 

@@ -229,11 +229,11 @@ CalypStream::~CalypStream()
   close();
 }
 
-ClpString CalypStream::getFormatName()
+ClpString CalypStream::getFormatName() const
 {
   return !d->handler ? "" : d->handler->getFormatName();
 }
-ClpString CalypStream::getCodecName()
+ClpString CalypStream::getCodecName() const
 {
   return !d->handler ? "" : d->handler->getCodecName();
 }
@@ -392,17 +392,17 @@ void CalypStream::close()
   d->isInit = false;
 }
 
-ClpString CalypStream::getFileName()
+ClpString CalypStream::getFileName() const
 {
   return d->cFilename;
 }
 
-bool CalypStream::isNative()
+bool CalypStream::isNative() const
 {
   return d->handler->m_bNative;
 }
 
-ClpULong CalypStream::getFrameNum()
+ClpULong CalypStream::getFrameNum() const
 {
   return d->handler->m_uiTotalNumberFrames;
 }
@@ -414,22 +414,26 @@ unsigned int CalypStream::getHeight() const
 {
   return d->handler->m_uiHeight;
 }
+unsigned int CalypStream::getBitsPerPixel() const
+{
+  return d->handler->m_uiBitsPerPixel;
+}
 int CalypStream::getEndianess() const
 {
   return d->handler->m_iEndianness;
 }
-double CalypStream::getFrameRate()
+double CalypStream::getFrameRate() const
 {
   return d->handler->m_dFrameRate;
 }
 
-long CalypStream::getCurrFrameNum()
+long CalypStream::getCurrFrameNum() const
 {
   return d->iCurrFrameNum;
 }
 
 void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
-                             unsigned int& rFrameRate )
+                             unsigned int& rFrameRate ) const
 {
   if( d->isInit )
   {
@@ -475,7 +479,7 @@ void CalypStream::loadAll()
   d->iCurrFrameNum = 0;
 }
 
-void CalypStream::getDuration( int* duration_array )
+void CalypStream::getDuration( int* duration_array ) const
 {
   //   int hours, mins, secs = 0;
   // #ifdef USE_FFMPEG
@@ -574,7 +578,7 @@ void CalypStream::readNextFrameFillRGBBuffer()
   return;
 }
 
-CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image )
+CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image ) const
 {
   if( pyuv_image == NULL )
     pyuv_image = new CalypFrame( d->frameBuffer->current() );
@@ -583,7 +587,7 @@ CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image )
   return pyuv_image;
 }
 
-CalypFrame* CalypStream::getCurrFrame()
+CalypFrame* CalypStream::getCurrFrame() const
 {
   return d->frameBuffer->current();
 }

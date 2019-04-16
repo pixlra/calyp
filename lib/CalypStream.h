@@ -67,8 +67,10 @@ public:
   CalypStream();
   ~CalypStream();
 
-  ClpString getFormatName();
-  ClpString getCodecName();
+  ClpString getFormatName() const;
+  ;
+  ClpString getCodecName() const;
+  ;
 
   bool open( ClpString filename, ClpString resolution, ClpString input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
              bool bInput );
@@ -77,16 +79,17 @@ public:
   bool reload();
   void close();
 
-  bool isNative();
-  ClpString getFileName();
-  ClpULong getFrameNum();
+  bool isNative() const;
+  ClpString getFileName() const;
+  ClpULong getFrameNum() const;
   unsigned int getWidth() const;
   unsigned int getHeight() const;
+  unsigned int getBitsPerPixel() const;
   int getEndianess() const;
-  long getCurrFrameNum();
-  double getFrameRate();
+  long getCurrFrameNum() const;
+  double getFrameRate() const;
   void getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
-                  unsigned int& rFrameRate );
+                  unsigned int& rFrameRate ) const;
 
   void loadAll();
 
@@ -96,18 +99,18 @@ public:
   bool saveFrame( const ClpString& filename );
   static bool saveFrame( const ClpString& filename, CalypFrame* saveFrame );
 
-  CalypFrame* getCurrFrame( CalypFrame* );
+  CalypFrame* getCurrFrame( CalypFrame* ) const;
 
   // continuous read control
   bool setNextFrame();
   void readNextFrame();
   void readNextFrameFillRGBBuffer();
-  CalypFrame* getCurrFrame();
+  CalypFrame* getCurrFrame() const;
 
   bool seekInputRelative( bool bIsFoward );
   bool seekInput( unsigned long new_frame_num );
 
-  void getDuration( int* duration_array );
+  void getDuration( int* duration_array ) const;
 
 private:
   bool readFrame( CalypFrame* frame );

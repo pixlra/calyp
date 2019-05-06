@@ -71,6 +71,7 @@ protected:
   std::vector<ClpString> m_strEndianness;
   ClpString m_strOutput;
   long m_iFrames;
+  unsigned m_uiOutEndianness;
 
   int m_iRateReductionFactor;
   ClpString m_strQualityMetric;

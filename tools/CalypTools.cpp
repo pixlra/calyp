@@ -120,10 +120,10 @@ int CalypTools::openInputs()
       }
       catch( const char* msg )
       {
-        log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(),
-             msg );
+        log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(), msg );
         return -1;
       }
+      m_uiOutEndianness = uiEndianness;
     }
   }
 
@@ -234,7 +234,7 @@ int CalypTools::Open( int argc, char* argv[] )
     try
     {
       pcOutputStream->open( m_pcOutputFileNames[0], pcInputFrame->getWidth(), pcInputFrame->getHeight(),
-                            pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel(), CLP_LITTLE_ENDIAN, 1,
+                            pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel(), m_uiOutEndianness, 1,
                             false );
       log( CLP_LOG_INFO, "Output stream from rate-reduction!\n" );
       reportStreamInfo( pcOutputStream );

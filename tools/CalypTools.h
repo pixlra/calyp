@@ -83,7 +83,7 @@ private:
   std::vector<CalypStream*> m_apcInputStreams;
   std::vector<CalypStream*> m_apcOutputStreams;
 
-  void reportStreamInfo( const CalypStream* stream );
+  void reportStreamInfo( const CalypStream* stream, ClpString strPrefix = "" );
   int openInputs();
   std::vector<CalypFrame*> readInput();
 

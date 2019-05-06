@@ -59,11 +59,11 @@ CalypTools::~CalypTools()
 
 #define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
 
-void CalypTools::reportStreamInfo( const CalypStream* stream )
+void CalypTools::reportStreamInfo( const CalypStream* stream, ClpString strPrefix )
 {
-  log( CLP_LOG_INFO, "Stream name: %s \n", stream->getFileName().c_str() );
-  log( CLP_LOG_INFO, "Resolution: %dx%d@%d \n", stream->getWidth(), stream->getHeight(), stream->getFrameRate() );
-  log( CLP_LOG_INFO, "Bits/pel: %d (%s)\n", stream->getBitsPerPixel(), stream->getEndianess() == CLP_BIG_ENDIAN ? "BE" : "LE" );
+  log( CLP_LOG_INFO, "%sStream name: %s \n", strPrefix.c_str(), stream->getFileName().c_str() );
+  log( CLP_LOG_INFO, "%sResolution: %dx%d@%d \n", strPrefix.c_str(), stream->getWidth(), stream->getHeight(), stream->getFrameRate() );
+  log( CLP_LOG_INFO, "%sBits/pel: %d (%s)\n", strPrefix.c_str(), stream->getBitsPerPixel(), stream->getEndianess() == CLP_BIG_ENDIAN ? "BE" : "LE" );
 }
 
 int CalypTools::openInputs()
@@ -249,7 +249,7 @@ int CalypTools::Open( int argc, char* argv[] )
                             pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel(), m_uiOutEndianness, 1,
                             false );
       log( CLP_LOG_INFO, "Output stream from rate-reduction!\n" );
-      reportStreamInfo( pcOutputStream );
+      reportStreamInfo( pcOutputStream, "Output " );
     }
     catch( const char* msg )
     {
@@ -383,7 +383,7 @@ int CalypTools::Open( int argc, char* argv[] )
           pcModStream->open( outputFileNames[0], pcModFrame->getWidth(), pcModFrame->getHeight(),
                              pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1, false );
           log( CLP_LOG_INFO, "Output stream from module!\n" );
-          reportStreamInfo( pcModStream );
+          reportStreamInfo( pcModStream, "Module Output " );
         }
         catch( const char* msg )
         {

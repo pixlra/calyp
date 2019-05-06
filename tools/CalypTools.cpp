@@ -123,7 +123,6 @@ int CalypTools::openInputs()
         log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(), msg );
         return -1;
       }
-      m_uiOutEndianness = uiEndianness;
     }
   }
 
@@ -168,6 +167,19 @@ int CalypTools::Open( int argc, char* argv[] )
   if( ( iRet = openInputs() ) < 0 )
   {
     return iRet;
+  }
+
+  m_uiOutEndianness = 0;
+  if( Opts().hasOpt( "endianness" ) )
+  {
+    if( m_strEndianness[0] == "big" )
+    {
+      m_uiOutEndianness = 0;
+    }
+    else if( m_strEndianness[0] == "little" )
+    {
+      m_uiOutEndianness = 1;
+    }
   }
 
   if( Opts().hasOpt( "save" ) )
@@ -369,7 +381,7 @@ int CalypTools::Open( int argc, char* argv[] )
         try
         {
           pcModStream->open( outputFileNames[0], pcModFrame->getWidth(), pcModFrame->getHeight(),
-                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), CLP_LITTLE_ENDIAN, 1, false );
+                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1, false );
           log( CLP_LOG_INFO, "Output stream from module!\n" );
           reportStreamInfo( pcModStream );
         }

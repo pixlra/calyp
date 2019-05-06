@@ -634,7 +634,7 @@ void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
     if( m_pcCurrentDisplayModule )
     {
       pcModule = m_pcCurrentDisplayModule;
-      m_pcCurrentDisplayModule = 0;
+      m_pcCurrentDisplayModule = NULL;
       ModulesHandle::destroyModuleIf( pcModule );
       setWindowName( QFileInfo( m_cFilename ).fileName() );
       bRefresh |= true;

@@ -388,16 +388,16 @@ unsigned int CalypFrame::getNumberChannels() const
   return d->m_pcPelFormat->numberChannels;
 }
 
-unsigned int CalypFrame::getWidth( int channel ) const
+unsigned CalypFrame::getWidth( unsigned channel ) const
 {
   return CHROMASHIFT( d->m_uiWidth, channel > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0 );
 }
-unsigned int CalypFrame::getHeight( int channel ) const
+unsigned CalypFrame::getHeight( unsigned channel ) const
 {
   return CHROMASHIFT( d->m_uiHeight, channel > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0 );
 }
 
-ClpULong CalypFrame::getPixels( int channel ) const
+ClpULong CalypFrame::getPixels( unsigned channel ) const
 {
   return getWidth( channel ) * getHeight( channel );
 }
@@ -855,7 +855,7 @@ int CalypFrame::getNumHistogramSegment()
   return d->m_uiHistoSegments;
 }
 
-unsigned int CalypFrame::getMinimumPelValue( int channel )
+unsigned int CalypFrame::getMinimumPelValue( unsigned channel )
 {
   if( !d->m_bHasHistogram )
     return 0;
@@ -887,7 +887,7 @@ unsigned int CalypFrame::getMinimumPelValue( int channel )
   return 0;
 }
 
-unsigned int CalypFrame::getMaximumPelValue( int channel )
+unsigned int CalypFrame::getMaximumPelValue( unsigned channel )
 {
   if( !d->m_bHasHistogram )
     return 0;
@@ -919,7 +919,7 @@ unsigned int CalypFrame::getMaximumPelValue( int channel )
   return 0;
 }
 
-unsigned int CalypFrame::getMaximum( int channel )
+unsigned int CalypFrame::getMaximum( unsigned channel )
 {
   if( !d->m_bHasHistogram )
     return 0;
@@ -952,7 +952,7 @@ unsigned int CalypFrame::getMaximum( int channel )
   return maxValue;
 }
 
-unsigned int CalypFrame::getNumPixelsRange( int channel, unsigned int start, unsigned int end )
+unsigned int CalypFrame::getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end )
 {
   if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
   {
@@ -974,7 +974,7 @@ unsigned int CalypFrame::getNumPixelsRange( int channel, unsigned int start, uns
   return count;
 }
 
-double CalypFrame::getMean( int channel, unsigned int start, unsigned int end )
+double CalypFrame::getMean( unsigned channel, unsigned int start, unsigned int end )
 {
   if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
   {
@@ -1004,7 +1004,7 @@ double CalypFrame::getMean( int channel, unsigned int start, unsigned int end )
   return mean;
 }
 
-int CalypFrame::getMedian( int channel, unsigned int start, unsigned int end )
+int CalypFrame::getMedian( unsigned channel, unsigned int start, unsigned int end )
 {
   if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
   {
@@ -1030,7 +1030,7 @@ int CalypFrame::getMedian( int channel, unsigned int start, unsigned int end )
   return 0;
 }
 
-double CalypFrame::getStdDev( int channel, unsigned int start, unsigned int end )
+double CalypFrame::getStdDev( unsigned channel, unsigned int start, unsigned int end )
 {
   if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
   {
@@ -1069,7 +1069,7 @@ double CalypFrame::getStdDev( int channel, unsigned int start, unsigned int end 
   return sqrt( ( dev - count * mean * mean ) / ( count - 1 ) );
 }
 
-double CalypFrame::getHistogramValue( int channel, unsigned int bin )
+double CalypFrame::getHistogramValue( unsigned channel, unsigned int bin )
 {
   if( !d->m_bHasHistogram || bin < 0 || bin > d->m_uiHistoSegments - 1 )
     return 0.0;

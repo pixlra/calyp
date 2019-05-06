@@ -181,28 +181,28 @@ public:
 	 * Get the number of channels
 	 * @return number of channels
 	 */
-  unsigned int getNumberChannels() const;
+  unsigned getNumberChannels() const;
 
   /**
 	 * Get width of the frame
 	 * @param channel/component
 	 * @return number of pixels
 	 */
-  unsigned int getWidth( int channel = 0 ) const;
+  unsigned int getWidth( unsigned channel = 0 ) const;
 
   /**
 	 * Get height of the frame
 	 * @param channel/component
 	 * @return number of pixels
 	 */
-  unsigned int getHeight( int channel = 0 ) const;
+  unsigned int getHeight( unsigned channel = 0 ) const;
 
   /**
 	 * Get number of pixels of the frame
 	 * @param channel/component
 	 * @return number of pixels
 	 */
-  ClpULong getPixels( int channel = 0 ) const;
+  ClpULong getPixels( unsigned channel = 0 ) const;
 
   /**
    * Get the total number of pixels of the frame
@@ -352,15 +352,15 @@ public:
   };
   void calcHistogram();
 
-  unsigned int getMinimumPelValue( int channel );
-  unsigned int getMaximumPelValue( int channel );
+  unsigned int getMinimumPelValue( unsigned channel );
+  unsigned int getMaximumPelValue( unsigned channel );
 
-  unsigned int getMaximum( int channel );
-  unsigned int getNumPixelsRange( int channel, unsigned int start, unsigned int end );
-  double getMean( int channel, unsigned int start, unsigned int end );
-  int getMedian( int channel, unsigned int start, unsigned int end );
-  double getStdDev( int channel, unsigned int start, unsigned int end );
-  double getHistogramValue( int channel, unsigned int bin );
+  unsigned int getMaximum( unsigned channel );
+  unsigned int getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end );
+  double getMean( unsigned channel, unsigned int start, unsigned int end );
+  int getMedian( unsigned channel, unsigned int start, unsigned int end );
+  double getStdDev( unsigned channel, unsigned int start, unsigned int end );
+  double getHistogramValue( unsigned channel, unsigned int bin );
   int getNumHistogramSegment();
 
   /**

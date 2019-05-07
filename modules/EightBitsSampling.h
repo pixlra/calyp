@@ -33,7 +33,9 @@ class EightBitsSampling : public CalypModuleIf
   REGISTER_CLASS_FACTORY( EightBitsSampling )
 
 private:
-  CalypFrame* m_pcSubSampledFrame;
+  int m_iNumberOfBits;
+  int m_iBitSifting;
+  CalypFrame* m_pcResampledFrame;
 
 public:
   EightBitsSampling();

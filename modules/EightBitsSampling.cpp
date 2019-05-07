@@ -30,53 +30,49 @@ EightBitsSampling::EightBitsSampling()
   m_iModuleAPI = CLP_MODULE_API_2;
   m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
   m_pchModuleCategory = "Conversions";
-  m_pchModuleName = "EightBitsSampling";
-  m_pchModuleLongName = "8 bit sub-sampling";
-  m_pchModuleTooltip = "Sub-sampling frame to 8bpp";
+  m_pchModuleName = "BitsResampling";
+  m_pchModuleLongName = "Re-sampling frame";
+  m_pchModuleTooltip = "Re-sampling frame to a different value of bits per pixel";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
+  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
 
-  m_pcSubSampledFrame = NULL;
+  m_cModuleOptions.addOptions() /**/
+      ( "num_bits", m_iNumberOfBits, "Number of bits/pixel (8-16) [8]" );
+
+  m_iNumberOfBits = 8;
+  m_pcResampledFrame = NULL;
 }
 
 bool EightBitsSampling::create( std::vector<CalypFrame*> apcFrameList )
 {
-  if( apcFrameList[0]->getBitsPel() > 8 )
-  {
-    m_pcSubSampledFrame = NULL;
-    m_pcSubSampledFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(),
-                                          apcFrameList[0]->getPelFormat(), 8 );
-    return true;
-  }
-  return false;
+  m_iBitSifting = int( apcFrameList[0]->getBitsPel() ) - m_iNumberOfBits;
+  if( !m_iBitSifting )
+    return false;
+
+  m_pcResampledFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(),
+                                       apcFrameList[0]->getPelFormat(), m_iNumberOfBits );
+  return true;
 }
 
 CalypFrame* EightBitsSampling::process( std::vector<CalypFrame*> apcFrameList )
 {
   CalypFrame* pcFrame = apcFrameList[0];
-  unsigned int uiShiftBits = pcFrame->getBitsPel() - 8;
   ClpPel* pPelInput = pcFrame->getPelBufferYUV()[0][0];
-  ClpPel* pPelSubSampled = m_pcSubSampledFrame->getPelBufferYUV()[0][0];
-  ClpPel pelValue;
+  ClpPel* pPelResampled = m_pcResampledFrame->getPelBufferYUV()[0][0];
+  int bitShifting = m_iBitSifting > 0 ? m_iBitSifting : -m_iBitSifting;
 
-  for( unsigned int i = 0; i < pcFrame->getHeight() * pcFrame->getWidth(); i++ )
-  {
-    pelValue = *pPelInput++;
-    pelValue = pelValue >> uiShiftBits;
-    *pPelSubSampled++ = pelValue;
-  }
-  for( unsigned int i = 0; i < pcFrame->getChromaLength() * 2; i++ )
-  {
-    pelValue = *pPelInput++;
-    pelValue = pelValue >> uiShiftBits;
-    *pPelSubSampled++ = pelValue;
-  }
-  return m_pcSubSampledFrame;
+  if( m_iBitSifting > 0 )
+    for( unsigned i = 0; i < pcFrame->getTotalNumberOfPixels(); i++ )
+      *pPelResampled++ = *pPelInput++ >> bitShifting;
+  else
+    for( unsigned i = 0; i < pcFrame->getTotalNumberOfPixels(); i++ )
+      *pPelResampled++ = *pPelInput++ << bitShifting;
+  return m_pcResampledFrame;
 }
 
 void EightBitsSampling::destroy()
 {
-  if( m_pcSubSampledFrame )
-    delete m_pcSubSampledFrame;
-  m_pcSubSampledFrame = NULL;
+  if( m_pcResampledFrame )
+    delete m_pcResampledFrame;
+  m_pcResampledFrame = NULL;
 }

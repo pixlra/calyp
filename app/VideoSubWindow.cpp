@@ -311,7 +311,7 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
 {
   ConfigureFormatDialog formatDialog( this );
   unsigned int Width = 0, Height = 0, BitsPel = 8, FrameRate = 30;
-  int Endianness = CLP_BIG_ENDIAN;
+  int Endianness = CLP_LITTLE_ENDIAN;
   int InputFormat = CLP_YUV420P;
 
   if( m_pCurrStream )
@@ -550,6 +550,18 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
         rBitsPerPixel = -1;
       }
     }
+    //    QRegularExpressionMatch BppOnlybMatch = QRegularExpression( "_\\d*b" ).match( FilenameShort );
+    //    if( BppOnlybMatch.hasMatch() )
+    //    {
+    //      QString matchString = BppOnlybMatch.captured( BppMatch.lastCapturedIndex() );
+    //      matchString.remove( "_" );
+    //      matchString.remove( "bpp" );
+    //      rBitsPerPixel = matchString.toUInt();
+    //      if( !( rBitsPerPixel > 0 && rBitsPerPixel < 16 ) )
+    //      {
+    //        rBitsPerPixel = -1;
+    //      }
+    //    }
 
     // Guess frame rate - match %dbpp
     QRegularExpressionMatch FpsMatch = QRegularExpression( "_\\d*fps" ).match( FilenameShort );

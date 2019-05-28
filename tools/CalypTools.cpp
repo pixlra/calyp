@@ -324,11 +324,17 @@ int CalypTools::Open( int argc, char* argv[] )
       return -1;
     }
 
-    if( !(m_pcCurrModuleIf->m_uiModuleRequirements & CLP_MODULES_VARIABLE_NUM_FRAMES) &&
-      m_apcInputStreams.size() != m_pcCurrModuleIf->m_uiNumberOfFrames )
+    if( m_pcCurrModuleIf->m_uiModuleRequirements & CLP_MODULES_VARIABLE_NUM_FRAMES )
     {
-      log( CLP_LOG_ERROR, "Invalid number of inputs! " );
-      return -1;
+      m_pcCurrModuleIf->m_uiNumberOfFrames = m_apcInputStreams.size();
+    }
+    else
+    {
+      if( m_apcInputStreams.size() != m_pcCurrModuleIf->m_uiNumberOfFrames )
+      {
+        log( CLP_LOG_ERROR, "Invalid number of inputs! " );
+        return -1;
+      }
     }
 
     m_pcCurrModuleIf->m_cModuleOptions.parse( argc, argv );

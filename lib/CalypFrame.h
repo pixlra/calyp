@@ -361,6 +361,7 @@ public:
   int getMedian( unsigned channel, unsigned int start, unsigned int end );
   double getStdDev( unsigned channel, unsigned int start, unsigned int end );
   double getHistogramValue( unsigned channel, unsigned int bin );
+  unsigned int getNEBins( unsigned channel );
   int getNumHistogramSegment();
 
   /**

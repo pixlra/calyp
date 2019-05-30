@@ -184,6 +184,11 @@ FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitc
   labelRangeValue = new QLabel;
   labelRangeValue->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
 
+  QLabel* nEBinsLabel = new QLabel( tr( "Non empty bins:" ) );
+  nEBinsLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
+  labelNEBinsValue = new QLabel;
+  labelNEBinsValue->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+
   QLabel* meanLabel = new QLabel( tr( "Mean:" ) );
   meanLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
   labelMeanValue = new QLabel;
@@ -212,6 +217,8 @@ FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitc
   statisticsLayout->addWidget( labelCountValue, gridRow++, 1 );
   statisticsLayout->addWidget( rangeLabel, gridRow, 0 );
   statisticsLayout->addWidget( labelRangeValue, gridRow++, 1 );
+  statisticsLayout->addWidget( nEBinsLabel, gridRow, 0 );
+  statisticsLayout->addWidget( labelNEBinsValue, gridRow++, 1 );
   statisticsLayout->addWidget( meanLabel, gridRow, 0 );
   statisticsLayout->addWidget( labelMeanValue, gridRow++, 1 );
   statisticsLayout->addWidget( stdDevLabel, gridRow, 0 );
@@ -274,6 +281,7 @@ void FramePropertiesDock::reset()
 
   m_iLastFrameType = -1;
 
+  labelNEBinsValue->clear();
   labelMeanValue->clear();
   labelPixelsValue->clear();
   labelStdDevValue->clear();
@@ -444,6 +452,9 @@ void FramePropertiesDock::updateStatistiques()
 
   if( frame )
   {
+    double numBins = frame->getNEBins( channel );
+    labelNEBinsValue->setText( value.setNum( (float)numBins, 'f', 0 ) );
+
     QString rangeText =
         "[" + QString::number( frame->getMinimumPelValue( channel ) ) + ":" + QString::number( frame->getMaximumPelValue( channel ) ) + "]";
     labelRangeValue->setText( rangeText );

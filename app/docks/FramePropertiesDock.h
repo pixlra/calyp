@@ -72,6 +72,7 @@ private:
   QLabel* labelPixelsValue;
   QLabel* labelCountValue;
   QLabel* labelRangeValue;
+  QLabel* labelNEBinsValue;
   QLabel* labelMeanValue;
   QLabel* labelStdDevValue;
   QLabel* labelMedianValue;

@@ -913,10 +913,43 @@ unsigned int CalypFrame::getMaximumPelValue( unsigned channel )
   {
     if( d->m_puiHistogram[i] > 0 )
     {
-      return i - indexEnd + 1;
+      return i - indexEnd - 1;
     }
   }
   return 0;
+}
+
+unsigned int CalypFrame::getNEBins( unsigned channel )
+{
+  if( !d->m_bHasHistogram )
+    return 0;
+
+  channel = d->getRealHistogramChannel( channel );
+  if( channel < 0 )
+    return 0;
+
+  int indexStart;
+  int indexEnd;
+  if( channel == HIST_ALL_CHANNELS )
+  {
+    indexStart = 0;
+    indexEnd = d->m_uiHistoChannels * d->m_uiHistoSegments;
+  }
+  else
+  {
+    indexStart = channel * d->m_uiHistoSegments;
+    indexEnd = indexStart + d->m_uiHistoSegments;
+  }
+
+  int nEBins = 0;
+  for( int i = indexStart; i < indexEnd; i++ )
+  {
+    if( d->m_puiHistogram[i] > 0 )
+    {
+      nEBins++;
+    }
+  }
+  return nEBins;
 }
 
 unsigned int CalypFrame::getMaximum( unsigned channel )

@@ -489,7 +489,8 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
       }
 
       // Guess resolution - match %dx%d
-      QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
+      //QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
+      QRegularExpressionMatch resolutionMatch = QRegularExpression( "_[0-9]+x[0-9]+" ).match( FilenameShort );
       if( resolutionMatch.hasMatch() )
       {
         QString resolutionString = resolutionMatch.captured( resolutionMatch.lastCapturedIndex() );
@@ -537,8 +538,9 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
       }
     }
 
+    // [.|_]
     // Guess bits per pixel - match %dbpp
-    QRegularExpressionMatch BppMatch = QRegularExpression( "_\\d*bpp" ).match( FilenameShort );
+    QRegularExpressionMatch BppMatch = QRegularExpression( "_[0-9]+bpp" ).match( FilenameShort );
     if( BppMatch.hasMatch() )
     {
       QString matchString = BppMatch.captured( BppMatch.lastCapturedIndex() );
@@ -550,21 +552,21 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
         rBitsPerPixel = -1;
       }
     }
-    //    QRegularExpressionMatch BppOnlybMatch = QRegularExpression( "_\\d*b" ).match( FilenameShort );
-    //    if( BppOnlybMatch.hasMatch() )
-    //    {
-    //      QString matchString = BppOnlybMatch.captured( BppMatch.lastCapturedIndex() );
-    //      matchString.remove( "_" );
-    //      matchString.remove( "bpp" );
-    //      rBitsPerPixel = matchString.toUInt();
-    //      if( !( rBitsPerPixel > 0 && rBitsPerPixel < 16 ) )
-    //      {
-    //        rBitsPerPixel = -1;
-    //      }
-    //    }
+    QRegularExpressionMatch BppOnlybMatch = QRegularExpression( "_[0-9]+b" ).match( FilenameShort );
+    if( BppOnlybMatch.hasMatch() )
+    {
+      QString matchString = BppOnlybMatch.captured( BppOnlybMatch.lastCapturedIndex() );
+      matchString.remove( "_" );
+      matchString.remove( "b" );
+      rBitsPerPixel = matchString.toUInt();
+      if( !( rBitsPerPixel > 0 && rBitsPerPixel < 16 ) )
+      {
+        rBitsPerPixel = -1;
+      }
+    }
 
     // Guess frame rate - match %dbpp
-    QRegularExpressionMatch FpsMatch = QRegularExpression( "_\\d*fps" ).match( FilenameShort );
+    QRegularExpressionMatch FpsMatch = QRegularExpression( "_[0-9]+fps" ).match( FilenameShort );
     if( FpsMatch.hasMatch() )
     {
       QString matchString = FpsMatch.captured( FpsMatch.lastCapturedIndex() );

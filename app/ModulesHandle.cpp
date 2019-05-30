@@ -380,7 +380,7 @@ void ModulesHandle::activateModule()
     {
       pcModuleSubWindow = new VideoSubWindow( VideoSubWindow::MODULE_SUBWINDOW );
       windowName.append( QStringLiteral( "Module " ) );
-      windowName.append( pcCurrAppModuleIf->m_pcModule->m_pchModuleName );
+      windowName.append( pcCurrAppModuleIf->m_pcModule->m_pchModuleLongName );
       pcCurrAppModuleIf->m_pcDisplaySubWindow = pcModuleSubWindow;
       //      connect( pcModuleSubWindow->getViewArea(), SIGNAL( selectionChanged( QRect ) ), m_appModuleVideo,
       //               SLOT( updateSelectionArea( QRect ) ) );

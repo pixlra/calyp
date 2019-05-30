@@ -33,6 +33,7 @@ ADD_MODULE( FrameCrop "FrameCrop" )
 ADD_MODULE( LumaAverage "LumaAverage" )
 ADD_MODULE( WeightedPSNR "WeightedPSNR" )
 ADD_MODULE( HEVCIntraPrediction "HEVCIntraPrediction" )
+ADD_MODULE( OptimiseDisplay "OptimiseDisplay" )
 
 ADD_MODULE_USE_OPENCV( MeasureOpticalFlowDualTVL1 "MeasureOpticalFlowDualTVL1" VERSION 2.4.13.0 MODULES video optflow )
 ADD_MODULE_USE_OPENCV( DisparityStereoBM "DisparityStereoBM" VERSION 2.4.13.0 MODULES calib3d )

@@ -412,12 +412,12 @@ ClpULong CalypFrame::getTotalNumberOfPixels() const
   return numberPixels;
 }
 
-unsigned char CalypFrame::getChromaWidthRatio() const
+unsigned CalypFrame::getChromaWidthRatio() const
 {
   return d->m_pcPelFormat->log2ChromaWidth;
 }
 
-unsigned char CalypFrame::getChromaHeightRatio() const
+unsigned CalypFrame::getChromaHeightRatio() const
 {
   return d->m_pcPelFormat->log2ChromaHeight;
 }

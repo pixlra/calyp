@@ -214,13 +214,13 @@ public:
 	 * Get chroma width ratio
 	 * @return ratio multiple of 2
 	 */
-  unsigned char getChromaWidthRatio() const;
+  unsigned getChromaWidthRatio() const;
 
   /**
 	 * Get chroma height ratio
 	 * @return ratio multiple of 2
 	 */
-  unsigned char getChromaHeightRatio() const;
+  unsigned getChromaHeightRatio() const;
 
   /**
 	 * Get number of pixels in each chroma channel

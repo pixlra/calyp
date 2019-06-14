@@ -29,9 +29,10 @@ Master branch | Development branch
 - CalypTools: High level command line interface
 
 ##  Supported Quality Metrics
-- PSNR
-- SSIM
-- MSE
+- Peak Signal-to-Noise Ratio (PSNR)
+- Structural SIMilarity (SSIM) 
+- Mean Square Error (MSE)
+- Weighted Spherical PSNR (WS-PSNR)
 
 ## Frame Processing Modules
 - Component filtering
@@ -59,14 +60,16 @@ Master branch | Development branch
     * Windows Bitmap (bmp)
     * Tagged Image File Format (tiff)
 
-## Developers
-- **Joao Carreira**     (jfmcarreira@gmail.com)
-- **Lui­s Lucas**       (luisfrlucas@gmail.com)
+## Development Team
+- [**Joao Carreira**](https://github.com/jfmcarreira) (Founder, Main Developer)
+- [**Lui­s Lucas**   ](https://github.com/lfrlucas)    (Founder, Developer)
+- [**Joao Santos**  ](https://github.com/jpataias)    (Contributor)
+- [**JNSFilipe**    ](https://github.com/JNSFilipe)   (Contributor)
 
 
 ### Binaries and Build
-* Packages are available for [Debian](https://launchpad.net/~pixlra/+archive/ubuntu/ppa) and [openSUSE](https://software.opensuse.org/package/playuver)
-* **Daily builds** available for Windows and Linux in our [SourceForge page](https://sourceforge.net/projects/playuver/)
+* Packages are available for [Debian](https://launchpad.net/~pixlra/+archive/ubuntu/ppa)
+* **Daily builds** available for [Windows](https://https://github.com/pixlra/calyp-releases/blob/master/installers/win/calyp-latest.exe)
 * **Dependencies**
   1. an ordinary C++ development environment (g++, make, C++ libraries and headers, ...)
   2. cmake

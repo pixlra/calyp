@@ -55,7 +55,8 @@ static inline void* xCallocMem( size_t nitems, size_t size )
 {
   size_t padded_size = nitems * size;
   void* d = xMallocMem( padded_size );
-  memset( d, 0, (int)padded_size );
+  if( d )
+    memset( d, 0, (int)padded_size );
   return d;
 }
 

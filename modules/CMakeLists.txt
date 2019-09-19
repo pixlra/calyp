@@ -46,6 +46,10 @@ ADD_MODULE_USE_OPENCV( SaliencyDetectionSpectral "SaliencyDetection" VERSION 3.3
 ADD_MODULE_USE_OPENCV( SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 ADD_MODULE_USE_OPENCV( SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency )
 
+ADD_MODULE_USE_OPENCV( ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" VERSION  3.1.0 MODULES core )
+ADD_MODULE_USE_OPENCV( ThreeSixtyFaceExtraction "ThreeSixtyFaceExtraction" VERSION  3.1.0 MODULES core )
+ADD_MODULE_USE_OPENCV( ThreeSixtyFaceConcatenation "ThreeSixtyFaceConcatenation" VERSION  3.1.0 MODULES core )
+
 IF(EXISTS ${CALYP_EXTRA_MODULES_DIR} )
   ADD_EXTRA_MODULES( ${CALYP_EXTRA_MODULES_DIR} )
 ENDIF()

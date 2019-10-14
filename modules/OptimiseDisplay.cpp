@@ -25,6 +25,8 @@
 
 #include "OptimiseDisplay.h"
 
+#include "lib/LibMemory.h"
+
 #include <cmath>
 
 OptimiseDisplay::OptimiseDisplay()
@@ -44,7 +46,7 @@ OptimiseDisplay::OptimiseDisplay()
                                                             // (check
                                                             // CalypModulesIf.h).
                                                             // Several requirements should be "or" between each others.
-  m_pcOptimisedFrame = NULL;
+  m_pcOptimisedFrame = nullptr;
 }
 
 bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
@@ -55,7 +57,7 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
     if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
       return false;
 
-  m_pcOptimisedFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_LUMA, 16 );
+  m_pcOptimisedFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CalypFrame::findPixelFormat( "GRAY" ), 16 );
   m_pcOptimisedFrame->reset();
 
   return true;
@@ -63,16 +65,18 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 
 CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
 {
-  unsigned int numValues = (int)pow( 2, apcFrameList[0]->getBitsPel() ), scale, usedValues = 0;
-  int* lookUpTable = (int*)malloc( sizeof( int ) * numValues );
+  ClpPel numValues = (int)pow( 2, apcFrameList[0]->getBitsPel() );
+  ClpPel* lookUpTable;
   const ClpPel* pInput1PelYUV = apcFrameList[0]->getPelBufferYUV()[0][0];
   ClpPel* pOutputPelYUV = m_pcOptimisedFrame->getPelBufferYUV()[0][0];
 
+  getMem1D( &lookUpTable, numValues );
   apcFrameList[0]->calcHistogram();
   m_pcOptimisedFrame->reset();
 
   for( unsigned int ch = 0; ch < apcFrameList[0]->getNumberChannels(); ch++ )
   {
+    ClpPel usedValues = 0;
     for( unsigned int b = 0; b < 1u << apcFrameList[0]->getBitsPel(); b++ )
     {
       if( apcFrameList[0]->getHistogramValue( ch, b ) != 0 )
@@ -80,14 +84,9 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
         lookUpTable[b] = usedValues;
         usedValues++;
       }
-      else
-      {
-        lookUpTable[b] = -1;
-      }
     }
 
-    scale = 65536 / usedValues;
-    usedValues = 0;
+    ClpPel scale = ( 1 << m_pcOptimisedFrame->getBitsPel() ) / usedValues;
 
     for( unsigned int y = 0; y < m_pcOptimisedFrame->getHeight( ch ); y++ )
     {
@@ -98,14 +97,12 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
     }
   }
 
-  free( lookUpTable );
-
+  freeMem1D( lookUpTable );
   return m_pcOptimisedFrame;
 }
 
 void OptimiseDisplay::destroy()
 {
-  if( m_pcOptimisedFrame )
-    delete m_pcOptimisedFrame;
-  m_pcOptimisedFrame = NULL;
+  delete m_pcOptimisedFrame;
+  m_pcOptimisedFrame = nullptr;
 }

@@ -34,6 +34,7 @@ class ThreeSixtyFaceConcatenation : public CalypModuleIf
 private:
   CalypFrame* m_pcTmpFrame;
   unsigned m_uiProjectionType;
+  unsigned m_uiNumberOfPartitionsPerFace;
   unsigned m_uiFacesX;
   unsigned m_uiFacesY;
 

@@ -45,15 +45,19 @@ ThreeSixtyFaceExtraction::ThreeSixtyFaceExtraction()
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY;
 
-  m_cModuleOptions.addOptions()                                            /**/
-      ( "faceNum", m_uiFaceNum, "360 proejction face to be outputed [0]" ) /**/
-      ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap" ) /**/
+  m_cModuleOptions.addOptions()                                                            /**/
+      ( "faceNum", m_uiFaceNum, "360 proejction face to be outputed [0]" )                 /**/
+      ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap" )                 /**/
+      ( "partitions", m_uiNumberOfPartitionsPerFace, "Number of partitions per face [1]" ) /**/
       ;
 
   m_uiFaceNum = 2;
   m_uiProjectionType = 1;
+  m_uiNumberOfPartitionsPerFace = 1;
   m_uiFacesX = 0;
   m_uiFacesY = 0;
+
+  m_pcTmpFrame = NULL;
 }
 
 bool ThreeSixtyFaceExtraction::create( std::vector<CalypFrame*> apcFrameList )
@@ -63,8 +67,8 @@ bool ThreeSixtyFaceExtraction::create( std::vector<CalypFrame*> apcFrameList )
   switch( m_uiProjectionType )
   {
   case 1:
-    m_uiFacesX = 3;
-    m_uiFacesY = 2;
+    m_uiFacesX = 3 * m_uiNumberOfPartitionsPerFace;
+    m_uiFacesY = 2 * m_uiNumberOfPartitionsPerFace;
     break;
   default:
     assert( 0 );
@@ -82,8 +86,19 @@ CalypFrame* ThreeSixtyFaceExtraction::process( std::vector<CalypFrame*> apcFrame
 {
   m_pcOutputFrame->reset();
 
-  unsigned x = m_uiFaceNum % m_uiFacesX * m_pcOutputFrame->getWidth();
-  unsigned y = ( m_uiFaceNum / m_uiFacesX ) * m_pcOutputFrame->getHeight();
+  unsigned x = -1;
+  unsigned y = -1;
+
+  switch( m_uiProjectionType )
+  {
+  case 1: // Cube-map
+    x = m_uiFaceNum % m_uiFacesX * m_pcOutputFrame->getWidth();
+    y = ( m_uiFaceNum / m_uiFacesX ) * m_pcOutputFrame->getHeight();
+    break;
+  default:
+    assert( 0 );
+  }
+
   m_pcOutputFrame->copyFrom( apcFrameList[0], x, y );
   return m_pcOutputFrame;
 }

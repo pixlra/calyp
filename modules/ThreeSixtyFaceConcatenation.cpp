@@ -45,13 +45,17 @@ ThreeSixtyFaceConcatenation::ThreeSixtyFaceConcatenation()
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULES_VARIABLE_NUM_FRAMES;
 
-  m_cModuleOptions.addOptions()                                            /**/
-      ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap" ) /**/
+  m_cModuleOptions.addOptions()                                                            /**/
+      ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap (6 faces)" )       /**/
+      ( "partitions", m_uiNumberOfPartitionsPerFace, "Number of partitions per face [1]" ) /**/
       ;
 
   m_uiProjectionType = 1;
+  m_uiNumberOfPartitionsPerFace = 1;
   m_uiFacesX = 0;
   m_uiFacesY = 0;
+
+  m_pcTmpFrame = NULL;
 }
 
 bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList )
@@ -69,8 +73,8 @@ bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList 
   switch( m_uiProjectionType )
   {
   case 1:
-    m_uiFacesX = 3;
-    m_uiFacesY = 2;
+    m_uiFacesX = 3 * m_uiNumberOfPartitionsPerFace;
+    m_uiFacesY = 2 * m_uiNumberOfPartitionsPerFace;
     break;
   default:
     assert( 0 );
@@ -88,13 +92,21 @@ CalypFrame* ThreeSixtyFaceConcatenation::process( std::vector<CalypFrame*> apcFr
 {
   m_pcOutputFrame->reset();
 
-  for( unsigned i = 0; i < m_uiFacesX * m_uiFacesY; i++ )
+  switch( m_uiProjectionType )
   {
-    CalypFrame* pcFrame = apcFrameList[i];
-    unsigned x = i % m_uiFacesX * pcFrame->getWidth();
-    unsigned y = i / m_uiFacesX * pcFrame->getHeight();
-    m_pcOutputFrame->copyTo( pcFrame, x, y );
+  case 1: // Cube-map
+    for( unsigned i = 0; i < m_uiFacesX * m_uiFacesY; i++ )
+    {
+      CalypFrame* pcFrame = apcFrameList[i];
+      unsigned x = i % m_uiFacesX * pcFrame->getWidth();
+      unsigned y = i / m_uiFacesX * pcFrame->getHeight();
+      m_pcOutputFrame->copyTo( pcFrame, x, y );
+    }
+    break;
+  default:
+    assert( 0 );
   }
+
   return m_pcOutputFrame;
 }
 

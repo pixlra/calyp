@@ -53,11 +53,7 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
 
-  for( unsigned int i = 1; i < apcFrameList.size(); i++ )
-    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
-      return false;
-
-  m_pcOptimisedFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CalypFrame::findPixelFormat( "GRAY" ), 16 );
+  m_pcOptimisedFrame = new CalypFrame( apcFrameList[0] );
   m_pcOptimisedFrame->reset();
 
   return true;
@@ -74,7 +70,7 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
   apcFrameList[0]->calcHistogram();
   m_pcOptimisedFrame->reset();
 
-  for( unsigned int ch = 0; ch < apcFrameList[0]->getNumberChannels(); ch++ )
+  for( unsigned int ch = 0; ch < m_pcOptimisedFrame->getNumberChannels(); ch++ )
   {
     ClpPel usedValues = 0;
     for( unsigned int b = 0; b < 1u << apcFrameList[0]->getBitsPel(); b++ )
@@ -86,7 +82,7 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
       }
     }
 
-    ClpPel scale = ( 1 << m_pcOptimisedFrame->getBitsPel() ) / usedValues;
+    ClpPel scale = ( 1u << m_pcOptimisedFrame->getBitsPel() ) / usedValues;
 
     for( unsigned int y = 0; y < m_pcOptimisedFrame->getHeight( ch ); y++ )
     {

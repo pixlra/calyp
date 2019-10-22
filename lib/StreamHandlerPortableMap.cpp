@@ -60,25 +60,27 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
     char line[101];
     while( fgets( line, 100, m_pFile ) && line[0] == '#' )
       ;
-    sscanf( line, "P%d", &m_iMagicNumber );
-    while( fgets( line, 100, m_pFile ) && line[0] == '#' )
-      ;
-    sscanf( line, "%u %u", &m_uiWidth, &m_uiHeight );
 
-    if( m_iMagicNumber == 1 )
+    if( sscanf( line, "P%d %u %u %d", &m_iMagicNumber, &m_uiWidth, &m_uiHeight, &m_iMaxValue ) != 4 )
     {
-      m_uiBitsPerPixel = 1;
-      m_iMaxValue = 1;
-      m_iPixelFormat = CLP_GRAY;
-    }
-    else
-    {
+      sscanf( line, "P%d", &m_iMagicNumber );
       while( fgets( line, 100, m_pFile ) && line[0] == '#' )
         ;
-      sscanf( line, "%d", &m_iMaxValue );
-      m_uiBitsPerPixel = log( m_iMaxValue + 1 ) / log( 2 );
-      m_iPixelFormat = m_iMagicNumber == 2 || m_iMagicNumber == 5 ? CLP_GRAY : CLP_RGB24;
+      sscanf( line, "%u %u", &m_uiWidth, &m_uiHeight );
+
+      if( m_iMagicNumber == 1 )
+      {
+        m_iMaxValue = 1;
+      }
+      else
+      {
+        while( fgets( line, 100, m_pFile ) && line[0] == '#' )
+          ;
+        sscanf( line, "%d", &m_iMaxValue );
+      }
     }
+    m_uiBitsPerPixel = log( m_iMaxValue + 1 ) / log( 2 );
+    m_iPixelFormat = m_iMagicNumber == 1 || m_iMagicNumber == 2 || m_iMagicNumber == 5 ? CLP_GRAY : CLP_RGB24;
   }
   else
   {
@@ -87,17 +89,17 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
     if( m_uiBitsPerPixel == 1 )
     {
       m_iMagicNumber = 1;
-      m_iPixelFormat = CalypFrame::findPixelFormat("GRAY");
+      m_iPixelFormat = CalypFrame::findPixelFormat( "GRAY" );
     }
     else if( colorSpace == CLP_COLOR_GRAY )
     {
       m_iMagicNumber = 5;
-      m_iPixelFormat = CalypFrame::findPixelFormat("GRAY");
+      m_iPixelFormat = CalypFrame::findPixelFormat( "GRAY" );
     }
     else if( colorSpace == CLP_COLOR_RGB )
     {
       m_iMagicNumber = 6;
-      m_iPixelFormat = CalypFrame::findPixelFormat("RGB");
+      m_iPixelFormat = CalypFrame::findPixelFormat( "RGB" );
     }
     else
     {
@@ -112,8 +114,8 @@ bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
   m_uiTotalNumberFrames = 1;
   if( m_pFile == NULL )
   {
-      closeHandler();
-      return false;
+    closeHandler();
+    return false;
   }
   return true;
 }
@@ -151,7 +153,7 @@ bool StreamHandlerPortableMap::read( CalypFrame* pcFrame )
 bool StreamHandlerPortableMap::write( CalypFrame* pcFrame )
 {
   CalypFrame pcRGBFrame( pcFrame->getWidth(), pcFrame->getHeight(),
-                        m_iPixelFormat, pcFrame->getBitsPel() );
+                         m_iPixelFormat, pcFrame->getBitsPel() );
   pcRGBFrame.copyFrom( pcFrame );
   fseek( m_pFile, 0, SEEK_SET );
   fprintf( m_pFile, "P%d\n%d %d\n", m_iMagicNumber, m_uiWidth, m_uiHeight );

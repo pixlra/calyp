@@ -69,7 +69,7 @@ Master branch | Development branch
 
 ### Binaries and Build
 * Packages are available for [Debian](https://launchpad.net/~pixlra/+archive/ubuntu/ppa)
-* **Daily builds** available for [Windows](https://https://github.com/pixlra/calyp-releases/blob/master/installers/win/calyp-latest.exe)
+* **Daily builds** available for [Windows](https://github.com/pixlra/calyp-releases/blob/master/installers/win/calyp-latest.exe)
 * **Dependencies**
   1. an ordinary C++ development environment (g++, make, C++ libraries and headers, ...)
   2. cmake

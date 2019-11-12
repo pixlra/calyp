@@ -41,11 +41,11 @@ OptimiseDisplay::OptimiseDisplay()
   m_pchModuleLongName = "Optimise Display";             // Long Name
   m_pchModuleTooltip = "Scales the display of images "  // Description
                        "for better visualization of small differences";
-  m_uiNumberOfFrames = 1;                                   // Number of frames required
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW;  // Module requirements
-                                                            // (check
-                                                            // CalypModulesIf.h).
-                                                            // Several requirements should be "or" between each others.
+  m_uiNumberOfFrames = 1;                                // Number of frames required
+  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;  // Module requirements
+                                                         // (check
+                                                         // CalypModulesIf.h).
+                                                         // Several requirements should be "or" between each others.
   m_pcOptimisedFrame = nullptr;
 }
 

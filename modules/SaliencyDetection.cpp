@@ -40,34 +40,12 @@ SaliencyDetectionModule::SaliencyDetectionModule()
   m_pchModuleCategory = "Saliency";
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW;
-
-  m_pcSaliencyFrame = NULL;
+  m_bConvertToGray = true;
 }
 
-bool SaliencyDetectionModule::commonCreate( std::vector<CalypFrame*> apcFrameList )
+void SaliencyDetectionModule::destroy_using_opencv()
 {
-  _BASIC_MODULE_API_2_CHECK_
-
-  m_pcSaliencyFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
-
-  return true;
-}
-
-bool SaliencyDetectionModule::commonProcess( std::vector<CalypFrame*> apcFrameList )
-{
-  Mat cvFrame;
-  if( !apcFrameList[0]->toMat( cvFrame, true ) )
-  {
-    return m_pcSaliencyFrame;
-  }
-  cvFrame.copyTo( m_matSaliency );
-  return m_ptrSaliencyAlgorithm->computeSaliency( cvFrame, m_matSaliency );
-}
-
-void SaliencyDetectionModule::destroy()
-{
-  if( m_pcSaliencyFrame )
-    delete m_pcSaliencyFrame;
+  delete m_pcvSaliency;
 }
 
 SaliencyDetectionSpectral::SaliencyDetectionSpectral()
@@ -85,36 +63,26 @@ SaliencyDetectionSpectral::SaliencyDetectionSpectral()
   m_bBinaryMap = false;
 }
 
-bool SaliencyDetectionSpectral::create( std::vector<CalypFrame*> apcFrameList )
+bool SaliencyDetectionSpectral::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  bool bRet = commonCreate( apcFrameList );
-  if( !bRet )
-    return bRet;
-
+  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = StaticSaliencySpectralResidual::create();
-
   return true;
 }
 
-CalypFrame* SaliencyDetectionSpectral::process( std::vector<CalypFrame*> apcFrameList )
+Mat* SaliencyDetectionSpectral::process_using_opencv( std::vector<Mat*> apcMatList )
 {
-  if( commonProcess( apcFrameList ) )
+  Mat cvSaliency;
+  m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], cvSaliency );
+  Mat cvBinaryMap;
+  StaticSaliencySpectralResidual spec;
+  spec.computeBinaryMap( cvSaliency, *m_pcvSaliency );
+  if( !m_bBinaryMap )
   {
-    Mat matBinaryMap;
-    StaticSaliencySpectralResidual spec;
-    spec.computeBinaryMap( m_matSaliency, matBinaryMap );
-    if( m_bBinaryMap )
-    {
-      m_pcSaliencyFrame->fromMat( matBinaryMap );
-    }
-    else
-    {
-      m_matSaliency *= 255;
-      m_matSaliency.convertTo( m_matSaliency, CV_8UC1 );
-      m_pcSaliencyFrame->fromMat( m_matSaliency );
-    }
+    cvSaliency *= 255;
+    cvSaliency.convertTo( *m_pcvSaliency, CV_8UC1 );
   }
-  return m_pcSaliencyFrame;
+  return m_pcvSaliency;
 }
 
 SaliencyDetectionFineGrained::SaliencyDetectionFineGrained()
@@ -125,20 +93,17 @@ SaliencyDetectionFineGrained::SaliencyDetectionFineGrained()
   m_pchModuleTooltip = "Measure saliency using fine grained method";
 }
 
-bool SaliencyDetectionFineGrained::create( std::vector<CalypFrame*> apcFrameList )
+bool SaliencyDetectionFineGrained::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  bool bRet = commonCreate( apcFrameList );
-  if( !bRet )
-    return bRet;
+  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = cv::saliency::StaticSaliencyFineGrained::create();
   return true;
 }
 
-CalypFrame* SaliencyDetectionFineGrained::process( std::vector<CalypFrame*> apcFrameList )
+Mat* SaliencyDetectionFineGrained::process_using_opencv( std::vector<Mat*> apcMatList )
 {
-  if( commonProcess( apcFrameList ) )
-    m_pcSaliencyFrame->fromMat( m_matSaliency );
-  return m_pcSaliencyFrame;
+  m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], *m_pcvSaliency );
+  return m_pcvSaliency;
 }
 
 SaliencyDetectionBinWangApr2014::SaliencyDetectionBinWangApr2014()
@@ -149,25 +114,22 @@ SaliencyDetectionBinWangApr2014::SaliencyDetectionBinWangApr2014()
   m_pchModuleTooltip = "Measure saliency using a fast self-tuning background subtraction algorithm";
 }
 
-bool SaliencyDetectionBinWangApr2014::create( std::vector<CalypFrame*> apcFrameList )
+bool SaliencyDetectionBinWangApr2014::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  bool bRet = commonCreate( apcFrameList );
-  if( !bRet )
-    return bRet;
+  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = MotionSaliencyBinWangApr2014::create();
-  m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->setImagesize( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight() );
+  m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->setImagesize( apcMatList[0]->cols, apcMatList[0]->rows );
   m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->init();
   return true;
 }
 
-CalypFrame* SaliencyDetectionBinWangApr2014::process( std::vector<CalypFrame*> apcFrameList )
+Mat* SaliencyDetectionBinWangApr2014::process_using_opencv( std::vector<Mat*> apcMatList )
 {
-  if( commonProcess( apcFrameList ) )
+  if( m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], *m_pcvSaliency ) )
   {
-    m_matSaliency *= 255;
-    m_matSaliency.convertTo( m_matSaliency, CV_8UC1 );
+    *m_pcvSaliency *= 255;
+    m_pcvSaliency->convertTo( *m_pcvSaliency, CV_8UC1 );
     //cv::cvtColor(m_matSaliency, m_matSaliency, cv::COLOR_BGR2GRAY);
-    m_pcSaliencyFrame->fromMat( m_matSaliency );
   }
-  return m_pcSaliencyFrame;
+  return m_pcvSaliency;
 }

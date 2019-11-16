@@ -47,6 +47,8 @@ IF( USE_OPENCV )
   LIST( APPEND Calyp_Lib_SRCS StreamHandlerOpenCV.h )
   LIST( APPEND Calyp_Lib_SRCS StreamHandlerOpenCV.cpp )
 
+  LIST( APPEND Calyp_Lib_SRCS CalypOpenCVModuleIf.cpp )
+
   LIST(APPEND CMAKE_CFG_LINKER_LIBSS ${OpenCV_LIBRARIES} )
   LIST(APPEND CMAKE_CFG_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} )
 ENDIF()
@@ -57,6 +59,7 @@ set(Calyp_Lib_HEADERS
     CalypStream.h
     CalypOptions.h
     CalypModuleIf.h
+    CalypOpenCVModuleIf.h
 )
 
 CONFIGURE_FILE( CalypConfig.cmake.in CalypConfig.cmake @ONLY)

@@ -24,6 +24,8 @@
 
 #include "ModulesHandle.h"
 
+#include <cstdio>
+
 #include "MainWindow.h"
 #include "ModulesHandleOptDialog.h"
 #include "SubWindowHandle.h"
@@ -31,8 +33,6 @@
 #include "VideoHandle.h"
 #include "VideoSubWindow.h"
 #include "modules/CalypModulesFactory.h"
-
-#include <cstdio>
 
 ModulesHandle::ModulesHandle( QWidget* parent, SubWindowHandle* windowManager, VideoHandle* moduleVideo )
     : QWidget( parent ), m_pcParent( parent ), m_pcMainWindowManager( windowManager ), m_appModuleVideo( moduleVideo )
@@ -112,20 +112,23 @@ void ModulesHandle::buildMenu()
     ModuleIfinternalName = QString::fromLocal8Bit( it->first );
 
     currSubMenu = NULL;
-    if( pcCurrModuleIf->m_pchModuleCategory )
+    if( pcCurrModuleIf->m_iModuleAPI <= CLP_MODULE_API_2 )
     {
-      for( int j = 0; j < m_pcModulesSubMenuList.size(); j++ )
+      if( pcCurrModuleIf->m_pchModuleCategory )
       {
-        if( m_pcModulesSubMenuList.at( j )->title() == QString( pcCurrModuleIf->m_pchModuleCategory ) )
+        for( int j = 0; j < m_pcModulesSubMenuList.size(); j++ )
         {
-          currSubMenu = m_pcModulesSubMenuList.at( j );
-          break;
+          if( m_pcModulesSubMenuList.at( j )->title() == QString( pcCurrModuleIf->m_pchModuleCategory ) )
+          {
+            currSubMenu = m_pcModulesSubMenuList.at( j );
+            break;
+          }
         }
-      }
-      if( !currSubMenu )
-      {
-        currSubMenu = m_pcModulesMenu->addMenu( pcCurrModuleIf->m_pchModuleCategory );
-        m_pcModulesSubMenuList.append( currSubMenu );
+        if( !currSubMenu )
+        {
+          currSubMenu = m_pcModulesMenu->addMenu( pcCurrModuleIf->m_pchModuleCategory );
+          m_pcModulesSubMenuList.append( currSubMenu );
+        }
       }
     }
 

@@ -29,11 +29,11 @@ set(Calyp_Lib_SRCS
     CalypOptions.cpp
     # Modules
     CalypModuleIf.h
+    CalypOpenCVModuleIf.h
 )
 
 LIST(APPEND CMAKE_CFG_LINKER_LIBSS ${PROJECT_LIBRARY} )
 LIST(APPEND CMAKE_CFG_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR} )
-
 
 IF( USE_FFMPEG )
   LIST( APPEND Calyp_Lib_SRCS StreamHandlerLibav.h )

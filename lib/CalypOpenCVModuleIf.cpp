@@ -25,7 +25,6 @@
 #include "CalypOpenCVModuleIf.h"
 
 // OpenCV
-#include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
 
 using cv::Mat;

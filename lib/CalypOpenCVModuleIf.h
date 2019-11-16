@@ -28,6 +28,11 @@
 
 #include "CalypModuleIf.h"
 
+namespace cv
+{
+class Mat;
+}
+
 /**
  * \class    CalypOpenCVModuleIf
  * \ingroup  CalypLib Calyp_Modules

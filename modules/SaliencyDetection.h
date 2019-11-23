@@ -75,7 +75,7 @@ private:
 public:
   SaliencyDetectionSpectral();
   virtual ~SaliencyDetectionSpectral() {}
-  bool create_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
   Mat* process_using_opencv( std::vector<Mat*> apcMatList );
 };
 
@@ -95,7 +95,7 @@ class SaliencyDetectionFineGrained : public SaliencyDetectionModule
 public:
   SaliencyDetectionFineGrained();
   virtual ~SaliencyDetectionFineGrained() {}
-  bool create_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
   Mat* process_using_opencv( std::vector<Mat*> apcMatList );
 };
 
@@ -112,7 +112,7 @@ class SaliencyDetectionBinWangApr2014 : public SaliencyDetectionModule
 public:
   SaliencyDetectionBinWangApr2014();
   virtual ~SaliencyDetectionBinWangApr2014() {}
-  bool create_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
   Mat* process_using_opencv( std::vector<Mat*> apcMatList );
 };
 

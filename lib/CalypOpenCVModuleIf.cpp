@@ -39,11 +39,16 @@ bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
     acMatList[i] = new Mat;
     apcFrameList[i]->toMat( *acMatList[i], m_bConvertToGray );
   }
-  if( create_using_opencv( acMatList ) )
+  Mat* outputMat = create_using_opencv( acMatList );
+  if( outputMat )
   {
     unsigned pelFormat = m_bConvertToGray ? CalypFrame::findPixelFormat( "GRAY" ) : apcFrameList[0]->getPelFormat();
-    m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), pelFormat, apcFrameList[0]->getBitsPel() );
+    m_pcOutputFrame = new CalypFrame( outputMat->cols, outputMat->rows, pelFormat, apcFrameList[0]->getBitsPel() );
     bRet = true;
+  }
+  else
+  {
+    return false;
   }
   for( unsigned i = 0; i < apcFrameList.size(); i++ )
   {

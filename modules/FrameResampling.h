@@ -18,48 +18,37 @@
  */
 
 /**
- * \file     CalypOpenCVModuleIf.h
- * \ingroup  CalypLibGroup
- * \brief    Calyp modules interface for OpenCV
+ * \file     FrameResampling.h
+ * \brief    Modules to resampling frames
  */
 
-#ifndef __CALYPOPENCVMODULEIF_H__
-#define __CALYPOPENCVMODULEIF_H__
+#ifndef __FRAMERESAMPLING_H__
+#define __FRAMERESAMPLING_H__
 
-#include "CalypModuleIf.h"
-
-namespace cv
-{
-class Mat;
-}
+// CalypLib
+#include "lib/CalypModuleIf.h"
 
 /**
- * \class    CalypOpenCVModuleIf
- * \ingroup  CalypLib Calyp_Modules
- * \brief    Abstract class for modules using OpenCV library
+ * \ingroup  Calyp_Modules
+ * @defgroup Calyp_Modules_Saliency Saliency
+ * @{
+ * Frame processing modules for saliency detection
+ * @}
  */
-class CalypOpenCVModuleIf : public CalypModuleIf
+
+class FrameResampling : public CalypModuleIf
 {
-protected:
-  const char* m_pchPythonFunctionName;
-  bool m_bConvertToGray;
-
+  REGISTER_CLASS_FACTORY( FrameResampling )
+private:
+  int m_iWidth;
+  int m_iHeight;
+int m_iInterpolation;
 public:
-  CalypOpenCVModuleIf()
-  {
-    m_bConvertToGray = false;
-  };
-  virtual ~CalypOpenCVModuleIf() {}
-
-  // Common API
+  FrameResampling();
+  virtual ~FrameResampling() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
   void destroy();
-
-  // API using OpenCV
-  virtual cv::Mat* create_using_opencv( std::vector<cv::Mat*> apcFrameList ) { return NULL; };
-  virtual cv::Mat* process_using_opencv( std::vector<cv::Mat*> apcFrameList ) = 0;
-  virtual void destroy_using_opencv(){};
 };
 
-#endif  // __CALYPOPENCVMODULEIF_H__
+#endif  // __FRAMERESAMPLING_H__

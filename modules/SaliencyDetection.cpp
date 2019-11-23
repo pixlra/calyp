@@ -63,11 +63,11 @@ SaliencyDetectionSpectral::SaliencyDetectionSpectral()
   m_bBinaryMap = false;
 }
 
-bool SaliencyDetectionSpectral::create_using_opencv( std::vector<Mat*> apcMatList )
+cv::Mat* SaliencyDetectionSpectral::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = StaticSaliencySpectralResidual::create();
-  return true;
+  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
+  return m_pcvSaliency;
 }
 
 Mat* SaliencyDetectionSpectral::process_using_opencv( std::vector<Mat*> apcMatList )
@@ -93,11 +93,11 @@ SaliencyDetectionFineGrained::SaliencyDetectionFineGrained()
   m_pchModuleTooltip = "Measure saliency using fine grained method";
 }
 
-bool SaliencyDetectionFineGrained::create_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionFineGrained::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = cv::saliency::StaticSaliencyFineGrained::create();
-  return true;
+  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
+  return m_pcvSaliency;
 }
 
 Mat* SaliencyDetectionFineGrained::process_using_opencv( std::vector<Mat*> apcMatList )
@@ -114,13 +114,13 @@ SaliencyDetectionBinWangApr2014::SaliencyDetectionBinWangApr2014()
   m_pchModuleTooltip = "Measure saliency using a fast self-tuning background subtraction algorithm";
 }
 
-bool SaliencyDetectionBinWangApr2014::create_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionBinWangApr2014::create_using_opencv( std::vector<Mat*> apcMatList )
 {
-  m_pcvSaliency = new Mat;
   m_ptrSaliencyAlgorithm = MotionSaliencyBinWangApr2014::create();
   m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->setImagesize( apcMatList[0]->cols, apcMatList[0]->rows );
   m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->init();
-  return true;
+  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
+  return m_pcvSaliency;
 }
 
 Mat* SaliencyDetectionBinWangApr2014::process_using_opencv( std::vector<Mat*> apcMatList )

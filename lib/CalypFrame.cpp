@@ -102,6 +102,7 @@ public:
   int m_iPixelFormat;             //!< Pixel format number (it follows the list of supported pixel formats)
   unsigned int m_uiBitsPel;       //!< Bits per pixel/channel
   unsigned int m_uiHalfPelValue;  //!< Bits per pixel/channel
+  bool m_bHasNegativeValues;      //!< Half of the scale correspond to negative values
 
   ClpPel*** m_pppcInputPel;
 
@@ -118,15 +119,12 @@ public:
   /** Numbers of histogram segments depending of image bytes depth*/
   unsigned int m_uiHistoSegments;
 
-  /**
-     * Common constructor function of a frame
-     *
-     * @param width width of the frame
-     * @param height height of the frame
-     * @param pel_format pixel format index (always use PixelFormats enum)
-     *
-     */
   void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel )
+  {
+    init( width, height, pel_format, bitsPixel, false );
+  }
+
+  void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel, bool has_negative_values )
   {
     m_bInit = false;
     m_bHasRGBPel = false;
@@ -137,6 +135,7 @@ public:
     m_iPixelFormat = pel_format;
     m_uiBitsPel = bitsPixel < 8 ? 8 : bitsPixel;
     m_uiHalfPelValue = 1 << ( m_uiBitsPel - 1 );
+    m_bHasNegativeValues = has_negative_values;
 
     if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == -1 || bitsPixel > 16 )
     {
@@ -265,10 +264,16 @@ CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, 
   d->init( width, height, pelFormat, bitsPixel );
 }
 
+CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel, bool has_negative_values )
+    : d( new CalypFramePrivate )
+{
+  d->init( width, height, pelFormat, bitsPixel, has_negative_values );
+}
+
 CalypFrame::CalypFrame( const CalypFrame& other )
     : d( new CalypFramePrivate )
 {
-  d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel() );
+  d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(), other.getHasNegativeValues() );
   copyFrom( &other );
 }
 
@@ -277,7 +282,7 @@ CalypFrame::CalypFrame( const CalypFrame* other )
 {
   if( other )
   {
-    d->init( other->getWidth(), other->getHeight(), other->getPelFormat(), other->getBitsPel() );
+    d->init( other->getWidth(), other->getHeight(), other->getPelFormat(), other->getBitsPel(), other->getHasNegativeValues() );
     copyFrom( other );
   }
 }
@@ -397,6 +402,11 @@ unsigned CalypFrame::getHeight( unsigned channel ) const
   return CHROMASHIFT( d->m_uiHeight, channel > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0 );
 }
 
+bool CalypFrame::getHasNegativeValues() const
+{
+  return d->m_bHasNegativeValues;
+}
+
 ClpULong CalypFrame::getPixels( unsigned channel ) const
 {
   return getWidth( channel ) * getHeight( channel );
@@ -490,19 +500,24 @@ unsigned char* CalypFrame::getRGBBuffer() const
   return NULL;
 }
 
-ClpPel CalypFrame::operator()( unsigned int ch, unsigned int xPos, unsigned int yPos )
+ClpPel CalypFrame::operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute ) const
 {
+  int retValue = 0;
   if( ch < d->m_pcPelFormat->numberChannels )
-    return d->m_pppcInputPel[ch][yPos][xPos];
-  return 0;
+  {
+    retValue = d->m_pppcInputPel[ch][yPos][xPos];
+    if( !absolute && d->m_bHasNegativeValues )
+      retValue = retValue - int(d->m_uiHalfPelValue);
+  }
+  return ClpPel( retValue );
 }
 
-CalypPixel CalypFrame::operator()( unsigned int xPos, unsigned int yPos )
+CalypPixel CalypFrame::operator()( unsigned int xPos, unsigned int yPos ) const
 {
   return getPixel( xPos, yPos );
 }
 
-CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos )
+CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos ) const
 {
   CalypPixel PixelValue( d->m_pcPelFormat->colorSpace );
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )

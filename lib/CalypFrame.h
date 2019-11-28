@@ -114,6 +114,17 @@ public:
   CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
 
   /**
+   * Creates a new frame using the following configuration
+   *
+   * @param width width of the frame
+   * @param height height of the frame
+   * @param pel_format pixel format index (always use PixelFormats enum)
+   *
+   * @note this function might misbehave if the pixel format enum is not correct
+   */
+  CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel, bool has_negative_values );
+
+  /**
 	 * Copy contructor
 	 *
 	 * @param other existing frame to copy from
@@ -198,6 +209,12 @@ public:
   unsigned int getHeight( unsigned channel = 0 ) const;
 
   /**
+   * Check if frame has negative values
+   * @return Boolean with the flag value
+   */
+  bool getHasNegativeValues() const;
+
+  /**
 	 * Get number of pixels of the frame
 	 * @param channel/component
 	 * @return number of pixels
@@ -257,13 +274,14 @@ public:
   unsigned char* getRGBBuffer() const;
 
   /**
-	 * Get pixel value at coordinates
+   * Get pixel value at coordinates
 	 * @param ch frame channel
 	 * @param xPos position in X axis
 	 * @param yPos position in Y axis
+   * @param absolute whether it should return positive/negative values
 	 * @return pixel value
 	 */
-  ClpPel operator()( unsigned int ch, unsigned int xPos, unsigned int yPos );
+  ClpPel operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute = true ) const;
 
   /**
 	 * Get pixel value at coordinates
@@ -271,7 +289,7 @@ public:
 	 * @param yPos position in Y axis
 	 * @return pixel value
 	 */
-  CalypPixel operator()( unsigned int xPos, unsigned int yPos );
+  CalypPixel operator()( unsigned int xPos, unsigned int yPos ) const;
 
   /**
 	 * Get pixel value at coordinates
@@ -279,7 +297,8 @@ public:
 	 * @param yPos position in Y axis
 	 * @return pixel value
 	 */
-  CalypPixel getPixel( unsigned int xPos, unsigned int yPos );
+  CalypPixel getPixel( unsigned int xPos, unsigned int yPos ) const;
+
 
   /**
 	 * Get pixel value at coordinates

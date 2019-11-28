@@ -38,9 +38,12 @@ FrameDifference::FrameDifference()
   m_uiNumberOfFrames = 2;
 
   m_cModuleOptions.addOptions() /**/
-      ( "Bits per pixel", m_uiBitsPixel, "Bits per pixel (use zero to avoid scaling) [0]" );
+      ( "BitsPerpixel", m_uiBitsPixel, "Bits per pixel (use zero to avoid scaling) [0]" ) /**/
+      ( "SumOperation", m_uiSumOperation, "Sum instead of difference [0]" );
 
   m_uiBitsPixel = 0;
+  m_uiSumOperation = 0;
+  m_iOperation = 1;
 
   m_pcFrameDifference = NULL;
 }
@@ -48,6 +51,8 @@ FrameDifference::FrameDifference()
 bool FrameDifference::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
+
+  m_uiSumOperation = m_uiSumOperation > 1 ? 0 : m_uiSumOperation;
 
   unsigned int uiMaxBitsPixel = 0;
   for( unsigned int i = 0; i < apcFrameList.size(); i++ )
@@ -57,42 +62,46 @@ bool FrameDifference::create( std::vector<CalypFrame*> apcFrameList )
     if( apcFrameList[i]->getBitsPel() > uiMaxBitsPixel )
     {
       uiMaxBitsPixel = apcFrameList[i]->getBitsPel();
+      if( apcFrameList[i]->getHasNegativeValues() )
+        uiMaxBitsPixel -= 1;
     }
   }
 
-  if( !m_uiBitsPixel )
-  {
-    m_uiBitsPixel = ( uiMaxBitsPixel + 1 ) & 0x0F;
-  }
+  uiMaxBitsPixel = m_uiSumOperation ? uiMaxBitsPixel : uiMaxBitsPixel + 1;
+  m_uiBitsPixel =  !m_uiBitsPixel ? uiMaxBitsPixel & 0x0F : m_uiBitsPixel;
 
-  m_iDiffBitShift = ( uiMaxBitsPixel + 1 ) - m_uiBitsPixel;
-  m_iMaxDiffValue = ( 1 << ( m_uiBitsPixel - 1 ) );
+  m_iDiffBitShift = uiMaxBitsPixel - m_uiBitsPixel;
+  m_iMaxDiffValue = ( 1 << ( m_uiSumOperation ? m_uiBitsPixel : m_uiBitsPixel - 1 ) );
 
   m_pcFrameDifference = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(),
-                                        apcFrameList[0]->getPelFormat(), m_uiBitsPixel );
+                                        apcFrameList[0]->getPelFormat(), m_uiBitsPixel, m_uiSumOperation == 1 ? false : true );
+
+  m_iOperation = m_uiSumOperation == 0 ? -1 : 1 ;
   return true;
 }
 
 CalypFrame* FrameDifference::process( std::vector<CalypFrame*> apcFrameList )
 {
-  ClpPel* pInput1PelYUV = apcFrameList[0]->getPelBufferYUV()[0][0];
-  ClpPel* pInput2PelYUV = apcFrameList[1]->getPelBufferYUV()[0][0];
+  const CalypFrame& frame1 = apcFrameList[0];
+  const CalypFrame& frame2 = apcFrameList[1];
   ClpPel* pOutputPelYUV = m_pcFrameDifference->getPelBufferYUV()[0][0];
-  int aux_pel_1, aux_pel_2;
-  int diff = 0;
+  short aux_pel_1, aux_pel_2;
+  short diff = 0;
 
   for( unsigned int ch = 0; ch < m_pcFrameDifference->getNumberChannels(); ch++ )
-    for( unsigned int y = 0; y < m_pcFrameDifference->getHeight(); y++ )
-      for( unsigned int x = 0; x < m_pcFrameDifference->getWidth(); x++ )
+    for( unsigned int y = 0; y < m_pcFrameDifference->getHeight( ch ); y++ )
+      for( unsigned int x = 0; x < m_pcFrameDifference->getWidth( ch ); x++ )
       {
-        aux_pel_1 = *pInput1PelYUV++;
-        aux_pel_2 = *pInput2PelYUV++;
-        diff = aux_pel_1 - aux_pel_2;
-        diff = m_iDiffBitShift > 0 ? diff >> m_iDiffBitShift : diff << m_iDiffBitShift;
-        diff = std::min( diff, m_iMaxDiffValue - 1 );
-        diff = std::max( diff, -m_iMaxDiffValue );
-
-        diff += m_iMaxDiffValue;
+        aux_pel_1 = frame1(ch, x, y, false );
+        aux_pel_2 = frame2(ch, x, y, false );
+        diff = aux_pel_1 + m_iOperation * aux_pel_2;
+        diff = m_iDiffBitShift > 0 ? diff >> m_iDiffBitShift : diff << -m_iDiffBitShift;
+        diff = std::min<short>( diff, m_iMaxDiffValue - 1 );
+        if( m_uiSumOperation == 0 )
+        {
+          diff = std::max<short>( diff, -m_iMaxDiffValue );
+          diff += m_iMaxDiffValue;
+        }
         *pOutputPelYUV++ = diff;
       }
   return m_pcFrameDifference;

@@ -34,8 +34,10 @@ class FrameDifference : public CalypModuleIf
 
 private:
   unsigned int m_uiBitsPixel;
+  unsigned int m_uiSumOperation;
+  int m_iOperation;
   int m_iDiffBitShift;
-  int m_iMaxDiffValue;
+  short m_iMaxDiffValue;
   CalypFrame* m_pcFrameDifference;
 
 public:

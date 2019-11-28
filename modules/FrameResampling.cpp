@@ -40,7 +40,7 @@ FrameResampling::FrameResampling()
   m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
   m_pchModuleCategory = "Utilities";
   m_pchModuleName = "FrameResampling";
-  m_pchModuleLongName = "Frame Resampling";
+  m_pchModuleLongName = "Frame Resampling (Spatial)";
   m_pchModuleTooltip = "Resampling frame to an abritary resolution";
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;

@@ -23,12 +23,12 @@
  */
 
 #include "CalypTools.h"
-#include "config.h"
 
 #include <climits>
 #include <cstring>
 #include <iostream>
 
+#include "config.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 #include "lib/CalypStream.h"
@@ -79,13 +79,14 @@ int CalypTools::openInputs()
     ClpString fmtString( "yuv420p" );
     unsigned int uiBitsPerPixel = 8;
     unsigned int uiEndianness = 0;
+    bool hasNegativeValues = false;
 
     CalypStream* pcStream;
     for( unsigned int i = 0; i < inputFileNames.size() && i < MAX_NUMBER_INPUTS; i++ )
     {
       if( Opts().hasOpt( "size" ) )
       {
-        resolutionString = GET_PARAM( m_strResolution, 0 );
+        resolutionString = GET_PARAM( m_strResolution, i );
       }
       if( Opts().hasOpt( "pel_fmt" ) )
       {
@@ -106,10 +107,14 @@ int CalypTools::openInputs()
           uiEndianness = 1;
         }
       }
+      if( Opts().hasOpt( "has_negative" ) )
+      {
+        hasNegativeValues = std::stoi( GET_PARAM( m_strHasNegativeValues, i ).c_str() ) == 0 ? false : true;
+      }
       pcStream = new CalypStream;
       try
       {
-        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, 1, true ) )
+        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, hasNegativeValues, 1, true ) )
         {
           log( CLP_LOG_ERROR, "Cannot open input stream %s! ", inputFileNames[i].c_str() );
           return -1;
@@ -172,11 +177,11 @@ int CalypTools::Open( int argc, char* argv[] )
   m_uiOutEndianness = 0;
   if( Opts().hasOpt( "endianness" ) )
   {
-    if( m_strEndianness[0] == "big" )
+    if( GET_PARAM( m_strEndianness, 9999 ) == "big" )
     {
       m_uiOutEndianness = 0;
     }
-    else if( m_strEndianness[0] == "little" )
+    else if( GET_PARAM( m_strEndianness, 9999 ) == "little" )
     {
       m_uiOutEndianness = 1;
     }

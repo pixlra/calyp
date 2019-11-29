@@ -24,14 +24,14 @@
 
 #include "CalypToolsCmdParser.h"
 
+#include <cstdarg>
+#include <cstring>
+#include <iostream>
+
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 #include "lib/CalypStream.h"
 #include "modules/CalypModulesFactory.h"
-
-#include <cstdarg>
-#include <cstring>
-#include <iostream>
 
 CalypToolsCmdParser::CalypToolsCmdParser()
 {
@@ -66,6 +66,7 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
       ( "pel_fmt,p", m_strPelFmt, "pixel format" )                                       /**/
       ( "bits_pel", m_strBitsPerPixel, "bits per pixel" )                                /**/
       ( "endianness", m_strEndianness, "File endianness (big, little)" )                 /**/
+      ( "has_negative", m_strHasNegativeValues, "Flag for files with negatie values" )   /**/
       ( "frames,f", m_iFrames, "number of frames to parse" )                             /**/
       ( "quality", m_strQualityMetric, "select a quality metric" )                       /**/
       ( "module", m_strModule, "select a module (use internal name)" )                   /**/

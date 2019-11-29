@@ -69,6 +69,7 @@ protected:
   std::vector<ClpString> m_strPelFmt;
   std::vector<ClpString> m_strBitsPerPixel;
   std::vector<ClpString> m_strEndianness;
+  std::vector<ClpString> m_strHasNegativeValues;
   ClpString m_strOutput;
   long m_iFrames;
   unsigned m_uiOutEndianness;

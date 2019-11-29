@@ -72,10 +72,13 @@ public:
   ClpString getCodecName() const;
   ;
 
-  bool open( ClpString filename, ClpString resolution, ClpString input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
+  bool open( ClpString filename, ClpString resolution, ClpString input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
   bool open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
              bool bInput );
+  bool open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
+             bool bInput );
+
   bool reload();
   void close();
 

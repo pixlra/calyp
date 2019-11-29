@@ -103,11 +103,11 @@ private:
   unsigned int m_uiIndex;
 
 public:
-  CalypStreamBufferPrivate( unsigned int size, unsigned int width, unsigned int height, int pelFormat, int bitsPixel )
+  CalypStreamBufferPrivate( unsigned int size, unsigned int width, unsigned int height, int pelFormat, int bitsPixel, bool hasNegative )
   {
     for( unsigned int i = 0; i < size; i++ )
     {
-      CalypFrame* pFrame = new CalypFrame( width, height, pelFormat, bitsPixel );
+      CalypFrame* pFrame = new CalypFrame( width, height, pelFormat, bitsPixel, hasNegative );
       m_apcFrameBuffer.push_back( pFrame );
     }
     m_uiIndex = 0;
@@ -238,7 +238,7 @@ ClpString CalypStream::getCodecName() const
   return !d->handler ? "" : d->handler->getCodecName();
 }
 
-bool CalypStream::open( ClpString filename, ClpString resolution, ClpString input_format_name, unsigned int bitsPel, int endianness,
+bool CalypStream::open( ClpString filename, ClpString resolution, ClpString input_format_name, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, bool bInput )
 {
   unsigned int width = 0;
@@ -261,10 +261,16 @@ bool CalypStream::open( ClpString filename, ClpString resolution, ClpString inpu
       break;
     }
   }
-  return open( filename, width, height, input_format, bitsPel, endianness, frame_rate, bInput );
+  return open( filename, width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput );
 }
 
 bool CalypStream::open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
+                        unsigned int frame_rate, bool bInput )
+{
+  return open( filename, width, height, input_format, bitsPel, endianness, false, frame_rate, bInput );
+}
+
+bool CalypStream::open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, bool bInput )
 {
   if( d->isInit )
@@ -314,7 +320,7 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
   try
   {
     d->frameBuffer = new CalypStreamBufferPrivate( d->isInput ? 3 : 1, d->handler->m_uiWidth, d->handler->m_uiHeight,
-                                                   d->handler->m_iPixelFormat, d->handler->m_uiBitsPerPixel );
+                                                   d->handler->m_iPixelFormat, d->handler->m_uiBitsPerPixel, hasNegative );
   }
   catch( CalypFailure& e )
   {

@@ -17,13 +17,12 @@ init:
   
 install:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
-  #- '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - choco install nsis
   - choco install opencv
   - 'C:\Tools\opencv\build\setup_vars_opencv4.cmd'
   - cd C:\Projects
-  - ps: Start-FileDownload 'https://ffmpeg.zeranoe.com/builds/win64/dev/ffmpeg-4.1.1-win64-dev.zip'
-  - 7z x ffmpeg-4.1.1-win64-dev.zip -y
+  - ps: Start-FileDownload 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z' ffmpeg.7z
+  - 7z e ffmpeg.7z -y -o ffmpeg
   - git clone https://github.com/pixlra/calyp-deployment.git
   
   
@@ -31,7 +30,7 @@ build_script:
   - mv C:\Projects\calyp C:\Projects\calyp-deployment\cmake-helper\
   - mkdir C:\Projects\calyp-build
   - cd C:\Projects\calyp-build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -DAVCODEC_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include   -DAVUTIL_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -DSWSCALE_LIBRARIES=C:/Projects/ffmpeg-4.1.1-win64-dev/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/Projects/ffmpeg-4.1.1-win64-dev/include -G "Visual Studio 15 2017 Win64" C:\Projects\calyp-deployment\cmake-helper
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/Projects/ffmpeg/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/Projects/ffmpeg/include -DAVCODEC_LIBRARIES=C:/Projects/ffmpeg/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/Projects/ffmpeg/include   -DAVUTIL_LIBRARIES=C:/Projects/ffmpeg/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/Projects/ffmpeg/include -DSWSCALE_LIBRARIES=C:/Projects/ffmpeg/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/Projects/ffmpeg/include -G "Visual Studio 15 2017 Win64" C:\Projects\calyp-deployment\cmake-helper
   - cmake --build . --target ALL_BUILD -- /p:Configuration=Release > log_build
   - cmake --build . --target INSTALL -- /p:Configuration=Release > log_install
   - cmake --build . --target PACKAGE -- /p:Configuration=Release > log_pkg

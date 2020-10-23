@@ -61,7 +61,7 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 
 CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
 {
-  ClpPel numValues = (int)pow( 2, apcFrameList[0]->getBitsPel() );
+  unsigned numValues = 1u << apcFrameList[0]->getBitsPel();
   ClpPel* lookUpTable;
   const ClpPel* pInput1PelYUV = apcFrameList[0]->getPelBufferYUV()[0][0];
   ClpPel* pOutputPelYUV = m_pcOptimisedFrame->getPelBufferYUV()[0][0];
@@ -70,10 +70,10 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
   apcFrameList[0]->calcHistogram();
   m_pcOptimisedFrame->reset();
 
-  for( unsigned int ch = 0; ch < m_pcOptimisedFrame->getNumberChannels(); ch++ )
+  for( unsigned ch = 0; ch < m_pcOptimisedFrame->getNumberChannels(); ch++ )
   {
     ClpPel usedValues = 0;
-    for( unsigned int b = 0; b < 1u << apcFrameList[0]->getBitsPel(); b++ )
+    for( unsigned b = 0; b < numValues; b++ )
     {
       if( apcFrameList[0]->getHistogramValue( ch, b ) != 0 )
       {
@@ -82,11 +82,11 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
       }
     }
 
-    ClpPel scale = ( 1u << m_pcOptimisedFrame->getBitsPel() ) / usedValues;
+    ClpPel scale = numValues / usedValues;
 
-    for( unsigned int y = 0; y < m_pcOptimisedFrame->getHeight( ch ); y++ )
+    for( unsigned y = 0; y < m_pcOptimisedFrame->getHeight( ch ); y++ )
     {
-      for( unsigned int x = 0; x < m_pcOptimisedFrame->getWidth( ch ); x++ )
+      for( unsigned x = 0; x < m_pcOptimisedFrame->getWidth( ch ); x++ )
       {
         *pOutputPelYUV++ = lookUpTable[*pInput1PelYUV++] * scale;
       }

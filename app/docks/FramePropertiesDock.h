@@ -76,6 +76,7 @@ private:
   QLabel* labelMeanValue;
   QLabel* labelStdDevValue;
   QLabel* labelMedianValue;
+  QLabel* labelEntropyValue;
   QLabel* labelPercentileValue;
 
   QLabel* colorsLabel;

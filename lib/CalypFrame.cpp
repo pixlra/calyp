@@ -1132,6 +1132,32 @@ double CalypFrame::getHistogramValue( unsigned channel, unsigned int bin )
   return d->m_puiHistogram[indexStart + bin];
 }
 
+double CalypFrame::getEntropy( unsigned channel, unsigned int start, unsigned int end )
+{
+  if( !d->m_bHasHistogram )
+    return 0;
+
+  channel = d->getRealHistogramChannel( channel );
+  if( channel < 0 )
+    return 0;
+
+  int indexStart = channel * d->m_uiHistoSegments;
+  double numValues = getNumPixelsRange( channel, start, end );
+  double entropy = 0.0;
+
+  for( unsigned b = start; b < end; b++ )
+  {
+    if (d->m_puiHistogram[indexStart + b] == 0)
+      continue;
+
+    double prob = d->m_puiHistogram[indexStart + b] / numValues;
+
+    entropy -= prob * log2(prob);
+  }
+
+  return entropy;
+}
+
 /*
  **************************************************************
  * interface to other libs

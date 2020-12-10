@@ -940,6 +940,10 @@ void HistogramWidget::paintEvent( QPaintEvent* )
     double median = frame->getMedian( m_channelType, 0, frame->getNumHistogramSegment() - 1 );
     tipText += value.setNum( median, 'f', 1 ) + cellEnd;
 
+    tipText += cellBeg + tr( "Entropy:" ) + cellMid;
+    double entropy = frame->getEntropy( m_channelType, 0, frame->getNumHistogramSegment() - 1 );
+    tipText += value.setNum( entropy, 'f', 2 ) + cellEnd;
+
     tipText += cellBeg + tr( "Percent:" ) + cellMid;
     double percentile = ( pixels > 0 ? ( 100.0 * counts / pixels ) : 0.0 );
     tipText += value.setNum( percentile, 'f', 1 ) + cellEnd;

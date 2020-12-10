@@ -382,6 +382,7 @@ public:
   double getHistogramValue( unsigned channel, unsigned int bin );
   unsigned int getNEBins( unsigned channel );
   int getNumHistogramSegment();
+  double getEntropy( unsigned channel, unsigned int start, unsigned int end );
 
   /**
 	 * interface with OpenCV lib

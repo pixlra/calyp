@@ -204,6 +204,11 @@ FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitc
   labelMedianValue = new QLabel;
   labelMedianValue->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
 
+  QLabel* entropyLabel = new QLabel( tr( "Entropy:" ) );
+  entropyLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
+  labelEntropyValue = new QLabel;
+  labelEntropyValue->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+
   QLabel* percentileLabel = new QLabel( tr( "Percentile:" ) );
   percentileLabel->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
   labelPercentileValue = new QLabel;
@@ -225,6 +230,8 @@ FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitc
   statisticsLayout->addWidget( labelStdDevValue, gridRow++, 1 );
   statisticsLayout->addWidget( medianLabel, gridRow, 0 );
   statisticsLayout->addWidget( labelMedianValue, gridRow++, 1 );
+  statisticsLayout->addWidget( entropyLabel, gridRow, 0 );
+  statisticsLayout->addWidget( labelEntropyValue, gridRow++, 1 );
 
   QGroupBox* statisticsGroup = new QGroupBox( tr( "Statistics" ) );
   statisticsGroup->setLayout( statisticsLayout );
@@ -473,6 +480,9 @@ void FramePropertiesDock::updateStatistiques()
 
     double median = frame->getMedian( channel, min, max );
     labelMedianValue->setText( value.setNum( median, 'f', 1 ) );
+
+    double entropy = frame->getEntropy( channel, min, max );
+    labelEntropyValue->setText( value.setNum( entropy, 'f', 2 ) );
 
     double percentile = ( pixels > 0 ? ( 100.0 * counts / pixels ) : 0.0 );
     labelPercentileValue->setText( value.setNum( percentile, 'f', 1 ) );

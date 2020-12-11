@@ -1,5 +1,5 @@
 /*    This file is a part of Calyp project
- *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-202   by Joao Carreira   (jfmcarreira@gmail.com)
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -59,23 +59,25 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 {
   int iRet = 0;
 
-  m_cOptions.addOptions()                                                                /**/
-      ( "quiet,q", m_bQuiet, "disable verbose" )( "input,i", m_apcInputs, "input file" ) /**/
-      ( "output,o", m_strOutput, "output file" )                                         /**/
-      ( "size,s", m_strResolution, "size (WxH)" )                                        /**/
-      ( "pel_fmt,p", m_strPelFmt, "pixel format" )                                       /**/
-      ( "bits_pel", m_strBitsPerPixel, "bits per pixel" )                                /**/
-      ( "endianness", m_strEndianness, "File endianness (big, little)" )                 /**/
-      ( "has_negative", m_strHasNegativeValues, "Flag for files with negatie values" )   /**/
-      ( "frames,f", m_iFrames, "number of frames to parse" )                             /**/
-      ( "quality", m_strQualityMetric, "select a quality metric" )                       /**/
-      ( "module", m_strModule, "select a module (use internal name)" )                   /**/
-      ( "save", "save a specific frame" )                                                /**/
-      ( "rate-reduction", m_iRateReductionFactor, "reduce the frame rate" );             /**/
+  m_cOptions.addOptions()                                                              /**/
+      ( "quiet,q", m_bQuiet, "disable verbose" )                                       /**/
+      ( "input,i", m_apcInputs, "input file" )                                         /**/
+      ( "output,o", m_strOutput, "output file" )                                       /**/
+      ( "size,s", m_strResolution, "size (WxH)" )                                      /**/
+      ( "pel_fmt,p", m_strPelFmt, "pixel format" )                                     /**/
+      ( "bits_pel", m_strBitsPerPixel, "bits per pixel" )                              /**/
+      ( "endianness", m_strEndianness, "File endianness (big, little)" )               /**/
+      ( "has_negative", m_strHasNegativeValues, "Flag for files with negatie values" ) /**/
+      ( "frames,f", m_iFrames, "number of frames to parse" )                           /**/
+      ( "quality", m_strQualityMetric, "select a quality metric" )                     /**/
+      ( "module", m_strModule, "select a module (use internal name)" )                 /**/
+      ( "save", "save a specific frame" )                                              /**/
+      ( "rate-reduction", m_iRateReductionFactor, "reduce the frame rate" );           /**/
 
-  if( !m_cOptions.parse( argc, argv ) )
+  iRet = m_cOptions.parse( argc, argv );
+  if( iRet < 0 || iRet > 0 )
   {
-    iRet = -1;
+    return iRet;
   }
 
   if( m_bQuiet )
@@ -96,9 +98,9 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
   }
   else if( m_cOptions.hasOpt( "help" ) )
   {
-    printf( "Usage: %s modules/quality/save [options] -input=input_file "
-            "[--output=output_file]\n",
-            argv[0] );
+    printf( "Usage: %s module/quality/save [options] --input=input_file [--output=output_file]\n", argv[0] );
+    printf( "       %s --module=module_name [options] --input=input_file [--output=output_file]\n", argv[0] );
+    printf( "       %s --quality=quality_metric [options] --input=input_file1 --input=input_file2\n", argv[0] );
     m_cOptions.doHelp( std::cout );
     iRet = 1;
   }

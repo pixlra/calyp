@@ -38,12 +38,12 @@
 
 #include "CalypOptions.h"
 
-#include "config.h"
-#include "lib/CalypModuleIf.h"
-
 #include <cstring>
 #include <iostream>
 #include <sstream>
+
+#include "config.h"
+#include "lib/CalypModuleIf.h"
 
 using namespace std;
 
@@ -284,7 +284,7 @@ bool CalypOptions::hasOpt( const ClpString& optName )
 void CalypOptions::addDefaultOptions()
 {
   addOptions()                                                /**/
-      ( "help,h", "produce help message" )                    /**/
+      ( "help", "produce help message" )                      /**/
       ( "version", "show version and exit" )                  /**/
       ( "pel_fmts", "list pixel formats" )                    /**/
       ( "quality_metrics", "list supported quality metrics" ) /**/
@@ -477,27 +477,26 @@ unsigned int CalypOptions::parseSHORT( unsigned int argc, char* argv[] )
   return 1;
 }
 
-bool CalypOptions::parse( unsigned int argc, char* argv[] )
+int CalypOptions::parse( unsigned int argc, char* argv[] )
 {
   try
   {
     m_aUnhandledArgs = scanArgv( argc, argv );
-
     if( checkListingOpts() )
     {
-      return false;
+      return 1;
     }
   }
   catch( std::exception& e )
   {
     std::cerr << "error: " << e.what() << "\n";
-    return false;
+    return -1;
   }
   catch( ... )
   {
     std::cerr << "Exception of unknown type!\n";
   }
-  return true;
+  return 0;
 }
 
 list<const char*> CalypOptions::scanArgv( unsigned int argc, char* argv[] )

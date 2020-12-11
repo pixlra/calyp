@@ -40,10 +40,10 @@
 #ifndef __CALYPOPTIONS_H__
 #define __CALYPOPTIONS_H__
 
-#include "CalypDefs.h"
-
 #include <list>
 #include <map>
+
+#include "CalypDefs.h"
 
 /**
  * \class    OptionBase
@@ -90,7 +90,7 @@ public:
   CalypOptions( const ClpString& name = "" );
   ~CalypOptions();
 
-  bool parse( unsigned int argc, char* argv[] );
+  int parse( unsigned int argc, char* argv[] );
   void parse( std::vector<ClpString> args_array );
 
   std::list<const char*>& getUnhandledArgs() { return m_aUnhandledArgs; }

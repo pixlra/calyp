@@ -76,6 +76,7 @@ private:
     RATE_REDUCTION_OPERATION,
     QUALITY_OPERATION,
     MODULE_OPERATION,
+    STATISTICS_OPERATION,
   };
 
   ClpULong m_uiNumberOfFrames;
@@ -102,6 +103,7 @@ private:
   CalypModuleIf* m_pcCurrModuleIf;
   //CalypFrame* applyFrameModule();
   int ModuleOperation();
+  int ListStatistics();
 };
 
 #endif  // __CALYPTOOLS_H__

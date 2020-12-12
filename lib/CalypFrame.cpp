@@ -1145,7 +1145,7 @@ double CalypFrame::getEntropy( unsigned channel, unsigned int start, unsigned in
   double numValues = getNumPixelsRange( channel, start, end );
   double entropy = 0.0;
 
-  for( unsigned b = start; b < end; b++ )
+  for( unsigned b = start; b <= end; b++ )
   {
     if (d->m_puiHistogram[indexStart + b] == 0)
       continue;

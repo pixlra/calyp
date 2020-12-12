@@ -479,7 +479,7 @@ void FramePropertiesDock::updateStatistiques()
     labelCountValue->setText( value.setNum( (float)counts, 'f', 0 ) );
 
     double median = frame->getMedian( channel, min, max );
-    labelMedianValue->setText( value.setNum( median, 'f', 1 ) );
+    labelMedianValue->setText( value.setNum( median, 'f', 0 ) );
 
     double entropy = frame->getEntropy( channel, min, max );
     labelEntropyValue->setText( value.setNum( entropy, 'f', 2 ) );

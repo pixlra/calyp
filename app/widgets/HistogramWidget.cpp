@@ -938,7 +938,7 @@ void HistogramWidget::paintEvent( QPaintEvent* )
 
     tipText += cellBeg + tr( "Median:" ) + cellMid;
     double median = frame->getMedian( m_channelType, 0, frame->getNumHistogramSegment() - 1 );
-    tipText += value.setNum( median, 'f', 1 ) + cellEnd;
+    tipText += value.setNum( median, 'f', 0 ) + cellEnd;
 
     tipText += cellBeg + tr( "Entropy:" ) + cellMid;
     double entropy = frame->getEntropy( m_channelType, 0, frame->getNumHistogramSegment() - 1 );

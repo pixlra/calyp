@@ -419,6 +419,21 @@ int CalypTools::Open( int argc, char* argv[] )
     log( CLP_LOG_INFO, "Calyp Module\n" );
   }
 
+  /**
+   * Check Statistics operation
+   */
+  if( Opts().hasOpt( "statistics" ) )
+  {
+    if( m_apcInputStreams.empty() )
+    {
+      log( CLP_LOG_ERROR, "Invalid number of inputs! " );
+      return -1;
+    }
+
+    m_uiOperation = STATISTICS_OPERATION;
+    m_fpProcess = &CalypTools::ListStatistics;
+  }
+
   if( m_uiOperation == INVALID_OPERATION )
   {
     log( CLP_LOG_ERROR, "No operation was selected! Use --help to see usage.\n" );
@@ -668,6 +683,82 @@ int CalypTools::ModuleOperation()
   if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
   {
     log( CLP_LOG_INFO, "\n  Mean Value: \n        %8.3f\n", dAveragedMeasurementResult );
+  }
+
+  return 0;
+}
+
+int CalypTools::ListStatistics ()
+{
+  log( CLP_LOG_RESULT, "\n\x1B[35mCalyp Statistics:\x1B[0m\n\n" );
+
+  CalypFrame *currFrame;
+  bool abEOF;
+  unsigned min[MAX_NUMBER_CHANNELS], max[MAX_NUMBER_CHANNELS];
+
+  for ( unsigned input = 0; input < m_apcInputStreams.size(); input++ )
+  {
+    log( CLP_LOG_RESULT, "\x1B[32mInput:\t\t\t%d\x1B[0m\n", input);
+    log( CLP_LOG_RESULT, "No. Frames:\t\t%d\n", m_apcInputStreams[input]->getFrameNum());
+    log( CLP_LOG_RESULT, "Pixels:\t\t\t%d\n", m_apcInputStreams[input]->getHeight() * m_apcInputStreams[input]->getWidth());
+
+    for( unsigned int frame = 0; frame < m_apcInputStreams[input]->getFrameNum(); frame++ )
+    {
+      log( CLP_LOG_RESULT, "\x1B[34m  Frame: %d\x1B[0m\n", frame);
+
+      currFrame = m_apcInputStreams[input]->getCurrFrame();
+      abEOF = m_apcInputStreams[input]->setNextFrame();
+      if( !abEOF )
+      {
+        m_apcInputStreams[input]->readNextFrame();
+      }
+
+      currFrame->calcHistogram();
+
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ )
+      {
+        min[channel] = currFrame->getMinimumPelValue( channel );
+        max[channel] = currFrame->getMaximumPelValue( channel );
+      }
+
+      log( CLP_LOG_RESULT, "    Channel:        " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13d ", channel);
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    ----------------" );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "----------------");
+      log( CLP_LOG_RESULT, "-\n");
+
+      log( CLP_LOG_RESULT, "    Range:          " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ )
+      {
+        char buffer[14];
+        sprintf(buffer, "[%d:%d]", min[channel], max[channel]);
+
+        log( CLP_LOG_RESULT, "| %13s ", buffer );
+      }
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    Non empty bins: " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13d ", currFrame->getNEBins( channel ) );
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    Mean:           " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13.1f ", currFrame->getMean( channel, min[channel], max[channel] ) );
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    Std. deviation: " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13.1f ", currFrame->getStdDev( channel, min[channel], max[channel] ) );
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    Median:         " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13d ", currFrame->getMedian( channel, min[channel], max[channel] ) );
+      log( CLP_LOG_RESULT, "|\n");
+
+      log( CLP_LOG_RESULT, "    Entropy:        " );
+      for ( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ ) log( CLP_LOG_RESULT, "| %13.2f ", currFrame->getEntropy( channel, min[channel], max[channel] ) );
+      log( CLP_LOG_RESULT, "|\n");
+    }
   }
 
   return 0;

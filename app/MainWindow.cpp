@@ -101,7 +101,7 @@ bool MainWindow::parseArgs( int argc, char* argv[] )
       ( "size,s", strResolution, "size (WxH)" ) /**/
       ( "pel_fmt", strPelFmt, "pixel format" );
 
-  if( !pcCmdParser.parse( argc, argv ) )
+  if( pcCmdParser.parse( argc, argv ) < 0 )
   {
     bRet |= true;
   }

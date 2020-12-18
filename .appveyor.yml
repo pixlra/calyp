@@ -4,7 +4,7 @@ platform:
   - x64
 environment:
   access_token:
-    secure: WAV5LfCSAtwE1JuZh4HrDlxOOClimLoslYAJlf5KRgc3f7WIkX591PrSSua/Zo2C
+    secure: SMxOWNKN0RkPvICWhIet2FJM5g/zx5mguM/XAPjM2OrC3U2/LAqcBZw0veS9peS4
     
 clone_folder: C:\Projects\calyp
 

@@ -22,7 +22,7 @@ install:
   - 'C:\Tools\opencv\build\setup_vars_opencv4.cmd'
   - cd C:\Projects
   - ps: Start-FileDownload 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z' ffmpeg.7z
-  - 7z e ffmpeg.7z -y -offmpeg
+  - 7z x ffmpeg.7z -y -offmpeg
   - git clone https://github.com/pixlra/calyp-deployment.git
   - CALL calyp-deployment/scripts/extract_ffmpeg.bat
   

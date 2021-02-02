@@ -1,5 +1,5 @@
 /*    This file is a part of Calyp project
- *    Copyright (C) 2014-2019  by Joao Carreira   (jfmcarreira@gmail.com)
+ *    Copyright (C) 2014-2021  by Joao Carreira   (jfmcarreira@gmail.com)
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -23,14 +23,16 @@
  */
 
 #include "VideoSubWindow.h"
+
 #include <QScrollArea>
+#include <QSettings>
 #include <QStaticText>
+#include <cassert>
+
 #include "ConfigureFormatDialog.h"
 #include "ModulesHandle.h"
 #include "QtConcurrent/qtconcurrentrun.h"
 #include "SubWindowAbstract.h"
-
-#include <cassert>
 
 #define QT_NO_CONCURRENT
 
@@ -313,6 +315,7 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   unsigned int Width = 0, Height = 0, BitsPel = 8, FrameRate = 30;
   int Endianness = CLP_LITTLE_ENDIAN;
   int InputFormat = CLP_YUV420P;
+  QSettings appSettings;
 
   if( m_pCurrStream )
     m_pCurrStream->getFormat( Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
@@ -323,7 +326,16 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   }
   bool bConfig = true;
   if( !bForceDialog )
+  {
     bConfig = guessFormat( cFilename, Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
+    if( bConfig )
+    {
+      // Pre-load values with last opened file
+      Width = appSettings.value( "VideoSubWindow/LastWidth" ).value<unsigned int>();
+      Height = appSettings.value( "VideoSubWindow/LastHeight" ).value<unsigned int>();
+      BitsPel = appSettings.value( "VideoSubWindow/LastBitsPerPixel" ).value<unsigned int>();
+    }
+  }
   bool bRet = false;
   for( int iPass = 0; iPass < 2 && !bRet; iPass++ )
   {
@@ -354,6 +366,14 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   m_sStreamInfo.m_iEndianness = Endianness;
   m_sStreamInfo.m_uiFrameRate = FrameRate;
   m_sStreamInfo.m_uiFileSize = QFileInfo( cFilename ).size();
+
+  QVariant var;
+  var.setValue<unsigned int>( Width );
+  appSettings.setValue( "VideoSubWindow/LastWidth", var );
+  var.setValue<unsigned int>( Height );
+  appSettings.setValue( "VideoSubWindow/LastHeight", var );
+  var.setValue<unsigned int>( BitsPel );
+  appSettings.setValue( "VideoSubWindow/LastBitsPerPixel", var );
 
   QApplication::restoreOverrideCursor();
 

@@ -1,5 +1,5 @@
-###
-### CMakeLists for calyp external components
-###
+#
+# CMakeLists for calyp external components
+#
 
-ADD_SUBDIRECTORY( qcustomplot )
+ADD_SUBDIRECTORY(qcustomplot)

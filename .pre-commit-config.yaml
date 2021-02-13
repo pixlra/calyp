@@ -1,0 +1,30 @@
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
+    - id: cmake-configure
+      name: Cmake Configure
+      entry: cmake -B build
+      pass_filenames: false
+      language: system
+    - id: cmake-build
+      name: Cmake Build
+      entry: cmake --build build
+      pass_filenames: false
+      language: system
+
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.10
+    hooks:
+    - id: cmake-format
+    - id: cmake-lint
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: python
+    hooks:
+      - id: clang-format
+        args: [--style=file, -i]
+      - id: clang-tidy
+        args: [-p=build]
+        args: [-checks=clang-diagnostic-return-type]

@@ -4,6 +4,8 @@
 ### C++ ###
 # Prerequisites
 *.d
+# Clang
+.cache/
 
 # Compiled Object files
 *.slo
@@ -132,4 +134,13 @@ fabric.properties
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
-# End of https://www.gitignore.io/api/c++,clion,linux
+### vscode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Documentation
+doc/

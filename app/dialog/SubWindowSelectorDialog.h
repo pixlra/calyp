@@ -25,13 +25,12 @@
 #ifndef __DIALOGSUBWINDOWSELECTOR_H__
 #define __DIALOGSUBWINDOWSELECTOR_H__
 
-#include "CommonDefs.h"
-#include "config.h"
-
+#include <QVector>
 #include <QtCore>
 #include <QtWidgets>
 
-#include <QVector>
+#include "CommonDefs.h"
+#include "config.h"
 
 class QPixmap;
 class QColor;

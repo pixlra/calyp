@@ -27,6 +27,7 @@
 
 #include <QtCore>
 #include <QtWidgets>
+
 #include "CommonDefs.h"
 #include "QFuture"
 #include "QualityMeasurementSidebar.h"

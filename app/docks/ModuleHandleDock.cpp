@@ -24,13 +24,13 @@
 
 #include "ModuleHandleDock.h"
 
-#include "CalypAppModuleIf.h"
-#include "ModulesHandle.h"
-
 #include <QGridLayout>
 #include <QLabel>
 #include <QString>
 #include <QtGui>
+
+#include "CalypAppModuleIf.h"
+#include "ModulesHandle.h"
 
 ModuleHandleDock::ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf )
     : QWidget( parent ), m_pcCurrModuleIf( moduleIf )

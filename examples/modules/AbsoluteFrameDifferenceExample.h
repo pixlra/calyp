@@ -25,9 +25,9 @@
 #ifndef __ABSOLUTEFRAMEDIFFERENCEEXAMPLE_H__
 #define __ABSOLUTEFRAMEDIFFERENCEEXAMPLE_H__
 
-#include "CalypModuleIf.h"
-
 #include <cassert>
+
+#include "CalypModuleIf.h"
 
 class AbsoluteFrameDifferenceExample : public CalypModuleIf
 {

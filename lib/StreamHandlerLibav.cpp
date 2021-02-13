@@ -24,12 +24,12 @@
 
 #include "StreamHandlerLibav.h"
 
+#include <cstdio>
+#include <iostream>
+
 #include "CalypFrame.h"
 #include "LibMemory.h"
 #include "PixelFormats.h"
-
-#include <cstdio>
-#include <iostream>
 
 #if( ( LIBAVCODEC_VERSION_MAJOR > 57 ) || ( LIBAVCODEC_VERSION_MAJOR == 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )
 #define FF_SEND_RECEIVE_API

@@ -94,7 +94,7 @@ CalypFrame* ThreeSixtyFaceConcatenation::process( std::vector<CalypFrame*> apcFr
 
   switch( m_uiProjectionType )
   {
-  case 1: // Cube-map
+  case 1:  // Cube-map
     for( unsigned i = 0; i < m_uiFacesX * m_uiFacesY; i++ )
     {
       CalypFrame* pcFrame = apcFrameList[i];

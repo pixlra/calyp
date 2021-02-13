@@ -25,13 +25,13 @@
 #ifndef __QUALITYMEASUREMENTSIDEBAR_H__
 #define __QUALITYMEASUREMENTSIDEBAR_H__
 
+#include <QtWidgets>
+
 #include "CommonDefs.h"
 #include "HistogramWidget.h"
 #include "config.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypStream.h"
-
-#include <QtWidgets>
 
 class SubWindowHandle;
 class VideoSubWindow;

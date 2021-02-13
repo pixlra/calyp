@@ -25,9 +25,9 @@
 #ifndef __PIXELFORMATS_H__
 #define __PIXELFORMATS_H__
 
-#include "CalypFrame.h"
-
 #include <map>
+
+#include "CalypFrame.h"
 
 #define CHROMA_RESAMPLING( X ) ( ( ( X + 1 ) >> 1 ) << 1 )
 

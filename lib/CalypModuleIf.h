@@ -164,7 +164,7 @@ public:
    * Module API version 3
    */
   virtual CalypFrame* getProcessedFrame() { return m_pcOutputFrame; }
-  virtual bool needFrame() { return m_iFrameBufferCount == 0? true : false; };
+  virtual bool needFrame() { return m_iFrameBufferCount == 0 ? true : false; };
   virtual bool flush()
   {
     m_iFrameBufferCount = 0;

@@ -25,10 +25,6 @@
 
 #include "SubWindowHandle.h"
 
-#include "MainWindow.h"
-#include "MdiSubWindow.h"
-#include "SubWindowAbstract.h"
-
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
@@ -40,6 +36,10 @@
 #include <QSettings>
 #include <QSignalMapper>
 #include <QStyle>
+
+#include "MainWindow.h"
+#include "MdiSubWindow.h"
+#include "SubWindowAbstract.h"
 
 class MdiArea : public QMdiArea
 {

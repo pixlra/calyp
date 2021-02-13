@@ -25,11 +25,11 @@
 #ifndef __SUBWINDOWHANDLE_H__
 #define __SUBWINDOWHANDLE_H__
 
-#include "CommonDefs.h"
-
 #include <QString>
 #include <QVector>
 #include <QWidget>
+
+#include "CommonDefs.h"
 
 class QAction;
 class QActionGroup;

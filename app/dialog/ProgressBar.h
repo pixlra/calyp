@@ -25,10 +25,10 @@
 #ifndef __PROGRESSBAR_H__
 #define __PROGRESSBAR_H__
 
-#include "CommonDefs.h"
-
 #include <QDialog>
 #include <QWidget>
+
+#include "CommonDefs.h"
 
 class QProgressBar;
 

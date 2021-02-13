@@ -26,12 +26,12 @@
 #ifndef __HISTOGRAMWIDGET_H__
 #define __HISTOGRAMWIDGET_H__
 
+#include <QColor>
+#include <QWidget>
+
 #include "CommonDefs.h"
 #include "config.h"
 #include "lib/CalypFrame.h"
-
-#include <QColor>
-#include <QWidget>
 
 class QEvent;
 

@@ -25,6 +25,15 @@
 
 #include "MainWindow.h"
 
+#include <QAction>
+#include <QActionGroup>
+#include <QCloseEvent>
+#include <QDoubleSpinBox>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QSignalMapper>
+#include <QtDebug>
+
 #include "AboutDialog.h"
 #include "ModulesHandle.h"
 #include "QualityHandle.h"
@@ -34,15 +43,6 @@
 #include "VideoHandle.h"
 #include "VideoSubWindow.h"
 #include "lib/CalypOptions.h"
-
-#include <QAction>
-#include <QActionGroup>
-#include <QCloseEvent>
-#include <QDoubleSpinBox>
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QSignalMapper>
-#include <QtDebug>
 #ifdef USE_FERVOR
 #include "fvupdater.h"
 #endif

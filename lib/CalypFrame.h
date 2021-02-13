@@ -299,7 +299,6 @@ public:
 	 */
   CalypPixel getPixel( unsigned int xPos, unsigned int yPos ) const;
 
-
   /**
 	 * Get pixel value at coordinates
 	 * in the desired color space

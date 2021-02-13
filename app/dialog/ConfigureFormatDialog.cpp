@@ -24,8 +24,6 @@
 
 #include "ConfigureFormatDialog.h"
 
-#include "lib/CalypFrame.h"
-
 #include <QComboBox>
 #include <QDebug>
 #include <QDialogButtonBox>
@@ -38,6 +36,8 @@
 #include <QSpinBox>
 #include <QString>
 #include <QWidget>
+
+#include "lib/CalypFrame.h"
 
 #define MAX_SUPPORTED_RESOLUTION 99999
 

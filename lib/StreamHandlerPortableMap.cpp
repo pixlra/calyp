@@ -24,11 +24,11 @@
 
 #include "StreamHandlerPortableMap.h"
 
-#include "CalypFrame.h"
-#include "LibMemory.h"
-
 #include <cmath>
 #include <cstdio>
+
+#include "CalypFrame.h"
+#include "LibMemory.h"
 
 std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedReadFormats()
 {

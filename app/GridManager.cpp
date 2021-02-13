@@ -71,8 +71,7 @@ void GridManager::drawGrid( QPixmap& image, const QRect& area, QPainter* painter
   switch( style )
   {
   case intersectionDot:
-  case intersectionCross:
-  {
+  case intersectionCross: {
     painter->setPen( mainPen );
     // Draw crosses or dots on intersections
     for( int x = offsetx; x <= area.right(); x += hSpacing )
@@ -99,8 +98,7 @@ void GridManager::drawGrid( QPixmap& image, const QRect& area, QPainter* painter
     }
     break;
   }
-  case Dashed:
-  {
+  case Dashed: {
     // Change pen to the dashed line
     mainPen.setStyle( Qt::DashLine );
   }

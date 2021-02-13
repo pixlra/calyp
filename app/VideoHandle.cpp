@@ -24,14 +24,6 @@
 
 #include "VideoHandle.h"
 
-#include "FrameNumberWidget.h"
-#include "FramePropertiesDock.h"
-#include "MainWindow.h"
-#include "SeekStreamDialog.h"
-#include "SubWindowHandle.h"
-#include "SubWindowSelectorDialog.h"
-#include "VideoSubWindow.h"
-
 #include <QDockWidget>
 #include <QElapsedTimer>
 #include <QLabel>
@@ -39,6 +31,14 @@
 #include <QSlider>
 #include <QToolBar>
 #include <QtGui>
+
+#include "FrameNumberWidget.h"
+#include "FramePropertiesDock.h"
+#include "MainWindow.h"
+#include "SeekStreamDialog.h"
+#include "SubWindowHandle.h"
+#include "SubWindowSelectorDialog.h"
+#include "VideoSubWindow.h"
 #if( _CONTROL_PLAYING_TIME_ == 1 )
 #include <QElapsedTimer>
 #endif

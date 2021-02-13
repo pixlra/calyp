@@ -26,16 +26,16 @@
 #ifndef __VIEWAREA_H__
 #define __VIEWAREA_H__
 
-#include "CommonDefs.h"
-#include "GridManager.h"
-#include "config.h"
-#include "lib/CalypFrame.h"
-
 #include <QBitmap>
 #include <QColor>
 #include <QPixmap>
 #include <QTimer>
 #include <QWidget>
+
+#include "CommonDefs.h"
+#include "GridManager.h"
+#include "config.h"
+#include "lib/CalypFrame.h"
 
 class CalypStream;
 

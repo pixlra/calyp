@@ -26,6 +26,7 @@
 #define __MDISUBWINDOW_H_
 
 #include <QMdiSubWindow>
+
 #include "CommonDefs.h"
 #include "config.h"
 

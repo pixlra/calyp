@@ -45,10 +45,10 @@ FrameResampling::FrameResampling()
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
 
-  m_cModuleOptions.addOptions()                              /**/
-      ( "width", m_iWidth, "Width of the crop region [-1]" ) /**/
+  m_cModuleOptions.addOptions()                                 /**/
+      ( "width", m_iWidth, "Width of the crop region [-1]" )    /**/
       ( "height", m_iHeight, "Height of the crop region [-1]" ) /**/
-      ( "Interpolation", m_iInterpolation, "Interpolation method (1-4) [4]" )                  ;
+      ( "Interpolation", m_iInterpolation, "Interpolation method (1-4) [4]" );
 
   m_iInterpolation = 4;
   m_iWidth = -1;

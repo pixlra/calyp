@@ -91,7 +91,7 @@ CalypFrame* ThreeSixtyFaceExtraction::process( std::vector<CalypFrame*> apcFrame
 
   switch( m_uiProjectionType )
   {
-  case 1: // Cube-map
+  case 1:  // Cube-map
     x = m_uiFaceNum % m_uiFacesX * m_pcOutputFrame->getWidth();
     y = ( m_uiFaceNum / m_uiFacesX ) * m_pcOutputFrame->getHeight();
     break;

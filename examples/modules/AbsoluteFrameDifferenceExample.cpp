@@ -23,6 +23,7 @@
  */
 
 #include "AbsoluteFrameDifferenceExample.h"
+
 #include <cstdlib>
 
 REGISTER_CLASS_MAKER( AbsoluteFrameDifferenceExample )

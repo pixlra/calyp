@@ -25,11 +25,11 @@
 #ifndef __PLOTWINDOWHANDLE_H__
 #define __PLOTWINDOWHANDLE_H__
 
+#include <QtWidgets>
+
 #include "CommonDefs.h"
 #include "SubWindowAbstract.h"
 #include "config.h"
-
-#include <QtWidgets>
 
 class QCustomPlot;
 

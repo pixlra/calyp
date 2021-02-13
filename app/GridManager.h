@@ -29,6 +29,7 @@
 #include <QColor>
 #include <QPen>
 #include <QRect>
+
 #include "CommonDefs.h"
 #include "config.h"
 

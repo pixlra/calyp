@@ -24,10 +24,10 @@
 
 #include "StreamHandlerRaw.h"
 
+#include <cstdio>
+
 #include "CalypFrame.h"
 #include "LibMemory.h"
-
-#include <cstdio>
 
 std::vector<CalypStreamFormat> StreamHandlerRaw::supportedReadFormats()
 {

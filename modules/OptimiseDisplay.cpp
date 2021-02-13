@@ -25,9 +25,9 @@
 
 #include "OptimiseDisplay.h"
 
-#include "lib/LibMemory.h"
-
 #include <cmath>
+
+#include "lib/LibMemory.h"
 
 OptimiseDisplay::OptimiseDisplay()
 {

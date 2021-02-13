@@ -24,11 +24,11 @@
 
 #include "SubWindowSelectorDialog.h"
 
-#include "SubWindowHandle.h"
-#include "VideoSubWindow.h"
-
 #include <QCheckBox>
 #include <QGroupBox>
+
+#include "SubWindowHandle.h"
+#include "VideoSubWindow.h"
 
 SubWindowSelectorDialog::SubWindowSelectorDialog( QWidget* parent, SubWindowHandle* windowManager,
                                                   unsigned int uiCategory, int minWindowsSelected, int maxWindowsSelected )

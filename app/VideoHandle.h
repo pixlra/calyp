@@ -25,14 +25,14 @@
 #ifndef __VIDEOHANDLE_H__
 #define __VIDEOHANDLE_H__
 
-#include "CommonDefs.h"
-#include "config.h"
-
 #include <QMenu>
 #include <QPoint>
 #include <QThread>
 #include <QVector>
 #include <QWidget>
+
+#include "CommonDefs.h"
+#include "config.h"
 
 //#define _CONTROL_PLAYING_TIME_ 1
 

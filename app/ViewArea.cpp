@@ -25,8 +25,6 @@
 
 #include "ViewArea.h"
 
-#include "GridManager.h"
-
 #include <QColor>
 #include <QCoreApplication>
 #include <QDebug>
@@ -38,8 +36,9 @@
 #include <QRectF>
 #include <QString>
 #include <QWidget>
-
 #include <cmath>
+
+#include "GridManager.h"
 
 static const QColor selectionColor = Qt::cyan;
 static const QColor imageMaskColor = Qt::green;
@@ -688,8 +687,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
     {
       switch( tool() )
       {
-      case MaskTool:
-      {
+      case MaskTool: {
         if( m_maskColor.isValid() )
           color = m_maskColor;
         else
@@ -697,8 +695,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
 
         break;
       }
-      case EraserTool:
-      {
+      case EraserTool: {
         color = eraserColor;
         break;
       }
@@ -1075,8 +1072,7 @@ void ViewArea::updateMask( const QRect& rect )
 {
   switch( tool() )
   {
-  case MaskTool:
-  {
+  case MaskTool: {
     // Add rect to the mask
     QPainter painter( &m_mask );
     painter.setBrush( Qt::color1 );
@@ -1085,8 +1081,7 @@ void ViewArea::updateMask( const QRect& rect )
     painter.end();
     break;
   }
-  case EraserTool:
-  {
+  case EraserTool: {
     // Clears rect area in the mask
     QPainter painter( &m_mask );
     painter.setBrush( Qt::color0 );

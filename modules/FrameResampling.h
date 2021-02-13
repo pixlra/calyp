@@ -42,7 +42,8 @@ class FrameResampling : public CalypModuleIf
 private:
   int m_iWidth;
   int m_iHeight;
-int m_iInterpolation;
+  int m_iInterpolation;
+
 public:
   FrameResampling();
   virtual ~FrameResampling() {}

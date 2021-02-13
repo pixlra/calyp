@@ -24,11 +24,11 @@
 
 #include "CalypAppModuleIf.h"
 
-#include "VideoSubWindow.h"
-
 #include <QAction>
 #include <QApplication>
 #include <QDockWidget>
+
+#include "VideoSubWindow.h"
 
 CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModuleIf* module )
     : m_bIsRunning( false )

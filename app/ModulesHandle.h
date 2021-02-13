@@ -24,15 +24,14 @@
 #ifndef __MODULESHANDLE_H__
 #define __MODULESHANDLE_H__
 
-#include "config.h"
-
+#include <QtCore>
+#include <QtWidgets>
 #include <cstdio>
 #include <iostream>
 
-#include <QtCore>
-#include <QtWidgets>
 #include "CalypAppModuleIf.h"
 #include "CommonDefs.h"
+#include "config.h"
 #include "lib/CalypFrame.h"
 
 class VideoHandle;

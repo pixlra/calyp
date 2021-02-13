@@ -25,11 +25,11 @@
 #ifndef __MODULEHANDLEDOCK_H__
 #define __MODULEHANDLEDOCK_H__
 
-#include "CommonDefs.h"
-#include "config.h"
-
 #include <QSize>
 #include <QWidget>
+
+#include "CommonDefs.h"
+#include "config.h"
 
 class QLabel;
 

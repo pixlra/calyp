@@ -23,7 +23,9 @@
  */
 
 #include "HEVCIntraPrediction.h"
+
 #include <cassert>
+
 #include "lib/LibMemory.h"
 
 HEVCIntraPrediction::HEVCIntraPrediction()
@@ -67,11 +69,11 @@ bool HEVCIntraPrediction::create( std::vector<CalypFrame*> apcFrameList )
   return true;
 }
 
-static const int g_AngularParamLookUp[] = {32, 26, 21, 17, 13, 9, 5, 2, 0, -2, -5, -9, -13, -17, -21, -26,        // Horizontal
-                                           -32, -26, -21, -17, -13, -9, -5, -2, 0, 2, 5, 9, 13, 17, 21, 26, 32};  // Vertical
+static const int g_AngularParamLookUp[] = { 32, 26, 21, 17, 13, 9, 5, 2, 0, -2, -5, -9, -13, -17, -21, -26,         // Horizontal
+                                            -32, -26, -21, -17, -13, -9, -5, -2, 0, 2, 5, 9, 13, 17, 21, 26, 32 };  // Vertical
 
-static const int g_InverAngularParamLookup[2][8] = {{-32, -26, -21, -17, -13, -9, -5, -2},
-                                                    {-256, -315, -390, -482, -630, -910, -1638, -4096}};
+static const int g_InverAngularParamLookup[2][8] = { { -32, -26, -21, -17, -13, -9, -5, -2 },
+                                                     { -256, -315, -390, -482, -630, -910, -1638, -4096 } };
 
 int getAngularParam( int mode )
 {

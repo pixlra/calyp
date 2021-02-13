@@ -44,9 +44,8 @@
  *
  */
 
-#include "lib/CalypFrame.h"
-
 #include "CalypToolsCmdParser.h"
+#include "lib/CalypFrame.h"
 
 class CalypFrame;
 class CalypStream;

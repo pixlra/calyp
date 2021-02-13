@@ -30,6 +30,7 @@
 #include <QRect>
 #include <QString>
 #include <QVector>
+
 #include "CommonDefs.h"
 #include "SubWindowAbstract.h"
 #include "ViewArea.h"

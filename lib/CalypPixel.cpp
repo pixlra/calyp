@@ -23,7 +23,6 @@
  */
 
 #include "CalypFrame.h"
-
 #include "PixelFormats.h"
 #include "config.h"
 
@@ -51,9 +50,12 @@ static inline void yuvToRgb( const int& iY, const int& iU, const int& iV, int& i
   iR = iY + ( ( 1436 * ( iV - 128 ) ) >> 10 );
   iG = iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 );
   iB = iY + ( ( 1812 * ( iU - 128 ) ) >> 10 );
-  iR = iR < 0 ? 0 : iR > 255 ? 255 : iR;
-  iG = iG < 0 ? 0 : iG > 255 ? 255 : iG;
-  iB = iB < 0 ? 0 : iB > 255 ? 255 : iB;
+  iR = iR < 0 ? 0 : iR > 255 ? 255 :
+                               iR;
+  iG = iG < 0 ? 0 : iG > 255 ? 255 :
+                               iG;
+  iB = iB < 0 ? 0 : iB > 255 ? 255 :
+                               iB;
 }
 
 static inline void rgbToYuv( const int& iR, const int& iG, const int& iB, int& iY, int& iU, int& iV )

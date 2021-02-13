@@ -56,9 +56,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             1,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_YUV420P ),
             {
-                {0, 0, 1}, /* Y */
-                {1, 0, 1}, /* U */
-                {2, 0, 1}, /* V */
+                { 0, 0, 1 }, /* Y */
+                { 1, 0, 1 }, /* U */
+                { 2, 0, 1 }, /* V */
             },
         },
     },
@@ -73,9 +73,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_YUV422P ),
             {
-                {0, 0, 1}, /* Y */
-                {1, 0, 1}, /* U */
-                {2, 0, 1}, /* V */
+                { 0, 0, 1 }, /* Y */
+                { 1, 0, 1 }, /* U */
+                { 2, 0, 1 }, /* V */
             },
         },
     },
@@ -90,9 +90,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_YUV444P ),
             {
-                {0, 0, 1}, /* Y */
-                {1, 0, 1}, /* U */
-                {2, 0, 1}, /* V */
+                { 0, 0, 1 }, /* Y */
+                { 1, 0, 1 }, /* U */
+                { 2, 0, 1 }, /* V */
             },
         },
     },
@@ -107,9 +107,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_YUYV422 ),
             {
-                {0, 1, 1}, /* Y */
-                {0, 3, 2}, /* U */
-                {0, 3, 4}, /* V */
+                { 0, 1, 1 }, /* Y */
+                { 0, 3, 2 }, /* U */
+                { 0, 3, 4 }, /* V */
             },
         },
     },
@@ -123,7 +123,7 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_GRAY8 ),
-            {{0, 0, 1}}, /* Y */
+            { { 0, 0, 1 } }, /* Y */
         },
     },
     {
@@ -137,9 +137,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_NONE ),
             {
-                {0, 0, 1}, /* R */
-                {1, 0, 1}, /* G */
-                {2, 0, 1}, /* B */
+                { 0, 0, 1 }, /* R */
+                { 1, 0, 1 }, /* G */
+                { 2, 0, 1 }, /* B */
             },
         },
     },
@@ -154,9 +154,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_RGB24 ),
             {
-                {0, 2, 1}, /* R */
-                {0, 2, 2}, /* G */
-                {0, 2, 3}, /* B */
+                { 0, 2, 1 }, /* R */
+                { 0, 2, 2 }, /* G */
+                { 0, 2, 3 }, /* B */
             },
         },
     },
@@ -171,9 +171,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_BGR24 ),
             {
-                {0, 2, 3}, /* R */
-                {0, 2, 2}, /* G */
-                {0, 2, 1}, /* B */
+                { 0, 2, 3 }, /* R */
+                { 0, 2, 2 }, /* G */
+                { 0, 2, 1 }, /* B */
             },
         },
     },
@@ -188,10 +188,10 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_RGBA ),
             {
-                {0, 3, 1}, /* R */
-                {0, 3, 2}, /* G */
-                {0, 3, 3}, /* B */
-                {0, 3, 4}, /* A */
+                { 0, 3, 1 }, /* R */
+                { 0, 3, 2 }, /* G */
+                { 0, 3, 3 }, /* B */
+                { 0, 3, 4 }, /* A */
             },
         },
     },
@@ -206,10 +206,10 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
             0,
             ADD_FFMPEG_PEL_FMT( AV_PIX_FMT_BGRA ),
             {
-                {0, 3, 3}, /* R */
-                {0, 3, 2}, /* G */
-                {0, 3, 1}, /* B */
-                {0, 3, 4}, /* A */
+                { 0, 3, 3 }, /* R */
+                { 0, 3, 2 }, /* G */
+                { 0, 3, 1 }, /* B */
+                { 0, 3, 4 }, /* A */
             },
         },
     },

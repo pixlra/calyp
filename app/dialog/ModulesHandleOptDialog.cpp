@@ -24,8 +24,6 @@
 
 #include "ModulesHandleOptDialog.h"
 
-#include "lib/CalypOptions.h"
-
 #include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QLabel>
@@ -33,6 +31,8 @@
 #include <QVBoxLayout>
 #include <QVector>
 #include <QWidget>
+
+#include "lib/CalypOptions.h"
 
 class QLineEdit;
 

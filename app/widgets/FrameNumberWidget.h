@@ -25,10 +25,10 @@
 #ifndef __WIDGETFRAMENUMBER_H__
 #define __WIDGETFRAMENUMBER_H__
 
+#include <QWidget>
+
 #include "CommonDefs.h"
 #include "config.h"
-
-#include <QWidget>
 
 class QLabel;
 

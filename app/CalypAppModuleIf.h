@@ -25,17 +25,17 @@
 #ifndef __CALYPAPPMODULESIF_H__
 #define __CALYPAPPMODULESIF_H__
 
+#include <QEvent>
+#include <QVector>
+#include <cstdio>
+#include <iostream>
+
 #include "CommonDefs.h"
 #include "ModuleHandleDock.h"
 #include "config.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 #include "lib/CalypStream.h"
-
-#include <QEvent>
-#include <QVector>
-#include <cstdio>
-#include <iostream>
 
 class QAction;
 class QDockWidget;

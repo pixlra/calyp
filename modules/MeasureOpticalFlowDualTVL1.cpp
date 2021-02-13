@@ -64,11 +64,11 @@ bool MeasureOpticalFlowDualTVL1::create( std::vector<CalypFrame*> apcFrameList )
       return false;
 
   m_iStep = 16;
-  #if CV_MAJOR_VERSION >= 4
+#if CV_MAJOR_VERSION >= 4
   m_cTvl1 = cv::optflow::createOptFlow_DualTVL1();
-  #else
+#else
   m_cTvl1 = cv::createOptFlow_DualTVL1();
-  #endif
+#endif
   m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
 
   return true;

@@ -24,14 +24,14 @@
 
 #include "SeekStreamDialog.h"
 
-#include "lib/CalypStream.h"
-
 #include <QDialogButtonBox>
 #include <QGridLayout>
 #include <QLabel>
 #include <QSpinBox>
 #include <QVector>
 #include <QWidget>
+
+#include "lib/CalypStream.h"
 
 SeekStreamDialog::SeekStreamDialog( CalypStream* pcCurrStream, QWidget* parent )
     : QDialog( parent, Qt::Dialog | Qt::WindowTitleHint ), m_iSelectedFrameNum()

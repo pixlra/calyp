@@ -41,6 +41,7 @@
 #include <QSize>
 #include <QString>
 #include <QWidget>
+
 #include "CommonDefs.h"
 #include "config.h"
 

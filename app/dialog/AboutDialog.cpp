@@ -27,13 +27,13 @@
 
 #include "AboutDialog.h"
 
-#include "config.h"
-
 #include <QApplication>
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QTextEdit>
 #include <QVBoxLayout>
+
+#include "config.h"
 
 #define TAB_FROM_SPACES "&nbsp;&nbsp;&nbsp;"
 

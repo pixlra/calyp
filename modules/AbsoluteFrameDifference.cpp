@@ -49,8 +49,7 @@ bool AbsoluteFrameDifference::create( std::vector<CalypFrame*> apcFrameList )
   _BASIC_MODULE_API_2_CHECK_
 
   for( unsigned int i = 1; i < apcFrameList.size(); i++ )
-    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY
-        | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
+    if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
       return false;
 
   m_pcFrameDifference = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY, apcFrameList[0]->getBitsPel() );

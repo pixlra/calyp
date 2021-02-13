@@ -24,10 +24,10 @@
 
 #include "QualityMeasurementSidebar.h"
 
+#include <QtGui>
+
 #include "SubWindowHandle.h"
 #include "VideoSubWindow.h"
-
-#include <QtGui>
 
 QualityMeasurementSidebar::QualityMeasurementSidebar( QWidget* parent, SubWindowHandle* windowManager )
     : QWidget( parent ), m_pcMainWindowManager( windowManager ), m_pcCurrentVideoSubWindow( NULL )

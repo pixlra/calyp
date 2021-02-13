@@ -24,12 +24,12 @@
 
 #include "CalypFrame.h"
 
+#include <cassert>
+#include <cmath>
+
 #include "LibMemory.h"
 #include "PixelFormats.h"
 #include "config.h"
-
-#include <cassert>
-#include <cmath>
 
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
@@ -507,7 +507,7 @@ ClpPel CalypFrame::operator()( unsigned int ch, unsigned int xPos, unsigned int 
   {
     retValue = d->m_pppcInputPel[ch][yPos][xPos];
     if( !absolute && d->m_bHasNegativeValues )
-      retValue = retValue - int(d->m_uiHalfPelValue);
+      retValue = retValue - int( d->m_uiHalfPelValue );
   }
   return ClpPel( retValue );
 }
@@ -735,7 +735,8 @@ void CalypFrame::fillRGBBuffer()
 {
 #define PEL_ARGB( a, r, g, b ) ( ( a & 0xff ) << 24 ) | ( ( r & 0xff ) << 16 ) | ( ( g & 0xff ) << 8 ) | ( b & 0xff )
 #define PEL_RGB( r, g, b ) PEL_ARGB( 0xffu, r, g, b )
-#define CLAMP_YUV2RGB( X ) X = X < 0 ? 0 : X > 255 ? 255 : X;
+#define CLAMP_YUV2RGB( X ) X = X < 0 ? 0 : X > 255 ? 255 : \
+                                                     X;
 #define YUV2RGB( iY, iU, iV, iR, iG, iB )                          \
   iR = iY + ( ( 1436 * ( iV - 128 ) ) >> 10 );                     \
   iG = iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 ); \
@@ -1147,12 +1148,12 @@ double CalypFrame::getEntropy( unsigned channel, unsigned int start, unsigned in
 
   for( unsigned b = start; b <= end; b++ )
   {
-    if (d->m_puiHistogram[indexStart + b] == 0)
+    if( d->m_puiHistogram[indexStart + b] == 0 )
       continue;
 
     double prob = d->m_puiHistogram[indexStart + b] / numValues;
 
-    entropy -= prob * log2(prob);
+    entropy -= prob * log2( prob );
   }
 
   return entropy;

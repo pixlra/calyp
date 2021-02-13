@@ -24,13 +24,13 @@
 
 #include "SubWindowAbstract.h"
 
-#include "MdiSubWindow.h"
-
 #include <QCloseEvent>
 #include <QFocusEvent>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QScrollBar>
+
+#include "MdiSubWindow.h"
 
 SubWindowAbstract::SubWindowAbstract( QWidget* parent, unsigned int category )
     : QWidget( parent ), m_cSubWindow( NULL )

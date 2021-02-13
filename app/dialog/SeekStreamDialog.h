@@ -25,12 +25,12 @@
 #ifndef __SEEKSTREAMDIALOG_H__
 #define __SEEKSTREAMDIALOG_H__
 
+#include <QDialog>
+#include <QVector>
+
 #include "CalypAppModuleIf.h"
 #include "CommonDefs.h"
 #include "config.h"
-
-#include <QDialog>
-#include <QVector>
 
 class QSpinBox;
 

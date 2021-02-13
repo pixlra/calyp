@@ -24,9 +24,9 @@
 
 #include "MdiSubWindow.h"
 
-#include "SubWindowAbstract.h"
-
 #include <QCloseEvent>
+
+#include "SubWindowAbstract.h"
 
 MdiSubWindow::MdiSubWindow( QWidget* parent )
     : QMdiSubWindow( parent )

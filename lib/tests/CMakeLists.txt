@@ -4,7 +4,8 @@
 
 INCLUDE_DIRECTORIES( ${GTEST_INCLUDE_DIRS} )
 
+ADD_DEFINITIONS(-DCALYP_TEST_DATA_DIR=\"${CALYP_TEST_DATA_DIR}\")
 ADD_EXECUTABLE(PlaYUVerFrameQualityTests PlaYUVerFrameQualityTests.cpp )
-TARGET_LINK_LIBRARIES(PlaYUVerFrameQualityTests ${PROJECT_LIBRARY} ${PlaYUVerLib_DEPS} gtest gtest_main )
+TARGET_LINK_LIBRARIES(PlaYUVerFrameQualityTests ${PROJECT_LIBRARY} gtest gtest_main )
 ADD_TEST(PlaYUVerFrameQualityTests PlaYUVerFrameQualityTests)
 

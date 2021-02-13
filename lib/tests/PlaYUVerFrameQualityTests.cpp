@@ -35,12 +35,12 @@ protected:
   static void SetUpTestCase()
   {
     pcStreamPast = new CalypStream;
-    pcStreamPast->open( "../../../tests_data/BasketballDrill_F10_832x480_yuv420p.yuv", 832, 480, 0, 8,
+    pcStreamPast->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                         CLP_BIG_ENDIAN, 1, true );
     pcFramePast = pcStreamPast->getCurrFrame();
 
     pcStreamFuture = new CalypStream;
-    pcStreamFuture->open( "../../../tests_data//BasketballDrill_F15_832x480_yuv420p.yuv", 832, 480, 0, 8,
+    pcStreamFuture->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F15_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                           CLP_BIG_ENDIAN, 1, true );
     pcFrameFuture = pcStreamFuture->getCurrFrame();
   }

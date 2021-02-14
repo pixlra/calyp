@@ -9,13 +9,16 @@ MACRO(ADD_MODULE name file)
     LIST(APPEND MODULES_LIST_FILES ${file})
     SET(Calyp_Mod_SRCS
         "${Calyp_Mod_SRCS}"
-        PARENT_SCOPE)
+        PARENT_SCOPE
+    )
     SET(MODULES_LIST_NAME
         "${MODULES_LIST_NAME}"
-        PARENT_SCOPE)
+        PARENT_SCOPE
+    )
     SET(MODULES_LIST_FILES
         "${MODULES_LIST_FILES}"
-        PARENT_SCOPE)
+        PARENT_SCOPE
+    )
   ENDIF()
   UNSET(__modulename)
 ENDMACRO()
@@ -50,7 +53,8 @@ ENDMACRO()
 # Create header
 MACRO(CREATE_MODULE_MACROS)
   FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/ModulesListHeader.h "// This files add the header files of each module\n"
-                                                             "#ifndef __MODULESLISTHEADER_H__\n#define __MODULESLISTHEADER_H__\n")
+                                                             "#ifndef __MODULESLISTHEADER_H__\n#define __MODULESLISTHEADER_H__\n"
+  )
   FOREACH(module ${MODULES_LIST_FILES})
     FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/ModulesListHeader.h "#include \"${module}.h\"\n")
   ENDFOREACH(module ${MODULES_LIST_FILES})

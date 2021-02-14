@@ -18,10 +18,12 @@ INCLUDE(GNUInstallDirs)
 
 SET(PROJECT_NAME
     "calyp"
-    CACHE INTERNAL "" FORCE)
+    CACHE INTERNAL "" FORCE
+)
 SET(PROJECT_LIBRARY
     "Calyp"
-    CACHE INTERNAL "" FORCE)
+    CACHE INTERNAL "" FORCE
+)
 
 PROJECT(${PROJECT_NAME})
 SET(CALYP_VERSION_MAJOR "1")
@@ -29,7 +31,8 @@ SET(CALYP_VERSION_MINOR "1")
 SET(CALYP_VERSION_PATCH "0")
 SET(CALYP_VERSION
     "${CALYP_VERSION_MAJOR}.${CALYP_VERSION_MINOR}.${CALYP_VERSION_PATCH}"
-    CACHE INTERNAL "" FORCE)
+    CACHE INTERNAL "" FORCE
+)
 
 # ####################################################################################################################################################
 # Variables
@@ -65,13 +68,15 @@ IF(NOT RELEASE_BUILD AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
       ${GIT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}
       ARGS "describe --tags"
       OUTPUT_VARIABLE CALYP_GIT_REVISION
-      RETURN_VALUE TAG_RESULT)
+      RETURN_VALUE TAG_RESULT
+    )
     # git describe --tags failed; maybe the repository was checked with depth=1.
     IF(NOT ${TAG_RESULT} EQUAL 0)
       EXEC_PROGRAM(
         ${GIT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}
         ARGS "describe --always"
-        OUTPUT_VARIABLE CALYP_GIT_REVISION)
+        OUTPUT_VARIABLE CALYP_GIT_REVISION
+      )
     ENDIF()
     MESSAGE(STATUS "Calyp Git revision: ${CALYP_GIT_REVISION}")
     SET(CALYP_VERSION_STRING "${CALYP_VERSION} (rev. ${CALYP_GIT_REVISION})")
@@ -82,7 +87,8 @@ ENDIF()
 
 SET(UPDATE_CHANNEL
     "stable"
-    CACHE STRING "Update channel")
+    CACHE STRING "Update channel"
+)
 # CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/CalypUpdate.xml.in ${CMAKE_CURRENT_BINARY_DIR}/CalypUpdate-${UPDATE_CHANNEL}.xml )
 
 # ####################################################################################################################################################
@@ -97,7 +103,8 @@ SET_PACKAGE_PROPERTIES(
   Doxygen PROPERTIES
   URL "http://www.doxygen.org/"
   DESCRIPTION "Doxygen"
-  TYPE OPTIONAL)
+  TYPE OPTIONAL
+)
 
 IF(BUILD_TESTS)
   FIND_PACKAGE(GTest)
@@ -108,7 +115,8 @@ IF(BUILD_TESTS)
   ENDIF()
   SET(CALYP_TEST_DATA_DIR
       "CALYP_TEST_DATA_DIR"
-      CACHE PATH "Location of video information for testing")
+      CACHE PATH "Location of video information for testing"
+  )
 ENDIF()
 
 OPTION(USE_OPENCV "Add OpenCV support" ON)
@@ -133,7 +141,8 @@ SET_PACKAGE_PROPERTIES(
   OpenCV PROPERTIES
   URL "http://opencv.willowgarage.com"
   DESCRIPTION "OpenCV library support in CalypFrame"
-  TYPE OPTIONAL)
+  TYPE OPTIONAL
+)
 
 OPTION(USE_FFMPEG "Add FFMPEG support" ON)
 IF(USE_FFMPEG)
@@ -148,7 +157,8 @@ SET_PACKAGE_PROPERTIES(
   FFmpeg PROPERTIES
   URL "http://ffmpeg.org/"
   DESCRIPTION "Libav library support in CalypStream"
-  TYPE OPTIONAL)
+  TYPE OPTIONAL
+)
 
 IF(WIN32)
   SET(USE_STATIC ON)
@@ -165,7 +175,8 @@ INCLUDE(FeatureSummary)
 # must go before the project command
 SET(CMAKE_CONFIGURATION_TYPES
     "Debug;Release"
-    CACHE STRING "Configs" FORCE)
+    CACHE STRING "Configs" FORCE
+)
 IF(DEFINED CMAKE_BUILD_TYPE AND CMAKE_VERSION VERSION_GREATER "2.8")
   SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 ENDIF()

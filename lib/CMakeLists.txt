@@ -6,15 +6,9 @@ INCLUDE(GNUInstallDirs)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(Calyp_Lib_Frame_SRCS
-    CalypPixel.cpp
-    PixelFormats.h
-    PixelFormats.cpp
-    CalypFrame.h
-    CalypFrame.cpp
-)
+SET(Calyp_Lib_Frame_SRCS CalypPixel.cpp PixelFormats.h PixelFormats.cpp CalypFrame.h CalypFrame.cpp)
 
-set(Calyp_Lib_Stream_SRCS
+SET(Calyp_Lib_Stream_SRCS
     CalypStream.h
     CalypStream.cpp
     CalypStreamHandlerIf.h
@@ -24,17 +18,11 @@ set(Calyp_Lib_Stream_SRCS
     StreamHandlerPortableMap.cpp
 )
 
-set(Calyp_Lib_OptionParser_SRCS
-    CalypOptions.h
-    CalypOptions.cpp
-)
+SET(Calyp_Lib_OptionParser_SRCS CalypOptions.h CalypOptions.cpp)
 
-set(Calyp_Lib_Modules_SRCS
-    CalypOptions.h
-    CalypOptions.cpp
-)
+SET(Calyp_Lib_Modules_SRCS CalypOptions.h CalypOptions.cpp)
 
-set(Calyp_Lib_SRCS
+SET(Calyp_Lib_SRCS
     LibMemory.h
     CalypLib.h
     CalypDefs.h
@@ -88,7 +76,8 @@ IF(NOT USE_STATIC)
     TARGETS ${PROJECT_LIBRARY}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  )
   INSTALL(FILES ${Calyp_Lib_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
   INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CalypConfig.cmake DESTINATION share/calyp)
 ENDIF()

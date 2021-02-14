@@ -27,13 +27,15 @@ with section("format"):
   # How many spaces to tab for indent
   tab_size = 2
 
-  max_pargs_hwrap = 8
+  # If an argument group contains more than this many sub-groups (parg or kwarg
+  # groups) then force it to a vertical layout.
+  max_subgroups_hwrap = 2
 
-  ## If true, lines are indented using tab characters (utf-8 0x09) instead of
-  ## <tab_size> space characters (utf-8 0x20). In cases where the layout would
-  ## require a fractional tab character, the behavior of the  fractional
-  ## indentation is governed by <fractional_tab_policy>
-  #use_tabchars = False
+  # If a positional argument group contains more than this many arguments, then
+  # force it to a vertical layout.
+  max_pargs_hwrap = 6
+
+  dangle_parens = True
 
   # Format command names consistently as 'lower' or 'upper' case
   command_case = 'upper'

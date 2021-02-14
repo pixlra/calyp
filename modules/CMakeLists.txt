@@ -5,7 +5,8 @@
 OPTION(CALYP_THREADED_MODULES "Use threads for modules" OFF)
 SET(CALYP_EXTRA_MODULES_DIR
     "CALYP_EXTRA_MODULES_DIR"
-    CACHE PATH "Location of extra Calyp modules")
+    CACHE PATH "Location of extra Calyp modules"
+)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -35,13 +36,37 @@ ADD_MODULE(WeightedPSNR "WeightedPSNR")
 ADD_MODULE(HEVCIntraPrediction "HEVCIntraPrediction")
 ADD_MODULE(OptimiseDisplay "OptimiseDisplay")
 
-ADD_MODULE_USE_OPENCV(MeasureOpticalFlowDualTVL1 "MeasureOpticalFlowDualTVL1" VERSION 2.4.13.0 MODULES video optflow)
+ADD_MODULE_USE_OPENCV(
+  MeasureOpticalFlowDualTVL1
+  "MeasureOpticalFlowDualTVL1"
+  VERSION
+  2.4.13.0
+  MODULES
+  video
+  optflow
+)
 ADD_MODULE_USE_OPENCV(DisparityStereoBM "DisparityStereoBM" VERSION 2.4.13.0 MODULES calib3d)
 ADD_MODULE_USE_OPENCV(DisparityStereoSGBM "DisparityStereoSGBM" VERSION 2.4.13.0 MODULES calib3d)
 ADD_MODULE_USE_OPENCV(OpticalFlowDualTVL1 "OpticalFlow" VERSION 3.1.0 MODULES optflow)
 ADD_MODULE_USE_OPENCV(OpticalFlowSparseToDense "OpticalFlow" VERSION 3.1.0 MODULES optflow)
-ADD_MODULE_USE_OPENCV(OpticalFlowFarneback "OpticalFlow" VERSION 3.1.0 MODULES video optflow)
-ADD_MODULE_USE_OPENCV(OpticalDeepFlow "OpticalFlow" VERSION 3.1.0 MODULES video optflow)
+ADD_MODULE_USE_OPENCV(
+  OpticalFlowFarneback
+  "OpticalFlow"
+  VERSION
+  3.1.0
+  MODULES
+  video
+  optflow
+)
+ADD_MODULE_USE_OPENCV(
+  OpticalDeepFlow
+  "OpticalFlow"
+  VERSION
+  3.1.0
+  MODULES
+  video
+  optflow
+)
 ADD_MODULE_USE_OPENCV(SaliencyDetectionSpectral "SaliencyDetection" VERSION 3.3.0 MODULES saliency)
 ADD_MODULE_USE_OPENCV(SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3.3.0 MODULES saliency)
 ADD_MODULE_USE_OPENCV(SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency)

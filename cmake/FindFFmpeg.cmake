@@ -53,19 +53,23 @@ MACRO(find_component _component _pkgconfig _library _header)
   FIND_PATH(
     ${_component}_INCLUDE_DIRS ${_header}
     HINTS ${PC_LIB${_component}_INCLUDEDIR} ${PC_LIB${_component}_INCLUDE_DIRS}
-    PATH_SUFFIXES ffmpeg)
+    PATH_SUFFIXES ffmpeg
+  )
 
   FIND_LIBRARY(
     ${_component}_LIBRARIES
     NAMES ${_library}
-    HINTS ${PC_LIB${_component}_LIBDIR} ${PC_LIB${_component}_LIBRARY_DIRS})
+    HINTS ${PC_LIB${_component}_LIBDIR} ${PC_LIB${_component}_LIBRARY_DIRS}
+  )
 
   SET(${_component}_DEFINITIONS
       ${PC_${_component}_CFLAGS_OTHER}
-      CACHE STRING "The ${_component} CFLAGS.")
+      CACHE STRING "The ${_component} CFLAGS."
+  )
   SET(${_component}_VERSION
       ${PC_${_component}_VERSION}
-      CACHE STRING "The ${_component} version number.")
+      CACHE STRING "The ${_component} version number."
+  )
 
   SET_COMPONENT_FOUND(${_component})
 
@@ -104,13 +108,16 @@ IF(NOT FFMPEG_LIBRARIES)
   # cache the vars.
   SET(FFMPEG_INCLUDE_DIRS
       ${FFMPEG_INCLUDE_DIRS}
-      CACHE STRING "The FFmpeg include directories." FORCE)
+      CACHE STRING "The FFmpeg include directories." FORCE
+  )
   SET(FFMPEG_LIBRARIES
       ${FFMPEG_LIBRARIES}
-      CACHE STRING "The FFmpeg libraries." FORCE)
+      CACHE STRING "The FFmpeg libraries." FORCE
+  )
   SET(FFMPEG_DEFINITIONS
       ${FFMPEG_DEFINITIONS}
-      CACHE STRING "The FFmpeg cflags." FORCE)
+      CACHE STRING "The FFmpeg cflags." FORCE
+  )
 
   MARK_AS_ADVANCED(FFMPEG_INCLUDE_DIRS FFMPEG_LIBRARIES FFMPEG_DEFINITIONS)
 

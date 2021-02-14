@@ -2,8 +2,10 @@
 # CMakeLists for calyp app component
 #
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/external ${CMAKE_CURRENT_SOURCE_DIR}/dialog
-                    ${CMAKE_CURRENT_SOURCE_DIR}/docks ${CMAKE_CURRENT_SOURCE_DIR}/widgets)
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/external ${CMAKE_CURRENT_SOURCE_DIR}/dialog ${CMAKE_CURRENT_SOURCE_DIR}/docks
+  ${CMAKE_CURRENT_SOURCE_DIR}/widgets
+)
 
 OPTION(USE_QTDBUS "Build with QtDBus" ON)
 OPTION(USE_FERVOR "Add Fervor support" OFF)
@@ -19,12 +21,14 @@ IF(USE_QTDBUS)
   SET_PACKAGE_PROPERTIES(
     Qt5DBus PROPERTIES
     DESCRIPTION "Support for Qt5 DBus messages between instances"
-    TYPE OPTIONAL)
+    TYPE OPTIONAL
+  )
   IF(${Qt5DBus_FOUND})
     SET(USE_QTDBUS ${Qt5DBus_FOUND}) # TODO: fix this stupid variable
     SET(USE_QTDBUS
         ${Qt5DBus_FOUND}
-        PARENT_SCOPE)
+        PARENT_SCOPE
+    )
     LIST(APPEND QT_LINKER_LIBS Qt5::DBus)
     LIST(APPEND QT_MODULES DBus)
   ENDIF()
@@ -63,7 +67,8 @@ SET(Calyp_App_SRCS
     # Docks
     docks/FramePropertiesDock.cpp
     docks/ModuleHandleDock.cpp
-    docks/QualityMeasurementSidebar.cpp)
+    docks/QualityMeasurementSidebar.cpp
+)
 
 IF(USE_QTDBUS)
   LIST(APPEND Calyp_App_SRCS DBusAppAdaptor.cpp)
@@ -109,7 +114,8 @@ SET_PACKAGE_PROPERTIES(
   Fervor PROPERTIES
   URL "https://github.com/pypt/fervor"
   DESCRIPTION "Fervor lib includes check for updates feature"
-  TYPE OPTIONAL)
+  TYPE OPTIONAL
+)
 ADD_FEATURE_INFO(Fervor USE_FERVOR "Fervor lib includes check for updates feature.")
 
 QT5_WRAP_UI(Calyp_App_UI_Wrap ${Calyp_App_UI})
@@ -126,13 +132,15 @@ IF(WIN32)
       OUTPUT ${WINDOWS_RES_FILE}
       COMMAND rc.exe /fo ${WINDOWS_RES_FILE} ${PROJECT_NAME}.rc
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources
-      COMMENT "Add icon on windows platform")
+      COMMENT "Add icon on windows platform"
+    )
   ELSE()
     ADD_CUSTOM_COMMAND(
       OUTPUT ${WINDOWS_RES_FILE}
       COMMAND windres.exe ${PROJECT_NAME}.rc ${WINDOWS_RES_FILE}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources
-      COMMENT "Add icon on windows platform")
+      COMMENT "Add icon on windows platform"
+    )
   ENDIF()
 ENDIF()
 

@@ -6,17 +6,15 @@ INCLUDE(GNUInstallDirs)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET(Calyp_Lib_SRCS
-    LibMemory.h
-    CalypLib.h
-    CalypDefs.h
-    # Frame
-    CalypFrame.h
-    CalypFrame.cpp
+set(Calyp_Lib_Frame_SRCS
     CalypPixel.cpp
     PixelFormats.h
     PixelFormats.cpp
-    # Stream
+    CalypFrame.h
+    CalypFrame.cpp
+)
+
+set(Calyp_Lib_Stream_SRCS
     CalypStream.h
     CalypStream.cpp
     CalypStreamHandlerIf.h
@@ -24,12 +22,27 @@ SET(Calyp_Lib_SRCS
     StreamHandlerRaw.cpp
     StreamHandlerPortableMap.h
     StreamHandlerPortableMap.cpp
-    # Options Parser
+)
+
+set(Calyp_Lib_OptionParser_SRCS
     CalypOptions.h
     CalypOptions.cpp
-    # Modules
-    CalypModuleIf.h
-    CalypOpenCVModuleIf.h)
+)
+
+set(Calyp_Lib_Modules_SRCS
+    CalypOptions.h
+    CalypOptions.cpp
+)
+
+set(Calyp_Lib_SRCS
+    LibMemory.h
+    CalypLib.h
+    CalypDefs.h
+    ${Calyp_Lib_Frame_SRCS}
+    ${Calyp_Lib_Stream_SRCS}
+    ${Calyp_Lib_OptionParser_SRCS}
+    ${Calyp_Lib_Modules_SRCS}
+)
 
 LIST(APPEND CMAKE_CFG_LINKER_LIBSS ${PROJECT_LIBRARY})
 LIST(APPEND CMAKE_CFG_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})

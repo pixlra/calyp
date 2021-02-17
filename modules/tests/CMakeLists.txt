@@ -11,4 +11,10 @@ FOREACH(module ${MODULES_LIST_NAME})
   TARGET_COMPILE_DEFINITIONS(TestModuleCreate_${module} PUBLIC -DCALYP_TEST_MODULE_NAME=\"${module}\")
   TARGET_LINK_LIBRARIES(TestModuleCreate_${module} ${PROJECT_LIBRARY} CalypModules gtest gtest_main)
   ADD_TEST(TestModuleCreate_${module} TestModuleCreate_${module})
+
+  ADD_EXECUTABLE(TestModuleProcessNumberOfFrames_${module} TestModuleProcessNumberOfFrames.cpp)
+  TARGET_COMPILE_DEFINITIONS(TestModuleProcessNumberOfFrames_${module} PUBLIC -DCALYP_TEST_MODULE_NAME=\"${module}\")
+  TARGET_LINK_LIBRARIES(TestModuleProcessNumberOfFrames_${module} ${PROJECT_LIBRARY} CalypModules gtest gtest_main)
+  ADD_TEST(TestModuleProcessNumberOfFrames_${module} TestModuleProcessNumberOfFrames_${module})
+
 ENDFOREACH(module ${MODULES_LIST_NAME})

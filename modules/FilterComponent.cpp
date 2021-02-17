@@ -71,6 +71,7 @@ FilterComponentLuma::FilterComponentLuma()
 
 bool FilterComponentLuma::create( std::vector<CalypFrame*> apcFrameList )
 {
+  _BASIC_MODULE_API_2_CHECK_
   return createFilter( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), apcFrameList[0]->getBitsPel() );
 }
 
@@ -88,6 +89,7 @@ FilterComponentChromaU::FilterComponentChromaU()
 
 bool FilterComponentChromaU::create( std::vector<CalypFrame*> apcFrameList )
 {
+  _BASIC_MODULE_API_2_CHECK_
   if( apcFrameList[0]->getNumberChannels() > 1 )
   {
     return createFilter( apcFrameList[0]->getWidth( CLP_CHROMA_U ), apcFrameList[0]->getHeight( CLP_CHROMA_U ),
@@ -111,6 +113,7 @@ FilterComponentChromaV::FilterComponentChromaV()
 
 bool FilterComponentChromaV::create( std::vector<CalypFrame*> apcFrameList )
 {
+  _BASIC_MODULE_API_2_CHECK_
   if( apcFrameList[0]->getNumberChannels() > 1 )
   {
     return createFilter( apcFrameList[0]->getWidth( CLP_CHROMA_V ), apcFrameList[0]->getHeight( CLP_CHROMA_V ),

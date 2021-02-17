@@ -19,7 +19,7 @@
 
 /**
  * \file     TestModuleCreate.cpp
- * \brief    CalypModuleIf testing create
+ * \brief    CalypModuleIf testing for YUV420p sequences
  */
 
 #include "gtest/gtest.h"
@@ -28,7 +28,7 @@
 #include "lib/CalypStream.h"
 #include "modules/CalypModulesFactory.h"
 
-class TestModuleCreate : public ::testing::Test
+class TestModuleProcessNumberOfFrames : public ::testing::Test
 {
 protected:
   // Per-test-case set-up.
@@ -58,6 +58,10 @@ protected:
   {
     ClpString moduleName = CALYP_TEST_MODULE_NAME;
 
+    pcStream = new CalypStream;
+    pcStream->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
+                    CLP_BIG_ENDIAN, 1, true );
+
     CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
     CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
     for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
@@ -81,85 +85,26 @@ protected:
   static CalypStream* pcStream;
 };
 
-CalypStream* TestModuleCreate::pcStream = NULL;
+CalypStream* TestModuleProcessNumberOfFrames::pcStream = NULL;
 
-TEST_F( TestModuleCreate, FIND_MODULE )
-{
-  EXPECT_NE( pcModule, nullptr );
-}
-
-TEST_F( TestModuleCreate, CREATE_OK )
-{
-  bool moduleRequireOptions = false;
-  if( pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_OPTIONS )
-  {
-    moduleRequireOptions = true;
-  }
-
-  bool moduleCreated = false;
-  std::vector<CalypFrame*> apcFrameList;
-  apcFrameList.clear();
-  for( unsigned int i = 0; i < pcModule->m_uiNumberOfFrames; i++ )
-  {
-    apcFrameList.push_back( pcStream->getCurrFrame() );
-    pcStream->setNextFrame();
-    pcStream->readNextFrame();
-  }
-  if( pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
-  {
-    moduleCreated = pcModule->create( apcFrameList ) | moduleRequireOptions;
-  }
-  else if( pcModule->m_iModuleAPI == CLP_MODULE_API_1 )
-  {
-    pcModule->create( pcStream->getCurrFrame() );
-    moduleCreated = true;
-  }
-  EXPECT_EQ( moduleCreated, true );
-}
-
-TEST_F( TestModuleCreate, CREATE_FAIL_LESS_ONE )
+TEST_F( TestModuleProcessNumberOfFrames, PROCESS_OK )
 {
   if( pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
   {
     std::vector<CalypFrame*> apcFrameList;
     apcFrameList.clear();
-    for( unsigned int i = 0; i < pcModule->m_uiNumberOfFrames - 1; i++ )
+    for( unsigned int i = 0; i < pcModule->m_uiNumberOfFrames; i++ )
     {
       apcFrameList.push_back( pcStream->getCurrFrame() );
       pcStream->setNextFrame();
       pcStream->readNextFrame();
     }
-    bool moduleCreated = pcModule->create( apcFrameList );
-    EXPECT_NE( moduleCreated, true );
-  }
-}
 
-TEST_F( TestModuleCreate, CREATE_FAIL_PLUS_ONE )
-{
-  if( pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
-  {
-    std::vector<CalypFrame*> apcFrameList;
-    apcFrameList.clear();
-    for( unsigned int i = 0; i < pcModule->m_uiNumberOfFrames + 1; i++ )
+    // Let's not test the modules that are not able to be created
+    if( pcModule->create( apcFrameList ) )
     {
-      apcFrameList.push_back( NULL );
+      CalypFrame* frame = pcModule->process( apcFrameList );
+      EXPECT_NE( frame, nullptr );
     }
-    bool moduleCreated = pcModule->create( apcFrameList );
-    EXPECT_NE( moduleCreated, true );
-  }
-}
-
-TEST_F( TestModuleCreate, CREATE_FAIL_NULL_FRAME )
-{
-  if( pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
-  {
-    std::vector<CalypFrame*> apcFrameList;
-    apcFrameList.clear();
-    for( unsigned int i = 0; i < pcModule->m_uiNumberOfFrames - 1; i++ )
-    {
-      apcFrameList.push_back( NULL );
-    }
-    bool moduleCreated = pcModule->create( apcFrameList );
-    EXPECT_NE( moduleCreated, true );
   }
 }

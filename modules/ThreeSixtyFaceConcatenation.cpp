@@ -43,7 +43,9 @@ ThreeSixtyFaceConcatenation::ThreeSixtyFaceConcatenation()
   m_pchModuleName = "ThreeSixtyFaceConcatenation";
   m_pchModuleTooltip = "Concatenate 360 video faces";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULES_VARIABLE_NUM_FRAMES;
+  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY |
+                           CLP_MODULE_REQUIRES_OPTIONS |
+                           CLP_MODULES_VARIABLE_NUM_FRAMES;
 
   m_cModuleOptions.addOptions()                                                            /**/
       ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap (6 faces)" )       /**/
@@ -60,6 +62,8 @@ ThreeSixtyFaceConcatenation::ThreeSixtyFaceConcatenation()
 
 bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList )
 {
+  if( apcFrameList.size() < 1 )
+    return false;
   for( unsigned int i = 0; i < apcFrameList.size(); i++ )
     if( !apcFrameList[i] )
       return false;
@@ -77,8 +81,11 @@ bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList 
     m_uiFacesY = 2 * m_uiNumberOfPartitionsPerFace;
     break;
   default:
-    assert( 0 );
+    return false;
   }
+
+  if( apcFrameList.size() != m_uiFacesX * m_uiFacesY )
+    return false;
 
   unsigned int width = apcFrameList[0]->getWidth() * m_uiFacesX;
   unsigned int height = apcFrameList[0]->getHeight() * m_uiFacesY;

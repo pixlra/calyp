@@ -57,6 +57,7 @@ FrameResampling::FrameResampling()
 
 bool FrameResampling::create( std::vector<CalypFrame*> apcFrameList )
 {
+  _BASIC_MODULE_API_2_CHECK_
   switch( m_iInterpolation )
   {
   case 2:

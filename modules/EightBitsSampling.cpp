@@ -45,6 +45,7 @@ EightBitsSampling::EightBitsSampling()
 
 bool EightBitsSampling::create( std::vector<CalypFrame*> apcFrameList )
 {
+  _BASIC_MODULE_API_2_CHECK_
   m_iBitSifting = int( apcFrameList[0]->getBitsPel() ) - m_iNumberOfBits;
   if( !m_iBitSifting )
     return false;

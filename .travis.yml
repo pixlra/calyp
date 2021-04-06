@@ -4,4 +4,4 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install build-essential cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
 script:
-  - mkdir -p build && cd build && cmake .. && make && cd ..
+  - mkdir -p build && cd build && cmake -DBUILD_TESTS=ON .. && make && && make test && cd ..

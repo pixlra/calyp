@@ -5,16 +5,16 @@ platform:
 environment:
   access_token:
     secure: SMxOWNKN0RkPvICWhIet2FJM5g/zx5mguM/XAPjM2OrC3U2/LAqcBZw0veS9peS4
-    
+
 clone_folder: C:\Projects\calyp
 
 init:
   - ps: Add-Content "$HOME\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
   - git config --global credential.helper store
   - git config --global user.email "jfmcarreira@gmail.com"
-  - git config --global user.name "AppVeyor" 
+  - git config --global user.name "AppVeyor"
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  
+
 install:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
   - choco install nsis
@@ -25,13 +25,13 @@ install:
   - 7z x ffmpeg.7z -y -offmpeg
   - git clone https://github.com/pixlra/calyp-deployment.git
   - CALL calyp-deployment/scripts/extract_ffmpeg.bat
-  
-  
+
+
 build_script:
   - mv C:\Projects\calyp C:\Projects\calyp-deployment\cmake-helper\
   - mkdir C:\Projects\calyp-build
   - cd C:\Projects\calyp-build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DAVCODEC_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include   -DAVUTIL_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DSWSCALE_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -G "Visual Studio 15 2017 Win64" C:\Projects\calyp-deployment\cmake-helper
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DUSE_DYNLOAD=OFF -DOpenCV_DIR="C:/Tools/opencv/build" -DOpenCV_DLL_DIR="C:/Tools/opencv/build/x64/vc15/bin" -DOpenCV_INSTALL_MODULES="world" -DQT_DIR="C:\Qt\latest\msvc2017_64" -DQt5_DIR="C:\Qt\latest\msvc2017_64\lib\cmake\Qt5" -DUSE_QTDBUS=OFF -DAVFORMAT_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avformat.lib -DAVFORMAT_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DAVCODEC_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avcodec.lib -DAVCODEC_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DAVUTIL_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avutil.lib -DAVUTIL_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DSWSCALE_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/swscale.lib -DSWSCALE_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DAVDEVICE_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/avdevice.lib -DAVDEVICE_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DPOSTPROC_LIBRARIES=C:/Projects/ffmpeg_libraries/lib/postproc.lib -DPOSTPROC_INCLUDE_DIRS=C:/Projects/ffmpeg_libraries/include -DFFMPEG_DIR=C:\Projects\ffmpeg_libraries -G "Visual Studio 15 2017 Win64" C:\Projects\calyp-deployment\cmake-helper
   - cmake --build . --target ALL_BUILD -- /p:Configuration=Release > log_build
   - cmake --build . --target INSTALL -- /p:Configuration=Release > log_install
   - cmake --build . --target PACKAGE -- /p:Configuration=Release > log_pkg
@@ -39,7 +39,7 @@ build_script:
 after_build:
   - IF "%APPVEYOR_REPO_BRANCH%" == "master" (CALL ..\calyp-deployment\scripts\deploy-to-github.bat)
 
-  
+
 on_failure:
  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 

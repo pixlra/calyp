@@ -86,6 +86,7 @@ IF(NOT FFMPEG_LIBRARIES)
   FIND_COMPONENT(AVDEVICE libavdevice avdevice libavdevice/avdevice.h)
   FIND_COMPONENT(AVUTIL libavutil avutil libavutil/avutil.h)
   FIND_COMPONENT(SWSCALE libswscale swscale libswscale/swscale.h)
+  FIND_COMPONENT(SWRESAMPLE libswresample swresample libswresample/swresample.h)
   FIND_COMPONENT(POSTPROC libpostproc postproc libpostproc/postprocess.h)
 
   # Check if the required components were found and add their stuff to the FFMPEG_* vars.

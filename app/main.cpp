@@ -51,6 +51,10 @@ int main( int argc, char* argv[] )
   QApplication::setApplicationVersion( QStringLiteral( CALYP_VERSION_STRING ) );
   QApplication::setOrganizationName( QStringLiteral( "PixLRA" ) );
 
+#if _WIN32
+  application->setStyle( "fusion" );
+#endif
+
 #ifdef USE_QTDBUS
   /**
    * use dbus, if available

@@ -25,6 +25,7 @@ install:
   - 7z x ffmpeg.7z -y -offmpeg
   - git clone https://github.com/pixlra/calyp-deployment.git
   - CALL calyp-deployment/scripts/extract_ffmpeg.bat
+  - rm C:\Projects\ffmpeg_libraries\bin\*.exe
 
 
 build_script:

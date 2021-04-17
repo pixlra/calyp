@@ -49,7 +49,7 @@ AboutDialog::AboutDialog( QWidget* parent )
                                   .arg( QApplication::applicationVersion() ) );
   label->setWordWrap( false );
 
-  QString featuresList = QStringLiteral( "<p><h3><b>Features:</b></h3><ul>" );
+  QString featuresList = QStringLiteral( "<p><h4><b>Features:</b></h4><ul>" );
 
 #ifdef USE_QTDBUS
   featuresList.append( QStringLiteral( "<li>Support for Qt DBus messages" ) );
@@ -63,14 +63,21 @@ AboutDialog::AboutDialog( QWidget* parent )
   featuresList.append( QStringLiteral( "</ul></p>" ) );
   QLabel* labelFeatures = new QLabel( featuresList );
 
-  QLabel* labelCopyright = new QLabel( QStringLiteral( "Copyright © 2014–2018 Joao Carreira and Luis Lucas" ) );
+  QString thanksList = QStringLiteral( "<p><h4><b>Thanks to:</b></h4><ul>" );
+  thanksList.append( QStringLiteral( "<li>Joao Santos" ) );
+  thanksList.append( QStringLiteral( "<li>Jose Filipe" ) );
+  thanksList.append( QStringLiteral( "</ul></p>" ) );
+  QLabel* labelContributors = new QLabel( thanksList );
+
+  QLabel* labelCopyright = new QLabel( QStringLiteral( "Copyright 2014–2021 Joao Carreira and Luis Lucas" ) );
 
   QWidget* topWidget = new QWidget;
   QVBoxLayout* topLayout = new QVBoxLayout;
   topLayout->addWidget( pixmapLabel, 0, Qt::AlignHCenter );
   topLayout->addWidget( label );
-  topLayout->addWidget( labelFeatures );
   topLayout->addWidget( labelCopyright );
+  topLayout->addWidget( labelFeatures );
+  topLayout->addWidget( labelContributors );
   topWidget->setLayout( topLayout );
 
   //	QTextEdit *textEdit = new QTextEdit(tr("<p>This program is free "

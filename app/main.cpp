@@ -52,7 +52,7 @@ int main( int argc, char* argv[] )
   QApplication::setOrganizationName( QStringLiteral( "PixLRA" ) );
 
 #if _WIN32
-  application->setStyle( "fusion" );
+  application.setStyle( QStyleFactory::create( "Fusion" ) );
 #endif
 
 #ifdef USE_QTDBUS

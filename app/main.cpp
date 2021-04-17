@@ -31,6 +31,7 @@
 #include "DBusAppAdaptor.h"
 #endif
 #include <QApplication>
+#include <QStyleFactory>
 #ifdef USE_FERVOR
 #include "fvupdater.h"
 #endif

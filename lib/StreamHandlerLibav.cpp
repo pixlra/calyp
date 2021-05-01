@@ -91,7 +91,7 @@ bool StreamHandlerLibav::openHandler( ClpString strFilename, bool bInput )
   //	}
 
   // Register all components of FFmpeg
-  av_register_all();
+  //av_register_all();
 
   /* open input file, and allocate format context */
   if( avformat_open_input( &m_cFmtCtx, filename, NULL, NULL ) < 0 )

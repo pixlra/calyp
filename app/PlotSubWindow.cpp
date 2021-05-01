@@ -24,6 +24,10 @@
 
 #include "PlotSubWindow.h"
 
+#include <QGuiApplication>
+#include <QScreen>
+#include <QSize>
+
 #include "qcustomplot.h"
 //#include "external/qcustomplot/qcustomplot.h"
 
@@ -174,7 +178,7 @@ QSize PlotSubWindow::sizeHint() const
   }
   else
   {
-    maxSize = QApplication::desktop()->availableGeometry().size();
+    maxSize = QGuiApplication::screens()[0]->availableGeometry().size();
   }
   return sizeHint( maxSize );
 }

@@ -730,7 +730,7 @@ void ViewArea::wheelEvent( QWheelEvent* event )
 
   if( event->modifiers() & Qt::ControlModifier )
   {
-    scale = 0.001 * event->delta();
+    scale = 0.001 * event->angleDelta().y();
     if( scale > 0 )
       scale = 1.25;
     else

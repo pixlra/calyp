@@ -259,7 +259,7 @@ QSize VideoSubWindow::sizeHint() const
   }
   else
   {
-    maxSize = QApplication::desktop()->availableGeometry().size();
+    maxSize = QGuiApplication::screens()[0]->availableGeometry().size();
   }
   return sizeHint( maxSize );
 }

@@ -4,7 +4,7 @@ MACRO(ADD_MODULE name file)
   OPTION(MODULE_${name} "Use module ${name}" ON)
   ADD_FEATURE_INFO(${name} MODULE_${name} "Module ${name}")
   IF(MODULE_${name})
-    LIST(APPEND Calyp_Mod_SRCS ${MODULE_LOCATION}${file})
+    LIST(APPEND Calyp_Mod_SRCS ${MODULE_LOCATION}${file}.cpp)
     LIST(APPEND MODULES_LIST_NAME ${name})
     LIST(APPEND MODULES_LIST_FILES ${file})
     SET(Calyp_Mod_SRCS

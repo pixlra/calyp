@@ -5,14 +5,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2.0)
 
 # ####################################################################################################################################################
-# CMake  functions
-# ####################################################################################################################################################
-SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-INCLUDE(cmake/ModulesFct.cmake)
-INCLUDE(FeatureSummary)
-INCLUDE(GNUInstallDirs)
-
-# ####################################################################################################################################################
 # Project Definition
 # ####################################################################################################################################################
 
@@ -25,7 +17,6 @@ SET(PROJECT_LIBRARY
     CACHE INTERNAL "" FORCE
 )
 
-PROJECT(${PROJECT_NAME})
 SET(CALYP_VERSION_MAJOR "1")
 SET(CALYP_VERSION_MINOR "2")
 SET(CALYP_VERSION_PATCH "1")
@@ -33,6 +24,20 @@ SET(CALYP_VERSION
     "${CALYP_VERSION_MAJOR}.${CALYP_VERSION_MINOR}.${CALYP_VERSION_PATCH}"
     CACHE INTERNAL "" FORCE
 )
+
+PROJECT(
+  ${PROJECT_NAME}
+  VERSION ${CALYP_VERSION}
+  LANGUAGES "CXX"
+)
+
+# ####################################################################################################################################################
+# CMake  functions
+# ####################################################################################################################################################
+SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+INCLUDE(cmake/ModulesFct.cmake)
+INCLUDE(FeatureSummary)
+INCLUDE(GNUInstallDirs)
 
 # ####################################################################################################################################################
 # Variables

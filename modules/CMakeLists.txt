@@ -76,6 +76,35 @@ ADD_MODULE_USE_OPENCV(FrameResampling "FrameResampling" VERSION 3.3.0 MODULES co
 ADD_MODULE_USE_OPENCV(ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" VERSION 3.1.0 MODULES core)
 ADD_MODULE_USE_OPENCV(ThreeSixtyFaceExtraction "ThreeSixtyFaceExtraction" VERSION 3.1.0 MODULES core)
 ADD_MODULE_USE_OPENCV(ThreeSixtyFaceConcatenation "ThreeSixtyFaceConcatenation" VERSION 3.1.0 MODULES core)
+ADD_MODULE_USE_OPENCV(
+  ThreeSixtyDownsampling
+  "ThreeSixtyDownsampling"
+  VERSION
+  3.1.0
+  MODULES
+  core
+  imgproc
+  photo
+)
+ADD_MODULE_USE_OPENCV(
+  ThreeSixtyDynamicDownsampling
+  "ThreeSixtyDynamicDownsampling"
+  VERSION
+  3.1.0
+  MODULES
+  core
+  imgproc
+)
+ADD_MODULE_USE_OPENCV(
+  ThreeSixtyNxN
+  "ThreeSixtyNxN"
+  VERSION
+  3.1.0
+  MODULES
+  core
+  imgproc
+  photo
+)
 
 IF(EXISTS ${CALYP_EXTRA_MODULES_DIR})
   ADD_EXTRA_MODULES(${CALYP_EXTRA_MODULES_DIR})

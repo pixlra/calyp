@@ -2,7 +2,7 @@
 # CMakeLists for calyp
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
 
 # ####################################################################################################################################################
 # Project Definition
@@ -48,6 +48,7 @@ OPTION(BUILD_TOOLS "Build Command Line Application" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" OFF)
 OPTION(BUILD_DOC "Build Documentation" OFF)
 OPTION(BUILD_TESTS "Build Google Tests" OFF)
+OPTION(BUILD_TESTS_CATCH2 "Build Catch2 Tests" OFF)
 
 OPTION(USE_FERVOR "Add Fervor support" OFF)
 
@@ -122,6 +123,24 @@ IF(BUILD_TESTS)
       "CALYP_TEST_DATA_DIR"
       CACHE PATH "Location of video information for testing"
   )
+ENDIF()
+
+IF(BUILD_TESTS_CATCH2)
+  INCLUDE(FetchContent)
+  FETCHCONTENT_DECLARE(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.1
+  )
+  FETCHCONTENT_MAKEAVAILABLE(Catch2)
+  SET_PACKAGE_PROPERTIES(
+    Catch2 PROPERTIES
+    URL "https://github.com/catchorg/Catch2"
+    DESCRIPTION "Catch2 unit tests"
+    TYPE OPTIONAL
+  )
+  INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/_deps/catch2-src/contrib/Catch.cmake)
+  ENABLE_TESTING()
 ENDIF()
 
 OPTION(USE_OPENCV "Add OpenCV support" ON)

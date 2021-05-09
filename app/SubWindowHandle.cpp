@@ -29,10 +29,12 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QMdiArea>
 #include <QMenu>
 #include <QPainter>
+#include <QScreen>
 #include <QSettings>
 #include <QSignalMapper>
 #include <QStyle>
@@ -154,7 +156,7 @@ void SubWindowHandle::setWindowMode( int iWindowMode )
     parentWidget()->update();
     m_pcApp->showNormal();
     qApp->processEvents();
-    QSize screenSize = QApplication::desktop()->availableGeometry().size();
+    QSize screenSize = QGuiApplication::screens()[0]->availableGeometry().size();
     m_pcApp->move( 0, 0 );
     m_pcApp->resize( screenSize.width(), 5 );
     m_pcApp->setWindowTitle( QApplication::applicationName() );
@@ -230,12 +232,14 @@ void SubWindowHandle::addMdiSubWindow( SubWindowAbstract* window )
            SLOT( removeMdiSubWindow( MdiSubWindow* ) ) );
 }
 
-void SubWindowHandle::addSubWindow( SubWindowAbstract* window, Qt::WindowFlags flags )
+void SubWindowHandle::addSubWindow( SubWindowAbstract* window )
 {
   if( window )
   {
-    connect( window, SIGNAL( updateStatusBar( const QString& ) ), m_pcApp, SLOT( printMessage( const QString& ) ) );
-    connect( window, SIGNAL( zoomFactorChanged( const double, const QPoint ) ), m_pcApp, SLOT( updateZoomFactorSBox() ) );
+    connect( window, SIGNAL( updateStatusBar( const QString& ) ), m_pcApp,
+            SLOT( printMessage( const QString& ) ) );
+    connect( window, SIGNAL( zoomFactorChanged( const double, const QPoint ) ), m_pcApp,
+            SLOT( updateZoomFactorSBox() ) );
     if( m_iWindowMode == DETACHEDSUBWINDOWMODE )
     {
       connect( window, SIGNAL( aboutToActivate( SubWindowAbstract* ) ), this,
@@ -378,7 +382,7 @@ void SubWindowHandle::tileSubWindows()
 
   if( m_iWindowMode == DETACHEDSUBWINDOWMODE )
   {
-    QSize screenSize = QApplication::desktop()->availableGeometry().size();
+    QSize screenSize = QGuiApplication::screens()[0]->availableGeometry().size();
     unsigned int minWindowsInRow = 1;
     while( ( screenSize.width() / minWindowsInRow ) > 500 )
     {

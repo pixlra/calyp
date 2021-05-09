@@ -51,7 +51,7 @@ public:
 
   void processLogMsg( const QString& msg );
 
-  void addSubWindow( SubWindowAbstract* widget, Qt::WindowFlags flags = 0 );
+  void addSubWindow( SubWindowAbstract* widget );
 
   SubWindowAbstract* activeSubWindow() const;
 

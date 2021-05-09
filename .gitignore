@@ -76,6 +76,7 @@
 # CMake
 bin/
 build/
+build-*
 cmake-build-*/
 
 # Mongo Explorer plugin

@@ -182,7 +182,6 @@ public:
   QSize sizeHint( const QSize& ) const;
 
   QString getCurrentFileName() { return m_cFilename; }
-  bool getIsModule() { return getCategory() | SubWindowAbstract::MODULE_SUBWINDOW; }
   void clearWindowBusy() { m_bWindowBusy = false; }
   void setFillWindow( bool bFlag );
 

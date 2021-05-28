@@ -30,6 +30,10 @@
 #include <cstdio>
 #include <iostream>
 
+#ifdef CALYP_THREADED_MODULES
+#include <QThread>
+#endif
+
 #include "CommonDefs.h"
 #include "ModuleHandleDock.h"
 #include "config.h"

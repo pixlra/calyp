@@ -119,6 +119,15 @@ public:
   /** Numbers of histogram segments depending of image bytes depth*/
   unsigned int m_uiHistoSegments;
 
+  CalypFramePrivate()
+  {
+    m_bInit = false;
+    m_bHasRGBPel = false;
+    m_pppcInputPel = nullptr;
+    m_pcARGB32 = nullptr;
+    m_puiHistogram = nullptr;
+  }
+
   void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel )
   {
     init( width, height, pel_format, bitsPixel, false );
@@ -126,10 +135,6 @@ public:
 
   void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel, bool has_negative_values )
   {
-    m_bInit = false;
-    m_bHasRGBPel = false;
-    m_pppcInputPel = NULL;
-    m_pcARGB32 = NULL;
     m_uiWidth = width;
     m_uiHeight = height;
     m_iPixelFormat = pel_format;
@@ -258,6 +263,11 @@ public:
  * \brief Constructors
  */
 
+CalypFrame::CalypFrame()
+    : d( new CalypFramePrivate )
+{
+}
+
 CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel )
     : d( new CalypFramePrivate )
 {
@@ -268,6 +278,28 @@ CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, 
     : d( new CalypFramePrivate )
 {
   d->init( width, height, pelFormat, bitsPixel, has_negative_values );
+}
+
+CalypFrame::CalypFrame( CalypFrame&& other ) noexcept
+    : d( other.d )
+{
+  other.d = nullptr;  // we'll talk more about this line below
+}
+
+CalypFrame& CalypFrame::operator=( CalypFrame&& other ) noexcept
+{
+  // Self-assignment detection
+  if( &other == this )
+    return *this;
+
+  // Release any resource we're holding
+  delete d;
+
+  // Transfer ownership of a.m_ptr to m_ptr
+  d = other.d;
+  other.d = nullptr;
+
+  return *this;
 }
 
 CalypFrame::CalypFrame( const CalypFrame& other )
@@ -285,6 +317,23 @@ CalypFrame::CalypFrame( const CalypFrame* other )
     d->init( other->getWidth(), other->getHeight(), other->getPelFormat(), other->getBitsPel(), other->getHasNegativeValues() );
     copyFrom( other );
   }
+}
+
+CalypFrame& CalypFrame::operator=( const CalypFrame& other )
+{
+  // Self-assignment detection
+  if( &other == this )
+    return *this;
+
+  // Release any resource we're holding
+  delete d;
+
+  // Copy the resource
+  d = new CalypFramePrivate;
+  d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(), other.getHasNegativeValues() );
+  copyFrom( &other );
+
+  return *this;
 }
 
 CalypFrame::CalypFrame( const CalypFrame& other, unsigned int x, unsigned int y, unsigned int width, unsigned int height )

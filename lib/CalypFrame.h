@@ -103,6 +103,11 @@ public:
   static int pelformatColorSpace( const int idx );
 
   /**
+   * Default constructor. Frame is not valid
+   */
+  CalypFrame();
+
+  /**
 	 * Creates a new frame using the following configuration
 	 *
 	 * @param width width of the frame
@@ -125,12 +130,33 @@ public:
   CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel, bool has_negative_values );
 
   /**
+   * Move contructor
+   *
+   * @param other existing frame to copy from
+   */
+  CalypFrame( CalypFrame&& other ) noexcept;
+
+  /**
+   * Move assignement contructor
+   *
+   * @param other existing frame to copy from
+   */
+  CalypFrame& operator=( CalypFrame&& other ) noexcept;
+
+  /**
 	 * Copy contructor
 	 *
 	 * @param other existing frame to copy from
 	 */
   CalypFrame( const CalypFrame& other );
   CalypFrame( const CalypFrame* other );
+
+  /**
+   * Copy-assignement contructor
+   *
+   * @param other existing frame to copy from
+   */
+  CalypFrame& operator=( const CalypFrame& other );
 
   /**
 	 * Creates and new frame with the configuration of an existing one and copy

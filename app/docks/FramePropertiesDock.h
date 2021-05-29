@@ -31,7 +31,8 @@
 #include "HistogramWidget.h"
 #include "config.h"
 #include "lib/CalypFrame.h"
-#include "lib/CalypStream.h"
+
+class CalypStream;
 
 class FramePropertiesDock : public QWidget
 {
@@ -48,10 +49,10 @@ public:
   void stopHistogram();
 
 private:
-  CalypFrame* m_pcFrame;
-  CalypFrame* m_pcSelectedFrame;
+  CalypFrame m_cFrame;
+  CalypFrame m_cSelectedFrame;
   int m_iLastFrameType;
-
+  bool m_bHasFrame;
   bool* m_pbIsPlaying;
 
   QComboBox* channelCB;

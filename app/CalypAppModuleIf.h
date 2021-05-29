@@ -30,13 +30,14 @@
 #include <cstdio>
 #include <iostream>
 
+#include "config.h"
+
 #ifdef CALYP_THREADED_MODULES
 #include <QThread>
 #endif
 
 #include "CommonDefs.h"
 #include "ModuleHandleDock.h"
-#include "config.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 #include "lib/CalypStream.h"
@@ -105,7 +106,7 @@ public:
   CalypModuleIf* getModule() { return m_pcModule; }
   unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
   ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
-  void update();
+  void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool isRunning();
   void show();

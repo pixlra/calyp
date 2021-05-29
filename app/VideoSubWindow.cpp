@@ -703,6 +703,7 @@ bool VideoSubWindow::hasRunningModule()
 void VideoSubWindow::setFillWindow( bool bFlag )
 {
   m_pcVideoInfo->setBusyWindow( bFlag );
+  m_pcVideoInfo->repaint();
 }
 
 void VideoSubWindow::setCurrFrame( CalypFrame* pcCurrFrame )
@@ -731,7 +732,7 @@ void VideoSubWindow::refreshFrameOperation()
   }
   for( int i = 0; i < m_apcCurrentModule.size(); i++ )
   {
-    m_apcCurrentModule.at( i )->update();
+    m_apcCurrentModule.at( i )->update( m_bIsPlaying );
   }
 }
 

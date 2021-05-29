@@ -28,12 +28,12 @@
 #include <QtGui>
 #include <cmath>
 
+#include "lib/CalypStream.h"
+
 FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitch )
-    : QWidget( parent ), m_pbIsPlaying( pbMainPlaySwitch )
+    : QWidget( parent ), m_pbIsPlaying( pbMainPlaySwitch ), m_bHasFrame( false )
 {
   // -------------- Variables definition --------------
-  m_pcFrame = NULL;
-  m_pcSelectedFrame = NULL;
   m_iLastFrameType = -1;
 
   // Histogram area -----------------------------------------------------
@@ -278,13 +278,8 @@ QSize FramePropertiesDock::sizeHint() const
 
 void FramePropertiesDock::reset()
 {
-  m_pcFrame = NULL;
+  m_bHasFrame = false;
   m_cSelectionArea = QRect();
-  if( m_pcSelectedFrame )
-  {
-    delete m_pcSelectedFrame;
-    m_pcSelectedFrame = NULL;
-  }
 
   m_iLastFrameType = -1;
 
@@ -364,35 +359,30 @@ void FramePropertiesDock::setFrame( CalypFrame* pcFrame )
     }
   }
   setEnabled( true );
-  if( m_pcFrame || !( *m_pbIsPlaying ) )
+  if( pcFrame && !( *m_pbIsPlaying ) )
   {
-    m_pcFrame = pcFrame;
+    m_bHasFrame = true;
+    m_cFrame = CalypFrame( pcFrame );
     updateDataHistogram();
   }
 }
 
 void FramePropertiesDock::setSelection( const QRect& selectionArea )
 {
-  if( m_pcFrame )
+  if( m_bHasFrame )
   {
     bool bSelectionChanged = !( selectionArea.size() == m_cSelectionArea.size() );
-    m_cSelectionArea = selectionArea;
     if( selectionArea.isValid() )
     {
+      m_cSelectionArea = selectionArea;
       histogramWidget->stopHistogramComputation();
-
       /*
-       * Allocate a new image for the selection
-       * or just copy information
+       * Crop selection from frame
        */
       if( bSelectionChanged )
       {
-        if( m_pcSelectedFrame )
-        {
-          delete m_pcSelectedFrame;
-        }
-        m_pcSelectedFrame = new CalypFrame( m_pcFrame, selectionArea.x(), selectionArea.y(), selectionArea.width(),
-                                            selectionArea.height() );
+        m_cSelectedFrame = CalypFrame( m_cFrame, selectionArea.x(), selectionArea.y(), selectionArea.width(),
+                                       selectionArea.height() );
       }
       updateDataHistogram();
       selectionImageButton->click();
@@ -409,13 +399,13 @@ void FramePropertiesDock::setSelection( const QRect& selectionArea )
 
 void FramePropertiesDock::updateDataHistogram()
 {
-  if( m_pcFrame && isVisible() )
+  if( m_bHasFrame && isVisible() )
   {
     if( !*m_pbIsPlaying )
     {
-      if( m_pcSelectedFrame )
+      if( m_cSelectionArea.isValid() )
       {
-        m_pcSelectedFrame->copyFrom( m_pcFrame, m_cSelectionArea.x(), m_cSelectionArea.y() );
+        m_cSelectedFrame = CalypFrame( m_cFrame, m_cSelectionArea.x(), m_cSelectionArea.y(), m_cSelectionArea.width(), m_cSelectionArea.height() );
         fullImageButton->show();
         selectionImageButton->show();
       }
@@ -424,7 +414,7 @@ void FramePropertiesDock::updateDataHistogram()
         fullImageButton->hide();
         selectionImageButton->hide();
       }
-      histogramWidget->updateData( m_pcFrame, m_pcSelectedFrame );
+      histogramWidget->updateData( &m_cFrame, m_cSelectionArea.isValid() ? &m_cSelectedFrame : nullptr );
     }
     else
     {
@@ -523,7 +513,7 @@ void FramePropertiesDock::slotRefreshOptions( int range )
 
 void FramePropertiesDock::slotHistogramComputationFailed()
 {
-  m_pcFrame = NULL;
+  m_bHasFrame = false;
 }
 
 void FramePropertiesDock::slotChannelChanged( int index )

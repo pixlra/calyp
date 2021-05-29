@@ -112,13 +112,23 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
+INCLUDE(FetchContent)
+
 IF(BUILD_TESTS)
-  FIND_PACKAGE(GTest)
-  SET(BUILD_DOC ${GTEST_FOUND})
-  IF(GTEST_FOUND)
-    ENABLE_TESTING()
-    INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
-  ENDIF()
+  FETCHCONTENT_DECLARE(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
+  # For Windows: Prevent overriding the parent project's compiler/linker settings
+  SET(gtest_force_shared_crt
+      ON
+      CACHE BOOL "" FORCE
+  )
+  FETCHCONTENT_MAKEAVAILABLE(googletest)
+
+  SET_PACKAGE_PROPERTIES(
+    googletest PROPERTIES
+    URL "https://github.com/google/googletest"
+    DESCRIPTION "Google unit tests"
+    TYPE OPTIONAL
+  )
   SET(CALYP_TEST_DATA_DIR
       "CALYP_TEST_DATA_DIR"
       CACHE PATH "Location of video information for testing"
@@ -126,7 +136,7 @@ IF(BUILD_TESTS)
 ENDIF()
 
 IF(BUILD_TESTS_CATCH2)
-  INCLUDE(FetchContent)
+
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git

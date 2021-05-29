@@ -32,6 +32,7 @@ using cv::Mat_;
 using cv::Point;
 using cv::Point2f;
 using cv::Ptr;
+using cv::Rect;
 using cv::Scalar;
 
 OpticalFlowModule::OpticalFlowModule()
@@ -106,6 +107,8 @@ void OpticalFlowModule::drawFlow()
 
 void OpticalFlowModule::compensateFlow()
 {
+  Rect frameShape( 0, 0, m_pcOutputFrame->getWidth(), m_pcOutputFrame->getHeight() );
+  m_pcOutputFrame->reset();
   for( unsigned int c = 0; c < m_pcOutputFrame->getNumberChannels(); c++ )
   {
     ClpPel** pPelPrev = m_pcFramePrev->getPelBufferYUV()[c];
@@ -117,7 +120,8 @@ void OpticalFlowModule::compensateFlow()
       {
         Point2f u = m_cvFlow( y, x );
         Point p( x + u.x, y + u.y );
-        *pPelOut = pPelPrev[p.y][p.x];
+        if( p.inside( frameShape ) )
+          *pPelOut = pPelPrev[p.y][p.x];
         pPelOut++;
       }
     }

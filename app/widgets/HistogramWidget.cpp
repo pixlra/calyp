@@ -53,8 +53,8 @@ public:
   void setup( CalypFrame* frame )
   {
     m_pcFrame = frame;
-    // run();
-    start();
+    run();
+    //start();
   }
   void run()
   {

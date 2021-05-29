@@ -48,7 +48,7 @@ CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModul
   }
 }
 
-void CalypAppModuleIf::update()
+void CalypAppModuleIf::update( bool isPlaying )
 {
   if( m_pcDisplaySubWindow )
   {
@@ -56,7 +56,7 @@ void CalypAppModuleIf::update()
   }
   else
   {
-    apply();
+    apply( isPlaying );
   }
 }
 

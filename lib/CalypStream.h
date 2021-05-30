@@ -113,8 +113,6 @@ public:
   bool seekInputRelative( bool bIsFoward );
   bool seekInput( unsigned long new_frame_num );
 
-  void getDuration( int* duration_array ) const;
-
 private:
   bool readFrame( CalypFrame* frame );
 

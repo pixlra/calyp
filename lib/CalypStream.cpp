@@ -107,15 +107,14 @@ public:
   {
     for( unsigned int i = 0; i < size; i++ )
     {
-      CalypFrame* pFrame = new CalypFrame( width, height, pelFormat, bitsPixel, hasNegative );
-      m_apcFrameBuffer.push_back( pFrame );
+      m_apcFrameBuffer.push_back( new CalypFrame( width, height, pelFormat, bitsPixel, hasNegative ) );
     }
     m_uiIndex = 0;
   }
 
   ~CalypStreamBufferPrivate()
   {
-    while( m_apcFrameBuffer.size() > 0 )
+    while( !m_apcFrameBuffer.empty() )
     {
       delete m_apcFrameBuffer.back();
       m_apcFrameBuffer.pop_back();
@@ -125,8 +124,7 @@ public:
   {
     for( unsigned int i = m_apcFrameBuffer.size(); i < newSize; i++ )
     {
-      CalypFrame* pFrame = new CalypFrame( m_apcFrameBuffer.at( 0 ) );
-      m_apcFrameBuffer.push_back( pFrame );
+      m_apcFrameBuffer.push_back( new CalypFrame( m_apcFrameBuffer.at( 0 ) ) );
     }
   }
   unsigned int size() { return m_apcFrameBuffer.size(); }
@@ -158,8 +156,9 @@ struct CalypStreamPrivate
 
   CalypStreamPrivate()
   {
-    handler = NULL;
-    pfctCreateHandler = NULL;
+    handler = nullptr;
+    pfctCreateHandler = nullptr;
+    frameBuffer = nullptr;
     isInput = true;
     isInit = false;
     bLoadAll = false;
@@ -227,6 +226,7 @@ CalypStream::CalypStream()
 CalypStream::~CalypStream()
 {
   close();
+  delete d;
 }
 
 ClpString CalypStream::getFormatName() const
@@ -389,10 +389,13 @@ void CalypStream::close()
   if( !d->isInit )
     return;
 
-  d->handler->closeHandler();
-  d->handler->Delete();
-
-  delete d->frameBuffer;
+  if( d->handler )
+  {
+    d->handler->closeHandler();
+    d->handler->Delete();
+  }
+  if( d->frameBuffer )
+    delete d->frameBuffer;
 
   d->bLoadAll = false;
   d->isInit = false;
@@ -483,29 +486,6 @@ void CalypStream::loadAll()
   }
   d->bLoadAll = true;
   d->iCurrFrameNum = 0;
-}
-
-void CalypStream::getDuration( int* duration_array ) const
-{
-  //   int hours, mins, secs = 0;
-  // #ifdef USE_FFMPEG
-  //   if( m_iStreamHandler == FFMPEG )
-  //   {
-  //     secs = m_cLibAvContext->getStreamDuration();
-  //   }
-  //   else
-  // #endif
-  //   if( m_iStreamHandler == YUV_IO )
-  //   {
-  //     secs = m_uiTotalFrameNum / m_dFrameRate;
-  //   }
-  //   mins = secs / 60;
-  //   secs %= 60;
-  //   hours = mins / 60;
-  //   mins %= 60;
-  //   *duration_array++ = hours;
-  //   *duration_array++ = mins;
-  //   *duration_array++ = secs;
 }
 
 bool CalypStream::readFrame( CalypFrame* frame )

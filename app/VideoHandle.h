@@ -34,8 +34,6 @@
 #include "CommonDefs.h"
 #include "config.h"
 
-//#define _CONTROL_PLAYING_TIME_ 1
-
 class QToolBar;
 class QDockWidget;
 class QSignalMapper;
@@ -113,6 +111,7 @@ private:
   QDockWidget* m_pcFramePropertiesDock;
   FramePropertiesDock* m_pcFramePropertiesSideBar;
 
+  QLabel* m_pcPlayingFPSLabel;
   QLabel* m_pcVideoFormatLabel;
   QLabel* m_pcResolutionLabel;
 
@@ -122,12 +121,12 @@ private:
   QTimer* m_pcPlayingTimer;
   bool m_bIsPlaying;
 
-#if( _CONTROL_PLAYING_TIME_ == 1 )
   unsigned int m_uiNumberPlayedFrames;
-  double m_dAverageFps;
-  QElapsedTimer* m_pcPlayControlTimer;
-#endif
+  unsigned int m_uiRealAverageFrameRate;
+  QElapsedTimer* m_pcFrameRateFeedbackTimer;
 
+  void configureFrameRateTimer();
+  void calculateRealFrameRate();
   unsigned long getMaxFrameNumber();
   void setTimerStatus();
 
@@ -140,8 +139,10 @@ private Q_SLOTS:
   void closeSubWindow( SubWindowAbstract* subWindow );
   void zoomToFactorAll( const double factor, const QPoint center = QPoint() );
   void moveAllScrollBars( const double&, const double& );
+
   void play();
   void stop();
+
   void playEvent();
   void seekSliderEvent( int new_frame_num );
   void seekEvent( int direction );

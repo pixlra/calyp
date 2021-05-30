@@ -39,9 +39,6 @@
 #include "SubWindowHandle.h"
 #include "SubWindowSelectorDialog.h"
 #include "VideoSubWindow.h"
-#if( _CONTROL_PLAYING_TIME_ == 1 )
-#include <QElapsedTimer>
-#endif
 
 VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
     : m_pcParet( parent ), m_pcMainWindowManager( windowManager )
@@ -49,6 +46,7 @@ VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
   m_pcCurrentVideoSubWindow = NULL;
   m_bIsPlaying = false;
   m_pcPlayingTimer = new QTimer;
+  m_pcFrameRateFeedbackTimer = new QElapsedTimer;
   m_pcPlayingTimer->setTimerType( Qt::PreciseTimer );
   connect( m_pcPlayingTimer, SIGNAL( timeout() ), this, SLOT( playEvent() ) );
   m_acPlayingSubWindows.clear();
@@ -240,6 +238,12 @@ QWidget* VideoHandle::createStatusBarMessage()
   QWidget* pcStatusBarWidget = new QWidget;
   QHBoxLayout* mainlayout = new QHBoxLayout;
 
+  m_pcPlayingFPSLabel = new QLabel;
+  m_pcPlayingFPSLabel->setText( " " );
+  m_pcPlayingFPSLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
+  m_pcPlayingFPSLabel->setMinimumWidth( 150 );
+  m_pcPlayingFPSLabel->setAlignment( Qt::AlignCenter );
+
   m_pcVideoFormatLabel = new QLabel;
   m_pcVideoFormatLabel->setText( " " );
   m_pcVideoFormatLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
@@ -252,6 +256,7 @@ QWidget* VideoHandle::createStatusBarMessage()
   m_pcResolutionLabel->setMinimumWidth( 90 );
   m_pcResolutionLabel->setAlignment( Qt::AlignCenter );
 
+  mainlayout->addWidget( m_pcPlayingFPSLabel );
   mainlayout->addWidget( m_pcVideoFormatLabel );
   mainlayout->addWidget( m_pcResolutionLabel );
   pcStatusBarWidget->setLayout( mainlayout );
@@ -320,9 +325,6 @@ void VideoHandle::update()
     CalypStream* pcStream = m_pcCurrentVideoSubWindow->getInputStream();
     CalypFrame* pcFrame = m_pcCurrentVideoSubWindow->getCurrFrame();
 
-    unsigned long frame_num = 0;
-    unsigned long total_frame_num = 1;
-
     m_pcVideoFormatLabel->setText( m_pcCurrentVideoSubWindow->getStreamInformation() );
 
     QString resolution;
@@ -331,6 +333,8 @@ void VideoHandle::update()
       resolution.append( QString( "%1x%2" ).arg( pcFrame->getWidth() ).arg( pcFrame->getHeight() ) );
     }
 
+    unsigned long frame_num = 0;
+    unsigned long total_frame_num = 1;
     if( pcStream )
     {
       frame_num = pcStream->getCurrFrameNum();
@@ -366,6 +370,11 @@ void VideoHandle::update()
     m_pcFrameSlider->setValue( frame_num );
     m_pcFrameSlider->blockSignals( false );
 
+    if( m_uiRealAverageFrameRate > 0 )
+    {
+      m_pcPlayingFPSLabel->setText( QString( "%1 fps" ).arg( m_uiRealAverageFrameRate ) );
+    }
+
     if( m_pcCurrentVideoSubWindow->isPlaying() )
     {
       m_arrayActions[PLAY_ACT]->setText( "Pause" );
@@ -379,6 +388,7 @@ void VideoHandle::update()
   }
   else
   {
+    m_pcPlayingFPSLabel->setText( "" );
     m_pcVideoFormatLabel->setText( "" );
     m_pcResolutionLabel->setText( "" );
     m_pcFramePropertiesSideBar->reset();
@@ -559,28 +569,23 @@ void VideoHandle::setTimerStatus()
     {
       m_pcPlayingTimer->start();
       m_bIsPlaying = true;
-#if( _CONTROL_PLAYING_TIME_ == 1 )
       m_uiNumberPlayedFrames = 0;
-      m_pcPlayControlTimer = new QElapsedTimer;
-      m_pcPlayControlTimer->start();
-      m_dAverageFps = 0;
-#endif
+      m_pcFrameRateFeedbackTimer->start();
+      m_uiRealAverageFrameRate = 0;
     }
   }
   else
   {
-#if( _CONTROL_PLAYING_TIME_ == 1 )
-    if( m_pcPlayControlTimer && m_pcPlayingTimer->interval() > 0 )
-    {
-      qDebug() << "Desired Fps: " << 1000 / m_pcPlayingTimer->interval() << "Real Fps: " << 1000 / m_dAverageFps;
-
-      delete m_pcPlayControlTimer;
-      m_pcPlayControlTimer = NULL;
-    }
-#endif
     m_pcPlayingTimer->stop();
     m_bIsPlaying = false;
   }
+}
+
+void VideoHandle::configureFrameRateTimer()
+{
+  double frame_rate = m_acPlayingSubWindows.at( 0 )->getInputStream()->getFrameRate();
+  unsigned int time_ms = (unsigned int)( 1000.0 / frame_rate + 0.5 );
+  m_pcPlayingTimer->setInterval( time_ms );
 }
 
 void VideoHandle::play()
@@ -593,8 +598,6 @@ void VideoHandle::play()
 
   if( !m_pcCurrentVideoSubWindow->isPlaying() )  // Not playing
   {
-    double frameRate;
-    unsigned int timeinterval;
     if( m_acPlayingSubWindows.size() < 2 )
     {
       for( int i = 0; i < m_acPlayingSubWindows.size(); i++ )
@@ -610,9 +613,7 @@ void VideoHandle::play()
       {
         m_acPlayingSubWindows.at( i )->play();
       }
-      frameRate = m_acPlayingSubWindows.at( 0 )->getInputStream()->getFrameRate();
-      timeinterval = (unsigned int)( 1000.0 / frameRate + 0.5 );
-      m_pcPlayingTimer->setInterval( timeinterval );
+      configureFrameRateTimer();
     }
   }
   else
@@ -656,15 +657,20 @@ void VideoHandle::stop()
   m_arrayActions[VIDEO_LOCK_ACT]->setVisible( false );
 }
 
+void VideoHandle::calculateRealFrameRate()
+{
+  double average_time_between_frames_ms = m_uiNumberPlayedFrames > 0 ? 1000.0 / m_uiRealAverageFrameRate : 0;
+  double time_elapsed_since_last_frame_ms = m_pcFrameRateFeedbackTimer->elapsed();
+  average_time_between_frames_ms = double( average_time_between_frames_ms * m_uiNumberPlayedFrames + time_elapsed_since_last_frame_ms ) / double( m_uiNumberPlayedFrames + 1 );
+  m_uiRealAverageFrameRate = 1000.0 / average_time_between_frames_ms;
+  m_uiNumberPlayedFrames++;
+  m_pcFrameRateFeedbackTimer->restart();
+}
+
 void VideoHandle::playEvent()
 {
   bool bEndOfSequence = false;
-#if( _CONTROL_PLAYING_TIME_ == 1 )
-  m_dAverageFps = double( m_dAverageFps * m_uiNumberPlayedFrames + m_pcPlayControlTimer->elapsed() ) /
-                  double( m_uiNumberPlayedFrames + 1 );
-  m_uiNumberPlayedFrames++;
-  m_pcPlayControlTimer->restart();
-#endif
+  calculateRealFrameRate();
   try
   {
     for( int i = 0; i < m_acPlayingSubWindows.size(); i++ )
@@ -713,7 +719,6 @@ void VideoHandle::seekEvent( int direction )
       m_pcCurrentVideoSubWindow->seekRelativeEvent( direction > 0 ? true : false );
     }
     emit changed();
-    // update();
   }
 }
 

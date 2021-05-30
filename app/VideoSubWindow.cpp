@@ -34,7 +34,7 @@
 #include "QtConcurrent/qtconcurrentrun.h"
 #include "SubWindowAbstract.h"
 
-#define QT_NO_CONCURRENT
+//#define QT_NO_CONCURRENT
 
 /**
  * \brief Functions to control data stream from stream information
@@ -765,8 +765,8 @@ bool VideoSubWindow::goToNextFrame( bool bThreaded )
     m_cRefreshResult.waitForFinished();
     if( bThreaded )
     {
-      refreshFrame();
       m_cReadResult = QtConcurrent::run( m_pCurrStream, &CalypStream::readNextFrameFillRGBBuffer );
+      refreshFrame();
     }
     else
 #endif

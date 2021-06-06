@@ -674,16 +674,11 @@ void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness, unsigned long 
 void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness )
 {
   ClpByte* ppBuff[MAX_NUMBER_PLANES];
-  ClpByte* pTmpBuff;
-  ClpPel* pPel;
   unsigned int bytesPixel = ( d->m_uiBitsPel - 1 ) / 8 + 1;
-  int ratioH, ratioW, step;
-  unsigned int i, ch;
   int startByte = 0;
   int endByte = bytesPixel;
   int incByte = 1;
-  int b;
-  int maxval = pow( 2, d->m_uiBitsPel ) - 1;
+  int maxval = ( 1 << d->m_uiBitsPel ) - 1;
 
   if( iEndianness == CLP_BIG_ENDIAN )
   {
@@ -693,36 +688,35 @@ void CalypFrame::frameFromBuffer( ClpByte* Buff, int iEndianness )
   }
 
   ppBuff[0] = Buff;
-  for( i = 1; i < MAX_NUMBER_PLANES; i++ )
+  for( unsigned i = 1; i < MAX_NUMBER_PLANES; i++ )
   {
-    ratioW = i > 1 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    ratioH = i > 1 ? d->m_pcPelFormat->log2ChromaHeight : 0;
+    int ratioW = i > 1 ? d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = i > 1 ? d->m_pcPelFormat->log2ChromaHeight : 0;
     ppBuff[i] = ppBuff[i - 1] + CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ) * bytesPixel;
   }
 
-  for( ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  xMemSet( ClpPel, getTotalNumberOfPixels(), d->m_pppcInputPel[0][0] );
+
+  for( unsigned ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
-    ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    step = ( d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
+    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
+    int step = ( d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
 
-    pPel = d->m_pppcInputPel[ch][0];
-    pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
+    ClpPel* pPel = d->m_pppcInputPel[ch][0];
+    ClpByte* pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
 
-    for( i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); i++ )
+    for( unsigned p = 0; p < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); p++ )
     {
-      *pPel = 0;
-      for( b = startByte; b != endByte; b += incByte )
+      for( int b = startByte; b != endByte; b += incByte )
       {
-        *pPel += *pTmpBuff << ( b * 8 );
+        pPel[p] += *pTmpBuff << ( b * 8 );
         pTmpBuff++;
-        // Check max value and bound it to "maxval" to prevent segfault when
-        // calculating histogram
-        if( *pPel > maxval )
-          *pPel = 0;
-        // -----
       }
-      pPel++;
+      // Check max value and bound it to "maxval" to prevent segfault when
+      // calculating histogram
+      if( pPel[p] > maxval )
+        pPel[p] = 0;
       pTmpBuff += step;
     }
   }

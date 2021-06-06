@@ -3,3 +3,4 @@
 #
 
 ADD_SUBDIRECTORY(modules)
+ADD_SUBDIRECTORY(stream)

@@ -780,8 +780,6 @@ void CalypFrame::frameToBuffer( ClpByte* output_buffer, int iEndianness )
   }
 }
 
-void CalypFrame::fillRGBBuffer()
-{
 #define PEL_ARGB( a, r, g, b ) ( ( a & 0xff ) << 24 ) | ( ( r & 0xff ) << 16 ) | ( ( g & 0xff ) << 8 ) | ( b & 0xff )
 #define PEL_RGB( r, g, b ) PEL_ARGB( 0xffu, r, g, b )
 #define CLAMP_YUV2RGB( X ) X = X < 0 ? 0 : X > 255 ? 255 : \
@@ -794,10 +792,45 @@ void CalypFrame::fillRGBBuffer()
   CLAMP_YUV2RGB( iG )                                              \
   CLAMP_YUV2RGB( iB )
 
+void fillRGBBufferYUV420p( ClpPel*** pppInputPel, uint32_t* pARGB, unsigned uiWidth, unsigned uiHeight, int shiftBits )
+{
+  ClpPel* pY = pppInputPel[CLP_LUMA][0];
+  ClpPel* pU = pppInputPel[CLP_CHROMA_U][0];
+  ClpPel* pV = pppInputPel[CLP_CHROMA_V][0];
+
+  for( unsigned y = 0; y < uiHeight; y += 2 )
+  {
+    for( unsigned x = 0; x < uiWidth; x += 2 )
+    {
+      int iY, iU, iV, iR, iG, iB;
+      iY = pY[y * uiWidth + x] >> shiftBits;
+      iU = pU[y * uiWidth / 4 + x / 2] >> shiftBits;
+      iV = pV[y * uiWidth / 4 + x / 2] >> shiftBits;
+      YUV2RGB( iY, iU, iV, iR, iG, iB );
+      pARGB[y * uiWidth + x] = PEL_RGB( iR, iG, iB );
+
+      iY = pY[y * uiWidth + x + 1] >> shiftBits;
+      YUV2RGB( iY, iU, iV, iR, iG, iB );
+      pARGB[y * uiWidth + x + 1] = PEL_RGB( iR, iG, iB );
+
+      iY = pY[y * uiWidth + uiWidth + x] >> shiftBits;
+      YUV2RGB( iY, iU, iV, iR, iG, iB );
+      pARGB[y * uiWidth + uiWidth + x] = PEL_RGB( iR, iG, iB );
+
+      iY = pY[y * uiWidth + uiWidth + x + 1] >> shiftBits;
+      YUV2RGB( iY, iU, iV, iR, iG, iB );
+      pARGB[y * uiWidth + uiWidth + x + 1] = PEL_RGB( iR, iG, iB );
+    }
+  }
+}
+
+void CalypFrame::fillRGBBuffer()
+{
   if( d->m_bHasRGBPel )
     return;
   int shiftBits = d->m_uiBitsPel - 8;
 
+  d->m_bHasRGBPel = true;
   // 4 bytes for A, R, G and B
   uint32_t* pARGB = (uint32_t*)d->m_pcARGB32;
   if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY )
@@ -829,6 +862,11 @@ void CalypFrame::fillRGBBuffer()
   }
   else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV )
   {
+    if( d->m_iPixelFormat == CLP_YUV420P )
+    {
+      fillRGBBufferYUV420p( d->m_pppcInputPel, pARGB, d->m_uiWidth, d->m_uiHeight, shiftBits );
+      return;
+    }
     ClpPel* pLineY = d->m_pppcInputPel[CLP_LUMA][0];
     ClpPel* pLineU = d->m_pppcInputPel[CLP_CHROMA_U][0];
     ClpPel* pLineV = d->m_pppcInputPel[CLP_CHROMA_V][0];
@@ -871,7 +909,6 @@ void CalypFrame::fillRGBBuffer()
       pLineV += uiChromaStride;
     }
   }
-  d->m_bHasRGBPel = true;
 }
 
 /**

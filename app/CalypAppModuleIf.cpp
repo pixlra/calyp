@@ -167,14 +167,12 @@ void CalypAppModuleIf::show()
     if( m_pcDisplaySubWindow )
     {
       m_pcDisplaySubWindow->setCurrFrame( m_pcProcessedFrame );
-      m_pcDisplaySubWindow->setFillWindow( false );
-      m_pcDisplaySubWindow->clearWindowBusy();
+      m_pcDisplaySubWindow->setFillWindow( isRunning() );
     }
     else
     {
       m_pcSubWindow[0]->setCurrFrame( m_pcProcessedFrame );
-      m_pcSubWindow[0]->setFillWindow( false );
-      m_pcSubWindow[0]->clearWindowBusy();
+      m_pcSubWindow[0]->setFillWindow( isRunning() );
     }
     break;
   case CLP_FRAME_MEASUREMENT_MODULE:

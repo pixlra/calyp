@@ -53,25 +53,17 @@ public:
   void setup( CalypFrame* frame )
   {
     m_pcFrame = frame;
-    run();
-    //start();
+    //run();
+    start();
   }
   void run()
   {
     if( m_pcFrame && m_parent )
     {
       EventData* eventData = new EventData();
-      //      eventDm_imageHistogramata->starting = true;
-      //      eventData->success = false;
-      //      eventData->histogram = m_histogram;
-      //      QCoreApplication::postEvent( m_parent, eventData );
-
       eventData->starting = true;
-
       m_pcFrame->calcHistogram();
-
       eventData->starting = false;
-      //       eventData->success = m_pcFrame->getHasHistogram();
       eventData->success = true;
       eventData->frame = m_pcFrame;
       QCoreApplication::postEvent( m_parent, eventData );

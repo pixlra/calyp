@@ -52,7 +52,11 @@ VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
   m_acPlayingSubWindows.clear();
 }
 
-VideoHandle::~VideoHandle() {}
+VideoHandle::~VideoHandle()
+{
+  delete m_pcPlayingTimer;
+  delete m_pcFrameRateFeedbackTimer;
+}
 
 void VideoHandle::createActions()
 {
@@ -360,7 +364,7 @@ void VideoHandle::update()
     }
     m_pcResolutionLabel->setText( resolution );
 
-    m_pcFramePropertiesSideBar->setFrame( pcFrame );
+    m_pcFramePropertiesSideBar->setFrame( pcFrame, m_pcCurrentVideoSubWindow->isPlaying() );
 
     m_pcFrameNumInfo->setTotalFrameNum( total_frame_num );
     m_pcFrameNumInfo->setCurrFrameNum( frame_num );
@@ -669,13 +673,22 @@ void VideoHandle::calculateRealFrameRate()
 
 void VideoHandle::playEvent()
 {
-  bool bEndOfSequence = false;
+  // This value should only be true if it is really needed to refresh the UI after this play event
+  // Lets assum the current window is not playing. Nothing changes in the UI expect the playing windows
+  // So no changed is emmited
+  bool bShouldRefreshUI = false;
   calculateRealFrameRate();
   try
   {
+    bool bEndOfSequence = false;
     for( auto playingSubWindow : m_acPlayingSubWindows )
     {
       bEndOfSequence |= playingSubWindow->playEvent();
+      // If the current selected windows is playing then we need to refresh the UI
+      if( playingSubWindow == m_pcCurrentVideoSubWindow )
+      {
+        bShouldRefreshUI = true;
+      }
     }
     if( bEndOfSequence )
     {
@@ -702,7 +715,8 @@ void VideoHandle::playEvent()
     stop();
     m_pcCurrentVideoSubWindow->close();
   }
-  emit changed();
+  if( bShouldRefreshUI )
+    emit changed();
 }
 
 void VideoHandle::seekEvent( int direction )

@@ -89,6 +89,7 @@ int findCalypStreamInfo( CalypFileInfoVector array, QString filename )
 class VideoInformation : public QWidget
 {
 private:
+  QTimer* m_pcRefreshTimer;
   QList<QStaticText> m_cTopLeftTextList;
   QFont m_cTopLeftTextFont;
   QFont m_cCenterTextFont;
@@ -102,6 +103,9 @@ public:
     setAttribute( Qt::WA_TransparentForMouseEvents );
     m_cTopLeftTextFont.setPointSize( 8 );
     m_cCenterTextFont.setPointSize( 12 );
+    m_pcRefreshTimer = new QTimer;
+    m_pcRefreshTimer->setSingleShot( true );
+    connect( m_pcRefreshTimer, SIGNAL( timeout() ), this, SLOT( update() ) );
   }
   void setInformationTopLeft( const QStringList& textLines )
   {
@@ -111,7 +115,11 @@ public:
       m_cTopLeftTextList.append( QStaticText( textLines.at( i ) ) );
     }
   }
-  void setBusyWindow( bool bFlag ) { m_bBusyWindow = bFlag; }
+  void setBusyWindow( bool bFlag )
+  {
+    m_bBusyWindow = bFlag;
+    m_pcRefreshTimer->start( 500 );
+  }
 
 protected:
   void paintEvent( QPaintEvent* event )
@@ -704,7 +712,6 @@ bool VideoSubWindow::hasRunningModule()
 void VideoSubWindow::setFillWindow( bool bFlag )
 {
   m_pcVideoInfo->setBusyWindow( bFlag );
-  m_pcVideoInfo->repaint();
 }
 
 void VideoSubWindow::setCurrFrame( CalypFrame* pcCurrFrame )
@@ -806,6 +813,20 @@ bool VideoSubWindow::saveStream( QString filename )
   // TODO: implement this
   QApplication::restoreOverrideCursor();
   return iRet;
+}
+
+bool VideoSubWindow::isPlaying()
+{
+  if( getCategory() & SubWindowCategory::MODULE_SUBWINDOW )
+  {
+    for( auto window : m_pcCurrentDisplayModule->getSubWindowList() )
+    {
+      if( window->isPlaying() )
+        return true;
+    }
+    return false;
+  }
+  return m_bIsPlaying;
 }
 
 bool VideoSubWindow::play()

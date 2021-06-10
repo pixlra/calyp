@@ -127,7 +127,7 @@ public:
   bool playEvent();
   void stop();
 
-  bool isPlaying() { return m_bIsPlaying; }
+  bool isPlaying();
   void seekAbsoluteEvent( unsigned int new_frame_num );
   void seekRelativeEvent( bool bIsFoward );
 

@@ -31,7 +31,7 @@
 #include "lib/CalypStream.h"
 
 FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitch )
-    : QWidget( parent ), m_pbIsPlaying( pbMainPlaySwitch ), m_bHasFrame( false )
+    : QWidget( parent ), m_bIsPlaying( false ), m_bHasFrame( false )
 {
   // -------------- Variables definition --------------
   m_iLastFrameType = -1;
@@ -297,7 +297,7 @@ void FramePropertiesDock::reset()
   setEnabled( false );
 }
 
-void FramePropertiesDock::setFrame( CalypFrame* pcFrame )
+void FramePropertiesDock::setFrame( CalypFrame* pcFrame, bool isPlaying )
 {
   int colorSpace = pcFrame->getColorSpace();
   if( m_iLastFrameType != colorSpace )
@@ -359,12 +359,20 @@ void FramePropertiesDock::setFrame( CalypFrame* pcFrame )
     }
   }
   setEnabled( true );
-  if( pcFrame && !( *m_pbIsPlaying ) )
+  m_bIsPlaying = isPlaying;
+  if( !m_bIsPlaying )
   {
-    m_bHasFrame = true;
-    m_cFrame = CalypFrame( pcFrame );
-    updateDataHistogram();
+    if( pcFrame )
+    {
+      m_bHasFrame = true;
+      m_cFrame = CalypFrame( pcFrame );
+    }
+    else
+    {
+      m_bHasFrame = false;
+    }
   }
+  updateDataHistogram();
 }
 
 void FramePropertiesDock::setSelection( const QRect& selectionArea )
@@ -401,7 +409,7 @@ void FramePropertiesDock::updateDataHistogram()
 {
   if( m_bHasFrame && isVisible() )
   {
-    if( !*m_pbIsPlaying )
+    if( !m_bIsPlaying )
     {
       if( m_cSelectionArea.isValid() )
       {

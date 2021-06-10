@@ -43,7 +43,7 @@ public:
 
   QSize sizeHint() const;
 
-  void setFrame( CalypFrame* m_pcFrame );
+  void setFrame( CalypFrame* m_pcFrame, bool isPlaying );
   void setSelection( const QRect& selectionArea );
   void reset();
   void stopHistogram();
@@ -52,8 +52,8 @@ private:
   CalypFrame m_cFrame;
   CalypFrame m_cSelectedFrame;
   int m_iLastFrameType;
+  bool m_bIsPlaying;
   bool m_bHasFrame;
-  bool* m_pbIsPlaying;
 
   QComboBox* channelCB;
   QComboBox* colorsCB;

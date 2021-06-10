@@ -108,6 +108,7 @@ public:
   ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
+  void setPlaying( bool isPlaying );
   bool isRunning();
   void show();
   void destroy();

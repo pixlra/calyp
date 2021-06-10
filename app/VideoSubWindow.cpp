@@ -815,6 +815,15 @@ bool VideoSubWindow::saveStream( QString filename )
   return iRet;
 }
 
+void VideoSubWindow::setPlaying( bool isPlaying )
+{
+  m_bIsPlaying = isPlaying;
+  for( auto module : m_apcCurrentModule )
+  {
+    module->setPlaying( isPlaying );
+  }
+}
+
 bool VideoSubWindow::isPlaying()
 {
   if( getCategory() & SubWindowCategory::MODULE_SUBWINDOW )
@@ -831,14 +840,12 @@ bool VideoSubWindow::isPlaying()
 
 bool VideoSubWindow::play()
 {
+  bool isPlaying = false;
   if( m_pCurrStream && m_pCurrStream->getFrameNum() > 1 )
   {
-    m_bIsPlaying = true;
+    isPlaying = true;
   }
-  else
-  {
-    m_bIsPlaying = false;
-  }
+  setPlaying( isPlaying );
   return m_bIsPlaying;
 }
 
@@ -854,7 +861,7 @@ bool VideoSubWindow::playEvent()
 
 void VideoSubWindow::pause()
 {
-  m_bIsPlaying = false;
+  setPlaying( false );
   refreshFrame();
 }
 
@@ -891,7 +898,7 @@ void VideoSubWindow::stop()
   m_cRefreshResult.waitForFinished();
   m_cReadResult.waitForFinished();
 #endif
-  m_bIsPlaying = false;
+  setPlaying( false );
   seekAbsoluteEvent( 0 );
   return;
 }

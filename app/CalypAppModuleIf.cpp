@@ -60,6 +60,14 @@ void CalypAppModuleIf::update( bool isPlaying )
   }
 }
 
+void CalypAppModuleIf::setPlaying( bool isPlaying )
+{
+  if( m_pcDisplaySubWindow )
+  {
+    m_pcDisplaySubWindow->setPlaying( isPlaying );
+  }
+}
+
 bool CalypAppModuleIf::isRunning()
 {
 #ifdef CALYP_THREADED_MODULES

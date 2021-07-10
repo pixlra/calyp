@@ -49,8 +49,8 @@ public:
   void stopHistogram();
 
 private:
-  CalypFrame m_cFrame;
-  CalypFrame m_cSelectedFrame;
+  std::shared_ptr<CalypFrame> m_pcFrame;
+  std::shared_ptr<CalypFrame> m_pcSelectedFrame;
   int m_iLastFrameType;
   bool m_bIsPlaying;
   bool m_bHasFrame;

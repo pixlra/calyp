@@ -42,6 +42,7 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include "CalypDefs.h"
 

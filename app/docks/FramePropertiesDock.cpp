@@ -365,7 +365,7 @@ void FramePropertiesDock::setFrame( CalypFrame* pcFrame, bool isPlaying )
     if( pcFrame )
     {
       m_bHasFrame = true;
-      m_cFrame = CalypFrame( pcFrame );
+      m_pcFrame = std::make_shared<CalypFrame>( *pcFrame );
     }
     else
     {
@@ -389,8 +389,10 @@ void FramePropertiesDock::setSelection( const QRect& selectionArea )
        */
       if( bSelectionChanged )
       {
-        m_cSelectedFrame = CalypFrame( m_cFrame, selectionArea.x(), selectionArea.y(), selectionArea.width(),
-                                       selectionArea.height() );
+        m_pcSelectedFrame = std::make_shared<CalypFrame>( *m_pcFrame, selectionArea.x(),
+                                                          selectionArea.y(),
+                                                          selectionArea.width(),
+                                                          selectionArea.height() );
       }
       updateDataHistogram();
       selectionImageButton->click();
@@ -413,7 +415,11 @@ void FramePropertiesDock::updateDataHistogram()
     {
       if( m_cSelectionArea.isValid() )
       {
-        m_cSelectedFrame = CalypFrame( m_cFrame, m_cSelectionArea.x(), m_cSelectionArea.y(), m_cSelectionArea.width(), m_cSelectionArea.height() );
+        m_pcSelectedFrame = std::make_shared<CalypFrame>( *m_pcFrame,
+                                                          m_cSelectionArea.x(),
+                                                          m_cSelectionArea.y(),
+                                                          m_cSelectionArea.width(),
+                                                          m_cSelectionArea.height() );
         fullImageButton->show();
         selectionImageButton->show();
       }
@@ -422,7 +428,7 @@ void FramePropertiesDock::updateDataHistogram()
         fullImageButton->hide();
         selectionImageButton->hide();
       }
-      histogramWidget->updateData( &m_cFrame, m_cSelectionArea.isValid() ? &m_cSelectedFrame : nullptr );
+      histogramWidget->updateData( m_pcFrame, m_cSelectionArea.isValid() ? m_pcSelectedFrame : nullptr );
     }
     else
     {
@@ -448,7 +454,7 @@ void FramePropertiesDock::updateStatistiques()
   if( channel == CalypFrame::HIST_ALL_CHANNELS )
     channel = colorsCB->itemData( colorsCB->currentIndex() ).toInt();
 
-  CalypFrame* frame;
+  std::shared_ptr<CalypFrame> frame;
 
   if( histogramWidget->m_renderingType == HistogramWidget::FullImageHistogram )
     frame = histogramWidget->m_fullImage;

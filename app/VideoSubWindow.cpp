@@ -800,7 +800,7 @@ bool VideoSubWindow::save( QString filename )
   {
     return false;
   }
-  iRet = CalypStream::saveFrame( filename.toStdString(), saveFrame );
+  iRet = CalypStream::saveFrame( filename.toStdString(), *saveFrame );
   QApplication::restoreOverrideCursor();
   return iRet;
 }

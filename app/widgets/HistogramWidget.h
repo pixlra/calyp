@@ -90,7 +90,7 @@ public:
   void stopHistogramComputation();
 
   /** Update full image histogram data. */
-  void updateData( CalypFrame* pcFrame, CalypFrame* pcFrameSelection );
+  void updateData( std::shared_ptr<CalypFrame> pcFrame, std::shared_ptr<CalypFrame> pcFrameSelection );
 
   /** @see @p HistogramOption */
   void setOptions( HistogramOptions options = AllOptions );
@@ -113,12 +113,10 @@ public:
 
   /** Full image */
   HistogramWorker* m_imageWorker;
-  // CalypFrameStats* m_imageHistogram;
-  CalypFrame* m_fullImage;
+  std::shared_ptr<CalypFrame> m_fullImage;
   /** Histogram area selection */
   HistogramWorker* m_selectionWorker;
-  // CalypFrameStats* m_selectionHistogram;
-  CalypFrame* m_selectionImage;
+  std::shared_ptr<CalypFrame> m_selectionImage;
 
 Q_SIGNALS:
   void signalintervalChanged( int min, int max );

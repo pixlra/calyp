@@ -579,7 +579,7 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
     {
       pcCurrModuleIf->apply( false, true );
       QCoreApplication::processEvents();
-      pcCurrModuleIf->m_pcModuleStream->writeFrame( pcCurrModuleIf->m_pcProcessedFrame );
+      pcCurrModuleIf->m_pcModuleStream->writeFrame( *pcCurrModuleIf->m_pcProcessedFrame );
       for( unsigned int i = 0; i < numberOfWindows; i++ )
       {
         pcCurrModuleIf->m_pcSubWindow[i]->play();

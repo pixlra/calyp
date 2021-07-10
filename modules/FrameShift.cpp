@@ -24,6 +24,8 @@
 
 #include "FrameShift.h"
 
+#include <memory>
+
 FrameShift::FrameShift()
 {
   /* Module Definition */
@@ -48,7 +50,11 @@ FrameShift::FrameShift()
 bool FrameShift::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
-  m_pcProcessedFrame = new CalypFrame( apcFrameList[0] );
+  m_pcProcessedFrame = new CalypFrame{ apcFrameList[0]->getWidth(),
+                                       apcFrameList[0]->getHeight(),
+                                       apcFrameList[0]->getPelFormat(),
+                                       apcFrameList[0]->getBitsPel(),
+                                       apcFrameList[0]->getHasNegativeValues() };
   return true;
 }
 

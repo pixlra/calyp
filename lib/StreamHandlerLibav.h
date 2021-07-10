@@ -65,11 +65,11 @@ public:
   ~StreamHandlerLibav() {}
   bool openHandler( ClpString strFilename, bool bInput );
   void closeHandler();
-  bool configureBuffer( CalypFrame* pcFrame );
+  bool configureBuffer( const CalypFrame& pcFrame );
   void calculateFrameNumber();
   bool seek( ClpULong iFrameNum );
-  bool read( CalypFrame* pcFrame );
-  bool write( CalypFrame* pcFrame );
+  bool read( CalypFrame& pcFrame );
+  bool write( const CalypFrame& pcFrame );
 
   unsigned int getStreamDuration() { return m_uiSecs; }
   unsigned char* m_pchFrameBuffer;

@@ -325,9 +325,9 @@ void StreamHandlerLibav::closeHandler()
   m_bHasStream = false;
 }
 
-bool StreamHandlerLibav::configureBuffer( CalypFrame* pcFrame )
+bool StreamHandlerLibav::configureBuffer( const CalypFrame& pcFrame )
 {
-  m_pStreamBuffer.resize( pcFrame->getBytesPerFrame() );
+  m_pStreamBuffer.resize( pcFrame.getBytesPerFrame() );
   return true;
 }
 
@@ -354,7 +354,7 @@ void StreamHandlerLibav::calculateFrameNumber()
   m_uiTotalNumberFrames = num_frames;
 }
 
-bool StreamHandlerLibav::read( CalypFrame* pcFrame )
+bool StreamHandlerLibav::read( CalypFrame& pcFrame )
 {
   int bGotFrame = 0;
   bool bErrors = false;
@@ -428,14 +428,14 @@ bool StreamHandlerLibav::read( CalypFrame* pcFrame )
     av_image_copy_to_buffer( m_pStreamBuffer.data(), m_uiFrameBufferSize, decFrame->data,
                              decFrame->linesize, AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
 
-    pcFrame->frameFromBuffer( m_pStreamBuffer, m_iEndianness );
+    pcFrame.frameFromBuffer( m_pStreamBuffer, m_iEndianness );
     m_uiCurrFrameFileIdx++;
     return true;
   }
   return false;
 }
 
-bool StreamHandlerLibav::write( CalypFrame* pcFrame )
+bool StreamHandlerLibav::write( const CalypFrame& pcFrame )
 {
   return false;
 }

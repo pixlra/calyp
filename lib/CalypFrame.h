@@ -27,6 +27,7 @@
 #define __CALYPFRAME_H__
 
 #include <span>
+#include <vector>
 
 #include "CalypDefs.h"
 
@@ -106,11 +107,6 @@ public:
   static int pelformatColorSpace( const int idx );
 
   /**
-   * Default constructor. Frame is not valid
-   */
-  CalypFrame();
-
-  /**
 	 * Creates a new frame using the following configuration
 	 *
 	 * @param width width of the frame
@@ -152,7 +148,6 @@ public:
 	 * @param other existing frame to copy from
 	 */
   CalypFrame( const CalypFrame& other );
-  CalypFrame( const CalypFrame* other );
 
   /**
    * Copy-assignement contructor
@@ -369,12 +364,12 @@ public:
      * @param x x position on the current frame
      * @param y y position on the current frame
      */
-  void copyTo( const CalypFrame& other, unsigned x, unsigned y );
-  void copyTo( const CalypFrame* other, unsigned x, unsigned y );
+  void copyTo( const CalypFrame& other, unsigned x, unsigned y ) const;
+  void copyTo( const CalypFrame* other, unsigned x, unsigned y ) const;
 
   void frameFromBuffer( const std::vector<ClpByte>&, int, unsigned long );
   void frameFromBuffer( const std::vector<ClpByte>&, int );
-  void frameToBuffer( std::vector<ClpByte>&, int );
+  void frameToBuffer( std::vector<ClpByte>&, int ) const;
 
   void fillRGBBuffer();
 
@@ -415,7 +410,7 @@ public:
   /**
 	 * interface with OpenCV lib
 	 */
-  bool toMat( cv::Mat& cvMat, bool convertToGray = false, bool scale = true, unsigned channel = 0 );
+  bool toMat( cv::Mat& cvMat, bool convertToGray = false, bool scale = true, unsigned channel = 0 ) const;
   bool fromMat( cv::Mat& cvMat, int iChannel = -1 );
 
   /**

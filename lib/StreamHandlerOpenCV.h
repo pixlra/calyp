@@ -42,10 +42,10 @@ public:
   ~StreamHandlerOpenCV() {}
   bool openHandler( ClpString strFilename, bool bInput );
   void closeHandler();
-  bool configureBuffer( CalypFrame* pcFrame );
+  bool configureBuffer( const CalypFrame& pcFrame );
   bool seek( ClpULong iFrameNum );
-  bool read( CalypFrame* pcFrame );
-  bool write( CalypFrame* pcFrame );
+  bool read( CalypFrame& pcFrame );
+  bool write( const CalypFrame& pcFrame );
 
 private:
   cv::VideoCapture* pcVideoCapture;

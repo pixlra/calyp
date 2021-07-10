@@ -66,9 +66,9 @@ void StreamHandlerRaw::closeHandler()
     fclose( m_pFile );
 }
 
-bool StreamHandlerRaw::configureBuffer( CalypFrame* pcFrame )
+bool StreamHandlerRaw::configureBuffer( const CalypFrame& pcFrame )
 {
-  m_pStreamBuffer.resize( pcFrame->getBytesPerFrame() );
+  m_pStreamBuffer.resize( pcFrame.getBytesPerFrame() );
   return true;
 }
 
@@ -94,7 +94,7 @@ bool StreamHandlerRaw::seek( ClpULong iFrameNum )
   return false;
 }
 
-bool StreamHandlerRaw::read( CalypFrame* pcFrame )
+bool StreamHandlerRaw::read( CalypFrame& pcFrame )
 {
   if( !m_pFile || m_pStreamBuffer.empty() || m_uiNBytesPerFrame == 0 )
     return false;
@@ -102,13 +102,13 @@ bool StreamHandlerRaw::read( CalypFrame* pcFrame )
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
   m_uiCurrFrameFileIdx++;
-  pcFrame->frameFromBuffer( m_pStreamBuffer, m_iEndianness );
+  pcFrame.frameFromBuffer( m_pStreamBuffer, m_iEndianness );
   return true;
 }
 
-bool StreamHandlerRaw::write( CalypFrame* pcFrame )
+bool StreamHandlerRaw::write( const CalypFrame& pcFrame )
 {
-  pcFrame->frameToBuffer( m_pStreamBuffer, m_iEndianness );
+  pcFrame.frameToBuffer( m_pStreamBuffer, m_iEndianness );
   unsigned long long int processed_bytes = fwrite( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;

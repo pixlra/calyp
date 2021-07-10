@@ -44,11 +44,11 @@ public:
   ~StreamHandlerRaw() {}
   bool openHandler( ClpString strFilename, bool bInput );
   void closeHandler();
-  bool configureBuffer( CalypFrame* pcFrame );
+  bool configureBuffer( const CalypFrame& pcFrame );
   void calculateFrameNumber();
   bool seek( ClpULong iFrameNum );
-  bool read( CalypFrame* pcFrame );
-  bool write( CalypFrame* pcFrame );
+  bool read( CalypFrame& pcFrame );
+  bool write( const CalypFrame& pcFrame );
 };
 
 #endif  // __STREAMHANDLERRAW_H__

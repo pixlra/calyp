@@ -258,12 +258,6 @@ public:
 /*!
  * \brief Constructors
  */
-
-CalypFrame::CalypFrame()
-    : d{ std::make_unique<CalypFramePrivate>() }
-{
-}
-
 CalypFrame::CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel )
     : d{ std::make_unique<CalypFramePrivate>() }
 {
@@ -300,15 +294,15 @@ CalypFrame::CalypFrame( const CalypFrame& other )
   copyFrom( &other );
 }
 
-CalypFrame::CalypFrame( const CalypFrame* other )
-    : d{ std::make_unique<CalypFramePrivate>() }
-{
-  if( other )
-  {
-    d->init( other->getWidth(), other->getHeight(), other->getPelFormat(), other->getBitsPel(), other->getHasNegativeValues() );
-    copyFrom( other );
-  }
-}
+// CalypFrame::CalypFrame( const CalypFrame* other )
+//     : d{ std::make_unique<CalypFramePrivate>() }
+// {
+//   if( other )
+//   {
+//     d->init( other->getWidth(), other->getHeight(), other->getPelFormat(), other->getBitsPel(), other->getHasNegativeValues() );
+//     copyFrom( other );
+//   }
+// }
 
 CalypFrame& CalypFrame::operator=( const CalypFrame& other )
 {
@@ -621,7 +615,7 @@ void CalypFrame::copyFrom( const CalypFrame* other, unsigned x, unsigned y )
     copyFrom( *other, x, y );
 }
 
-void CalypFrame::copyTo( const CalypFrame& other, unsigned x, unsigned y )
+void CalypFrame::copyTo( const CalypFrame& other, unsigned x, unsigned y ) const
 {
   if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
     return;
@@ -642,7 +636,7 @@ void CalypFrame::copyTo( const CalypFrame& other, unsigned x, unsigned y )
   d->m_bHasHistogram = false;
 }
 
-void CalypFrame::copyTo( const CalypFrame* other, unsigned x, unsigned y )
+void CalypFrame::copyTo( const CalypFrame* other, unsigned x, unsigned y ) const
 {
   if( other )
     copyTo( *other, x, y );
@@ -709,7 +703,7 @@ void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndiann
   d->m_bHasHistogram = false;
 }
 
-void CalypFrame::frameToBuffer( std::vector<ClpByte>& output_buffer, int iEndianness )
+void CalypFrame::frameToBuffer( std::vector<ClpByte>& output_buffer, int iEndianness ) const
 {
   unsigned int bytesPixel = ( d->m_uiBitsPel - 1 ) / 8 + 1;
   ClpByte* ppBuff[MAX_NUMBER_PLANES];
@@ -1230,7 +1224,7 @@ double CalypFrame::getEntropy( unsigned channel, unsigned int start, unsigned in
  **************************************************************
  */
 
-bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned channel )
+bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned channel ) const
 {
   bool bRet = false;
 #ifdef USE_OPENCV

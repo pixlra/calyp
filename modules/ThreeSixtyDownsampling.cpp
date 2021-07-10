@@ -595,8 +595,11 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
     m_pcOutputFrame = new CalypFrame( m_cvReshapePoints[0]->cols, m_cvReshapePoints[0]->rows, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
     break;
   case 2:
-    m_pcOutputFrame = new CalypFrame( pcInputFrame );
-    m_pcOutputFrame->reset();
+    m_pcOutputFrame = new CalypFrame{ pcInputFrame->getWidth(),
+                                      pcInputFrame->getHeight(),
+                                      pcInputFrame->getPelFormat(),
+                                      pcInputFrame->getBitsPel(),
+                                      pcInputFrame->getHasNegativeValues() };
     break;
   }
   return true;

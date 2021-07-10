@@ -82,8 +82,8 @@ bool FrameDifference::create( std::vector<CalypFrame*> apcFrameList )
 
 CalypFrame* FrameDifference::process( std::vector<CalypFrame*> apcFrameList )
 {
-  const CalypFrame& frame1 = apcFrameList[0];
-  const CalypFrame& frame2 = apcFrameList[1];
+  const CalypFrame& frame1 = *apcFrameList[0];
+  const CalypFrame& frame2 = *apcFrameList[1];
   ClpPel* pOutputPelYUV = m_pcFrameDifference->getPelBufferYUV()[0][0];
   short aux_pel_1, aux_pel_2;
   short diff = 0;

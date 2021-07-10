@@ -479,7 +479,7 @@ int CalypTools::RateReductionOperation()
     if( ( frame % m_iRateReductionFactor ) == 0 )
     {
       log( CLP_LOG_INFO, "Writing", frame );
-      m_apcOutputStreams[0]->writeFrame( m_apcInputStreams[0]->getCurrFrame() );
+      m_apcOutputStreams[0]->writeFrame( m_apcInputStreams[0]->getCurrFrameConst() );
     }
     abEOF = m_apcInputStreams[0]->setNextFrame();
     if( !abEOF )
@@ -640,7 +640,7 @@ int CalypTools::ModuleOperation()
 
       if( pcProcessedFrame )
       {
-        m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
+        m_apcOutputStreams[0]->writeFrame( *pcProcessedFrame );
       }
     }
     else if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
@@ -675,7 +675,7 @@ int CalypTools::ModuleOperation()
         pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
         if( !pcProcessedFrame )
           break;
-        m_apcOutputStreams[0]->writeFrame( pcProcessedFrame );
+        m_apcOutputStreams[0]->writeFrame( *pcProcessedFrame );
       }
     }
   }

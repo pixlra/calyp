@@ -126,9 +126,9 @@ void StreamHandlerPortableMap::closeHandler()
     fclose( m_pFile );
 }
 
-bool StreamHandlerPortableMap::configureBuffer( CalypFrame* pcFrame )
+bool StreamHandlerPortableMap::configureBuffer( const CalypFrame& pcFrame )
 {
-  m_pStreamBuffer.resize( pcFrame->getBytesPerFrame() );
+  m_pStreamBuffer.resize( pcFrame.getBytesPerFrame() );
   return true;
 }
 
@@ -138,20 +138,20 @@ bool StreamHandlerPortableMap::seek( ClpULong iFrameNum )
   return true;
 }
 
-bool StreamHandlerPortableMap::read( CalypFrame* pcFrame )
+bool StreamHandlerPortableMap::read( CalypFrame& pcFrame )
 {
   unsigned long long int processed_bytes = fread( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
-  pcFrame->frameFromBuffer( m_pStreamBuffer, CLP_BIG_ENDIAN );
+  pcFrame.frameFromBuffer( m_pStreamBuffer, CLP_BIG_ENDIAN );
   m_uiCurrFrameFileIdx++;
   return true;
 }
 
-bool StreamHandlerPortableMap::write( CalypFrame* pcFrame )
+bool StreamHandlerPortableMap::write( const CalypFrame& pcFrame )
 {
-  CalypFrame pcRGBFrame( pcFrame->getWidth(), pcFrame->getHeight(),
-                         m_iPixelFormat, pcFrame->getBitsPel() );
+  CalypFrame pcRGBFrame( pcFrame.getWidth(), pcFrame.getHeight(),
+                         m_iPixelFormat, pcFrame.getBitsPel() );
   pcRGBFrame.copyFrom( pcFrame );
   fseek( m_pFile, 0, SEEK_SET );
   fprintf( m_pFile, "P%d\n%d %d\n", m_iMagicNumber, m_uiWidth, m_uiHeight );

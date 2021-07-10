@@ -53,7 +53,11 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
 
-  m_pcOptimisedFrame = new CalypFrame( apcFrameList[0] );
+  m_pcOptimisedFrame = new CalypFrame{ apcFrameList[0]->getWidth(),
+                                       apcFrameList[0]->getHeight(),
+                                       apcFrameList[0]->getPelFormat(),
+                                       apcFrameList[0]->getBitsPel(),
+                                       apcFrameList[0]->getHasNegativeValues() };
   m_pcOptimisedFrame->reset();
 
   return true;

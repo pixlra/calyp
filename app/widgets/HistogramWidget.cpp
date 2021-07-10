@@ -41,24 +41,23 @@ class HistogramWorker : public QThread
 {
 private:
   QObject* m_parent;
-  CalypFrame* m_pcFrame;
+  std::shared_ptr<CalypFrame> m_pcFrame;
 
 public:
   HistogramWorker( QObject* parent )
   {
-    m_pcFrame = NULL;
     m_parent = parent;
   }
 
-  void setup( CalypFrame* frame )
+  void setup( std::shared_ptr<CalypFrame> frame )
   {
     m_pcFrame = frame;
-    //run();
-    start();
+    run();
+    //start();
   }
   void run()
   {
-    if( m_pcFrame && m_parent )
+    if( m_pcFrame != nullptr && m_parent != nullptr )
     {
       EventData* eventData = new EventData();
       eventData->starting = true;
@@ -86,7 +85,7 @@ public:
 
     bool starting;
     bool success;
-    CalypFrame* frame;
+    std::shared_ptr<CalypFrame> frame;
   };
 };
 
@@ -371,7 +370,7 @@ void HistogramWidget::stopHistogramComputation()
 //                          Update Data Methods
 ////////////////////////////////////////////////////////////////////////////////
 
-void HistogramWidget::updateData( CalypFrame* pcFrame, CalypFrame* pcFrameSelection )
+void HistogramWidget::updateData( std::shared_ptr<CalypFrame> pcFrame, std::shared_ptr<CalypFrame> pcFrameSelection )
 {
   d->imageBits = pcFrame->getBitsPel();
   switch( pcFrame->getColorSpace() )
@@ -489,7 +488,7 @@ void HistogramWidget::paintEvent( QPaintEvent* )
   int wWidth = width() - 1;
   int wHeight = height() - 1;
   double max;
-  CalypFrame* frame;
+  std::shared_ptr<CalypFrame> frame;
 
   if( m_renderingType == ImageSelectionHistogram && m_selectionImage )
     frame = m_selectionImage;

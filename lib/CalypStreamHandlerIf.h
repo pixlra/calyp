@@ -89,10 +89,10 @@ public:
 
   virtual bool openHandler( ClpString strFilename, bool bInput ) = 0;
   virtual void closeHandler() = 0;
-  virtual bool configureBuffer( CalypFrame* pcFrame ) = 0;
+  virtual bool configureBuffer( const CalypFrame& pcFrame ) = 0;
   virtual bool seek( ClpULong iFrameNum ) = 0;
-  virtual bool read( CalypFrame* pcFrame ) = 0;
-  virtual bool write( CalypFrame* pcFrame ) = 0;
+  virtual bool read( CalypFrame& pcFrame ) = 0;
+  virtual bool write( const CalypFrame& pcFrame ) = 0;
 
   virtual void calculateFrameNumber(){};
 

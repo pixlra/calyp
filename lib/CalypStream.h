@@ -26,6 +26,8 @@
 #ifndef __CALYPSTREAM_H__
 #define __CALYPSTREAM_H__
 
+#include <vector>
+
 #include "CalypDefs.h"
 
 class CalypFrame;
@@ -33,21 +35,21 @@ class CalypStreamHandlerIf;
 
 typedef CalypStreamHandlerIf* ( *CreateStreamHandlerFn )( void );
 
-typedef struct
+struct CalypStreamFormat
 {
   ClpString formatName;
   ClpString formatExt;
   std::vector<ClpString> getExts();
   ClpString formatPattern;
   CreateStreamHandlerFn formatFct;
-} CalypStreamFormat;
+};
 
-typedef struct
+struct CalypStandardResolution
 {
   ClpString shortName;
   unsigned int uiWidth;
   unsigned int uiHeight;
-} CalypStandardResolution;
+};
 
 /**
  * \class CalypStream
@@ -68,9 +70,7 @@ public:
   ~CalypStream();
 
   ClpString getFormatName() const;
-  ;
   ClpString getCodecName() const;
-  ;
 
   bool open( ClpString filename, ClpString resolution, ClpString input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
@@ -97,27 +97,29 @@ public:
   void loadAll();
 
   void writeFrame();
-  void writeFrame( CalypFrame* pcFrame );
+  void writeFrame( const CalypFrame& pcFrame );
 
   bool saveFrame( const ClpString& filename );
-  static bool saveFrame( const ClpString& filename, CalypFrame* saveFrame );
+  static bool saveFrame( const ClpString& filename, const CalypFrame& saveFrame );
 
-  CalypFrame* getCurrFrame( CalypFrame* ) const;
+  CalypFrame* getCurrFrame( CalypFrame* );
 
   // continuous read control
   bool setNextFrame();
   void readNextFrame();
   void readNextFrameFillRGBBuffer();
-  CalypFrame* getCurrFrame() const;
+  CalypFrame* getCurrFrame();
+  const CalypFrame& getCurrFrameConst() const;
 
   bool seekInputRelative( bool bIsFoward );
   bool seekInput( unsigned long new_frame_num );
 
 private:
-  bool readFrame( CalypFrame* frame );
+  bool readFrame( CalypFrame& frame );
 
 private:
-  struct CalypStreamPrivate* d;
+  class CalypStreamPrivate;
+  std::unique_ptr<CalypStreamPrivate> d;
 };
 
 #endif  // __CALYPSTREAM_H__

@@ -126,7 +126,7 @@ void StreamHandlerOpenCV::closeHandler()
   }
 }
 
-bool StreamHandlerOpenCV::configureBuffer( CalypFrame* pcFrame )
+bool StreamHandlerOpenCV::configureBuffer( const CalypFrame& pcFrame )
 {
   return true;
 }
@@ -137,7 +137,7 @@ bool StreamHandlerOpenCV::seek( ClpULong iFrameNum )
   return true;
 }
 
-bool StreamHandlerOpenCV::read( CalypFrame* pcFrame )
+bool StreamHandlerOpenCV::read( CalypFrame& pcFrame )
 {
   bool bRet = false;
   if( pcVideoCapture )
@@ -145,23 +145,23 @@ bool StreamHandlerOpenCV::read( CalypFrame* pcFrame )
     Mat cvMat;
     bRet = pcVideoCapture->read( cvMat );
     if( bRet )
-      bRet = pcFrame->fromMat( cvMat );
+      bRet = pcFrame.fromMat( cvMat );
   }
   else
   {
     Mat cvMat = cv::imread( m_cFilename );
-    bRet = pcFrame->fromMat( cvMat );
+    bRet = pcFrame.fromMat( cvMat );
   }
   if( bRet )
     m_uiCurrFrameFileIdx++;
   return bRet;
 }
 
-bool StreamHandlerOpenCV::write( CalypFrame* pcFrame )
+bool StreamHandlerOpenCV::write( const CalypFrame& pcFrame )
 {
   bool bRet = false;
   Mat cvFrame;
-  bRet = pcFrame->toMat( cvFrame, false, true );
+  bRet = pcFrame.toMat( cvFrame, false, true );
   if( !bRet )
     return bRet;
   bRet = cv::imwrite( m_cFilename, cvFrame );

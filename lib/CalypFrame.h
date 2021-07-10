@@ -26,6 +26,8 @@
 #ifndef __CALYPFRAME_H__
 #define __CALYPFRAME_H__
 
+#include <span>
+
 #include "CalypDefs.h"
 
 namespace cv
@@ -73,7 +75,8 @@ public:
   CalypPixel convertPixel( CalypColorSpace eOutputSpace );
 
 private:
-  struct CalypPixelPrivate* d;
+  class CalypPixelPrivate;
+  std::unique_ptr<CalypPixelPrivate> d;
 };
 
 /**
@@ -369,9 +372,9 @@ public:
   void copyTo( const CalypFrame& other, unsigned x, unsigned y );
   void copyTo( const CalypFrame* other, unsigned x, unsigned y );
 
-  void frameFromBuffer( ClpByte*, int, unsigned long );
-  void frameFromBuffer( ClpByte*, int );
-  void frameToBuffer( ClpByte*, int );
+  void frameFromBuffer( const std::vector<ClpByte>&, int, unsigned long );
+  void frameFromBuffer( const std::vector<ClpByte>&, int );
+  void frameToBuffer( std::vector<ClpByte>&, int );
 
   void fillRGBBuffer();
 
@@ -443,7 +446,8 @@ public:
   /** @} */
 
 private:
-  struct CalypFramePrivate* d;
+  class CalypFramePrivate;
+  std::unique_ptr<CalypFramePrivate> d;
 };
 
 #endif  // __CALYPFRAME_H__

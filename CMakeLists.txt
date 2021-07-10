@@ -218,10 +218,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # Compiler options
 # ####################################################################################################################################################
 
-SET(CMAKE_CXX_STANDARD 14)
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  ADD_DEFINITIONS(-std=gnu++0x)
-ENDIF()
+SET(CMAKE_CXX_STANDARD 20)
+ADD_DEFINITIONS(-std=gnu++20)
 
 IF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No build type selected, default to Release")

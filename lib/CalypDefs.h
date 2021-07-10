@@ -26,16 +26,14 @@
 #ifndef __CALYPDEFS_H__
 #define __CALYPDEFS_H__
 
-#include <algorithm>
 #include <iterator>
+#include <memory>
 #include <string>
-#include <vector>
 
-typedef unsigned short ClpPel;  ///< 16-bit pixel type
-typedef unsigned char ClpByte;
-typedef unsigned long long ClpULong;
-
-typedef std::string ClpString;
+using ClpByte = std::uint8_t;
+using ClpPel = std::uint16_t;
+using ClpULong = std::uint64_t;
+using ClpString = std::string;
 
 enum CLP_LOG_LEVEL
 {

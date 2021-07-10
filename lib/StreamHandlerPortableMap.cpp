@@ -124,14 +124,12 @@ void StreamHandlerPortableMap::closeHandler()
 {
   if( m_pFile )
     fclose( m_pFile );
-
-  if( m_pStreamBuffer )
-    freeMem1D( m_pStreamBuffer );
 }
 
 bool StreamHandlerPortableMap::configureBuffer( CalypFrame* pcFrame )
 {
-  return getMem1D<ClpByte>( &m_pStreamBuffer, pcFrame->getBytesPerFrame() );
+  m_pStreamBuffer.resize( pcFrame->getBytesPerFrame() );
+  return true;
 }
 
 bool StreamHandlerPortableMap::seek( ClpULong iFrameNum )
@@ -142,7 +140,7 @@ bool StreamHandlerPortableMap::seek( ClpULong iFrameNum )
 
 bool StreamHandlerPortableMap::read( CalypFrame* pcFrame )
 {
-  unsigned long long int processed_bytes = fread( m_pStreamBuffer, sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
+  unsigned long long int processed_bytes = fread( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
   pcFrame->frameFromBuffer( m_pStreamBuffer, CLP_BIG_ENDIAN );
@@ -162,7 +160,7 @@ bool StreamHandlerPortableMap::write( CalypFrame* pcFrame )
     fprintf( m_pFile, "%d\n", m_iMaxValue );
   }
   pcRGBFrame.frameToBuffer( m_pStreamBuffer, m_iEndianness );
-  unsigned long long int processed_bytes = fwrite( m_pStreamBuffer, sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
+  unsigned long long int processed_bytes = fwrite( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
   return true;

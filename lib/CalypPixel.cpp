@@ -22,14 +22,17 @@
  * \brief    Video Frame handling
  */
 
+#include <memory>
+
 #include "CalypFrame.h"
 #include "PixelFormats.h"
 #include "config.h"
 
 #define MAX_NUMBER_COMPONENTS 4
 
-struct CalypPixelPrivate
+class CalypPixel::CalypPixelPrivate
 {
+public:
   CalypPixelPrivate( const int& ColorSpace )
   {
     iColorSpace = ColorSpace == CLP_COLOR_GRAY ?
@@ -71,18 +74,18 @@ int CalypPixel::getMaxNumberOfComponents()
 }
 
 CalypPixel::CalypPixel( const int& ColorSpace )
-    : d( new CalypPixelPrivate( ColorSpace ) )
+    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
 {
 }
 
 CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0 )
-    : d( new CalypPixelPrivate( ColorSpace ) )
+    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
 {
   d->PelComp[0] = c0;
 }
 
 CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2 )
-    : d( new CalypPixelPrivate( ColorSpace ) )
+    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
 {
   d->PelComp[0] = c0;
   d->PelComp[1] = c1;
@@ -90,7 +93,7 @@ CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c
 }
 
 CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2, const ClpPel& c3 )
-    : d( new CalypPixelPrivate( ColorSpace ) )
+    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
 {
   d->PelComp[0] = c0;
   d->PelComp[1] = c1;
@@ -99,7 +102,8 @@ CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c
 }
 
 CalypPixel::CalypPixel( const CalypPixel& other )
-    : d( new CalypPixelPrivate( other.colorSpace() ) )
+    : d{ std::make_unique<CalypPixelPrivate>( other.colorSpace() ) }
+
 {
   for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
   {
@@ -107,10 +111,7 @@ CalypPixel::CalypPixel( const CalypPixel& other )
   }
 }
 
-CalypPixel::~CalypPixel()
-{
-  delete d;
-}
+CalypPixel::~CalypPixel() = default;
 
 int CalypPixel::colorSpace() const
 {

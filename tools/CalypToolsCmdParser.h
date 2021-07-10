@@ -25,6 +25,8 @@
 #ifndef __CALYPTOOLSCMDPARSER_H__
 #define __CALYPTOOLSCMDPARSER_H__
 
+#include <vector>
+
 #include "config.h"
 #include "lib/CalypOptions.h"
 

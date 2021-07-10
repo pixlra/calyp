@@ -52,7 +52,6 @@ HEVCIntraPrediction::HEVCIntraPrediction()
       ;
 
   m_pcPredBlock = NULL;
-  m_referenceMem = NULL;
 
   m_uiMode = 26;
   m_iBlockSize = 4;
@@ -66,7 +65,8 @@ bool HEVCIntraPrediction::create( std::vector<CalypFrame*> apcFrameList )
   m_pcPredBlock = NULL;
   m_pcPredBlock = new CalypFrame( m_iBlockSize * 2 + 1, m_iBlockSize * 2 + 1, CLP_GRAY, apcFrameList[0]->getBitsPel() );
 
-  getMem1D( &m_referenceMem, m_iBlockSize * 4 );
+  m_referenceMem.resize( m_iBlockSize * 4 );
+
   return true;
 }
 
@@ -210,7 +210,5 @@ void HEVCIntraPrediction::destroy()
 {
   if( m_pcPredBlock )
     delete m_pcPredBlock;
-  if( m_referenceMem )
-    freeMem1D( m_referenceMem );
   m_pcPredBlock = NULL;
 }

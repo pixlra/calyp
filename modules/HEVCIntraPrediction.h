@@ -39,7 +39,7 @@ private:
   unsigned int m_uiYpel;
   bool m_bShowResidue;
   int m_iBlockSize;
-  ClpPel* m_referenceMem;
+  std::vector<ClpPel> m_referenceMem;
 
 public:
   HEVCIntraPrediction();

@@ -25,6 +25,8 @@
 #ifndef __CALYPSTREAMHANDLERIF_H__
 #define __CALYPSTREAMHANDLERIF_H__
 
+#include <vector>
+
 #include "CalypStream.h"
 
 #define INI_REGIST_CALYP_SUPPORTED_FMT        \
@@ -78,7 +80,6 @@ public:
       , m_dFrameRate( 30 )
       , m_uiCurrFrameFileIdx( 0 )
       , m_uiTotalNumberFrames( 0 )
-      , m_pStreamBuffer( NULL )
       , m_uiNBytesPerFrame( 0 )
       , m_isEOF( false )
   {
@@ -114,7 +115,7 @@ protected:
   double m_dFrameRate;
   ClpULong m_uiCurrFrameFileIdx;
   ClpULong m_uiTotalNumberFrames;
-  ClpByte* m_pStreamBuffer;
+  std::vector<ClpByte> m_pStreamBuffer;
   ClpULong m_uiNBytesPerFrame;
   bool m_isEOF;
 };

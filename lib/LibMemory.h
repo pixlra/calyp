@@ -40,7 +40,7 @@
 #endif
 #define xMemSet( type, len, ptr ) memset( ptr, 0, ( len ) * sizeof( type ) )
 
-static inline void* xMallocMem( size_t nitems )
+[[deprecated]] static inline void* xMallocMem( size_t nitems )
 {
   void* d;
   if( ( d = xMalloc( nitems ) ) == NULL )
@@ -51,7 +51,7 @@ static inline void* xMallocMem( size_t nitems )
   return d;
 }
 
-static inline void* xCallocMem( size_t nitems, size_t size )
+[[deprecated]] static inline void* xCallocMem( size_t nitems, size_t size )
 {
   size_t padded_size = nitems * size;
   void* d = xMallocMem( padded_size );
@@ -61,12 +61,22 @@ static inline void* xCallocMem( size_t nitems, size_t size )
 }
 
 template <typename T>
-int getMem1D( T** array1D, int dim0 )
+[[deprecated]] int getMem1D( T** array1D, int dim0 )
 {
   if( ( *array1D = (T*)xCallocMem( dim0, sizeof( T ) ) ) == NULL )
     return 0;
 
   return ( sizeof( T* ) + dim0 * sizeof( T ) );
+}
+
+template <typename T>
+[[deprecated]] void freeMem1D( T*& array1D )
+{
+  if( array1D )
+  {
+    xFreeMem( array1D );
+    array1D = NULL;
+  }
 }
 
 template <typename T>
@@ -86,32 +96,6 @@ int getMem2D( T*** array2D, int dim0, int dim1 )
 }
 
 template <typename T>
-int getMem3D( T**** array3D, int dim0, int dim1, int dim2 )
-{
-  int i, mem_size = dim0 * sizeof( T** );
-
-  if( ( ( *array3D ) = (T***)xMallocMem( dim0 * sizeof( T** ) ) ) == NULL )
-    printf( "get_mem3Dint: array3D" );
-
-  mem_size += getMem2D( *array3D, dim0 * dim1, dim2 );
-
-  for( i = 1; i < dim0; i++ )
-    ( *array3D )[i] = ( *array3D )[i - 1] + dim1;
-
-  return mem_size;
-}
-
-template <typename T>
-void freeMem1D( T*& array1D )
-{
-  if( array1D )
-  {
-    xFreeMem( array1D );
-    array1D = NULL;
-  }
-}
-
-template <typename T>
 void freeMem2D( T**& array2D )
 {
   if( *array2D )
@@ -127,21 +111,6 @@ void freeMem2D( T**& array2D )
   else
   {
     printf( "free_mem2Dint: trying to free unused memory" );
-  }
-}
-
-template <typename T>
-void freeMem3D( T***& array3D )
-{
-  if( array3D )
-  {
-    freeMem2D( *array3D );
-    xFreeMem( array3D );
-    array3D = NULL;
-  }
-  else
-  {
-    printf( "free_mem3Dint: trying to free unused memory" );
   }
 }
 

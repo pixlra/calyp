@@ -44,6 +44,8 @@
  *
  */
 
+#include <vector>
+
 #include "CalypToolsCmdParser.h"
 #include "lib/CalypFrame.h"
 

@@ -34,6 +34,8 @@
  * @}
  */
 
+#include <vector>
+
 #include "CalypFrame.h"
 #include "CalypOptions.h"
 

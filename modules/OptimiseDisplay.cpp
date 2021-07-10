@@ -62,11 +62,10 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
 {
   unsigned numValues = 1u << apcFrameList[0]->getBitsPel();
-  ClpPel* lookUpTable;
+  std::vector<ClpPel> lookUpTable( numValues, 0 );
   const ClpPel* pInput1PelYUV = apcFrameList[0]->getPelBufferYUV()[0][0];
   ClpPel* pOutputPelYUV = m_pcOptimisedFrame->getPelBufferYUV()[0][0];
 
-  getMem1D( &lookUpTable, numValues );
   apcFrameList[0]->calcHistogram();
   m_pcOptimisedFrame->reset();
 
@@ -92,8 +91,6 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
       }
     }
   }
-
-  freeMem1D( lookUpTable );
   return m_pcOptimisedFrame;
 }
 

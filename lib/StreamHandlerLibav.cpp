@@ -323,14 +323,12 @@ void StreamHandlerLibav::closeHandler()
     av_free( m_cFrame );
   }
   m_bHasStream = false;
-
-  if( m_pStreamBuffer )
-    freeMem1D( m_pStreamBuffer );
 }
 
 bool StreamHandlerLibav::configureBuffer( CalypFrame* pcFrame )
 {
-  return getMem1D<ClpByte>( &m_pStreamBuffer, pcFrame->getBytesPerFrame() );
+  m_pStreamBuffer.resize( pcFrame->getBytesPerFrame() );
+  return true;
 }
 
 void StreamHandlerLibav::calculateFrameNumber()
@@ -427,7 +425,7 @@ bool StreamHandlerLibav::read( CalypFrame* pcFrame )
 
       decFrame = m_cConvertedFrame;
     }
-    av_image_copy_to_buffer( m_pStreamBuffer, m_uiFrameBufferSize, decFrame->data,
+    av_image_copy_to_buffer( m_pStreamBuffer.data(), m_uiFrameBufferSize, decFrame->data,
                              decFrame->linesize, AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
 
     pcFrame->frameFromBuffer( m_pStreamBuffer, m_iEndianness );

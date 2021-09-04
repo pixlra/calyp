@@ -34,17 +34,17 @@
  * @}
  */
 
+#include <memory>
 #include <vector>
 
 #include "CalypFrame.h"
 #include "CalypOptions.h"
 
 #define REGISTER_CLASS_MAKER( X ) \
-  extern "C" CalypModuleIf* Maker() { return new X; }
-#define REGISTER_CLASS_FACTORY( X )                  \
-public:                                              \
-  static CalypModuleIf* Create() { return new X(); } \
-  void Delete() { delete this; }
+  extern "C" CalypModulePtr Maker() { return std::make_unique<X>(); }
+#define REGISTER_CLASS_FACTORY( X ) \
+public:                             \
+  static CalypModulePtr Create() { return std::make_unique<X>(); }
 #define _BASIC_MODULE_API_2_CHECK_                        \
   if( apcFrameList.size() != m_uiNumberOfFrames )         \
     return false;                                         \
@@ -140,7 +140,6 @@ public:
     m_iFrameBufferCount = 0;
   }
   virtual ~CalypModuleIf() {}
-  virtual void Delete() = 0;
   virtual void destroy() = 0;
 
   const char* getModuleLongName()
@@ -173,5 +172,7 @@ public:
     return true;
   };
 };
+
+using CalypModulePtr = std::unique_ptr<CalypModuleIf>;
 
 #endif  // __CALYPMODULESIF_H__

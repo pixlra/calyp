@@ -91,7 +91,6 @@ QMenu* ModulesHandle::createMenu()
 
 void ModulesHandle::buildMenu()
 {
-  CalypModuleIf* pcCurrModuleIf;
   QString ModuleIfinternalName;
   QAction* currAction;
   QMenu* currSubMenu;
@@ -108,7 +107,7 @@ void ModulesHandle::buildMenu()
   CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
   for( ; it != moduleFactoryMap.end(); ++it )
   {
-    pcCurrModuleIf = it->second();
+    auto pcCurrModuleIf = it->second();
     ModuleIfinternalName = QString::fromLocal8Bit( it->first );
 
     currSubMenu = NULL;
@@ -147,8 +146,6 @@ void ModulesHandle::buildMenu()
       currSubMenu->addAction( currAction );
     else
       m_pcModulesMenu->addAction( currAction );
-
-    pcCurrModuleIf->Delete();
   }
 
   m_pcModulesMenu->addAction( m_arrayActions[LOAD_EXTERNAL_ACT] );
@@ -278,9 +275,8 @@ void ModulesHandle::activateModule()
   }
 
   QString ModuleIfName = pcAction->data().toString();
-  CalypModuleIf* pcCurrModuleIf =
-      CalypModulesFactory::Get()->CreateModule( ModuleIfName.toLocal8Bit().constData() );
-  CalypAppModuleIf* pcCurrAppModuleIf = new CalypAppModuleIf( this, pcAction, pcCurrModuleIf );
+  auto pcCurrModuleIf = CalypModulesFactory::Get()->CreateModule( ModuleIfName.toLocal8Bit().constData() );
+  CalypAppModuleIf* pcCurrAppModuleIf = new CalypAppModuleIf( this, pcAction, std::move( pcCurrModuleIf ) );
 
   QList<VideoSubWindow*> videoSubWindowList;
   int numberOfFrames = pcCurrAppModuleIf->m_pcModule->m_uiNumberOfFrames;

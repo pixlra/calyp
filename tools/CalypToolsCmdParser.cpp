@@ -110,7 +110,6 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 void CalypToolsCmdParser::listModuleHelp()
 {
   ClpString moduleName = m_strModule;
-  CalypModuleIf* pcCurrModuleIf = NULL;
 
   CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
   CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
@@ -118,10 +117,10 @@ void CalypToolsCmdParser::listModuleHelp()
   {
     if( strcmp( it->first, moduleName.c_str() ) == 0 )
     {
-      pcCurrModuleIf = it->second();
       break;
     }
   }
+  auto pcCurrModuleIf = it->second();
   if( pcCurrModuleIf )
   {
     printf( "Usage: calypTools --module=%s options:\n", it->first );
@@ -136,7 +135,6 @@ void CalypToolsCmdParser::listModules()
   if( m_cOptions.hasOpt( "module_list_full" ) )
     bDetailed = true;
 
-  CalypModuleIf* pcCurrModuleIf;
   CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
   CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
 
@@ -157,7 +155,7 @@ void CalypToolsCmdParser::listModules()
     if( bDetailed )
     {
       ClpString ModuleNameString;
-      pcCurrModuleIf = it->second();
+      auto pcCurrModuleIf = it->second();
 
       if( pcCurrModuleIf->m_pchModuleCategory )
       {
@@ -176,7 +174,6 @@ void CalypToolsCmdParser::listModules()
         break;
       }
       printf( "   %s", pcCurrModuleIf->m_pchModuleTooltip );
-      pcCurrModuleIf->Delete();
     }
     printf( "\n" );
   }

@@ -29,11 +29,13 @@
 #include <QDockWidget>
 
 #include "VideoSubWindow.h"
+#include "lib/CalypFrame.h"
+#include "lib/CalypStream.h"
 
-CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModuleIf* module )
+CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModulePtr&& module )
     : m_bIsRunning( false )
     , m_pcModuleAction( action )
-    , m_pcModule( module )
+    , m_pcModule( std ::move( module ) )
     , m_pcDisplaySubWindow( NULL )
     , m_pcDockWidget( NULL )
     , m_pcModuleDock( NULL )
@@ -184,7 +186,7 @@ void CalypAppModuleIf::show()
     }
     break;
   case CLP_FRAME_MEASUREMENT_MODULE:
-    m_pcModuleDock->setModulueReturnValue( m_dMeasurementResult );
+    m_pcModuleDock->setModuleReturnValue( m_dMeasurementResult );
     break;
   }
 }
@@ -230,7 +232,6 @@ void CalypAppModuleIf::destroy()
   if( m_pcModule )
   {
     m_pcModule->destroy();
-    m_pcModule->Delete();
-    m_pcModule = NULL;
+    m_pcModule = nullptr;
   }
 }

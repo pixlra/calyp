@@ -38,12 +38,14 @@
 
 #include "CommonDefs.h"
 #include "ModuleHandleDock.h"
-#include "lib/CalypFrame.h"
+// #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
-#include "lib/CalypStream.h"
+// #include "lib/CalypStream.h"
 
 class QAction;
 class QDockWidget;
+class CalypStream;
+class CalypFrame;
 
 #define CLP_MODULE_MAX_NUM_FRAMES 5
 
@@ -65,7 +67,7 @@ private:
   bool m_bSuccess;
 
   QAction* m_pcModuleAction;
-  CalypModuleIf* m_pcModule;
+  CalypModulePtr m_pcModule;
 
   VideoSubWindow* m_pcSubWindow[CLP_MODULE_MAX_NUM_FRAMES];
 
@@ -92,7 +94,7 @@ public:
     CalypAppModuleIf* m_pcModule;
   };
 
-  CalypAppModuleIf( QObject* parent, QAction* action, CalypModuleIf* module );
+  CalypAppModuleIf( QObject* parent, QAction* action, CalypModulePtr&& module );
   virtual ~CalypAppModuleIf() {}
   QList<VideoSubWindow*> getSubWindowList()
   {
@@ -103,7 +105,7 @@ public:
     return arraySubWindows;
   }
 
-  CalypModuleIf* getModule() { return m_pcModule; }
+  CalypModuleIf* getModule() { return m_pcModule.get(); }
   unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
   ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );

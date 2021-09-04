@@ -42,7 +42,7 @@ public:
   ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf );
   ~ModuleHandleDock();
 
-  void setModulueReturnValue( double value );
+  void setModuleReturnValue( double value );
 
   QSize sizeHint() const;
 

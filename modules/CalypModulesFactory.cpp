@@ -39,10 +39,6 @@
 
 CalypModulesFactory::CalypModulesFactory(){ REGISTER_ALL_MODULES }
 
-CalypModulesFactory::~CalypModulesFactory()
-{
-  m_FactoryMap.clear();
-}
 
 void CalypModulesFactory::Register( const char* moduleName, CreateModuleFn pfnCreate )
 {
@@ -70,7 +66,7 @@ bool CalypModulesFactory::RegisterDl( const char* dlName )
 #endif
 }
 
-CalypModuleIf* CalypModulesFactory::CreateModule( const char* moduleName )
+CalypModulePtr CalypModulesFactory::CreateModule( const char* moduleName )
 {
   CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
   CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
@@ -81,5 +77,5 @@ CalypModuleIf* CalypModulesFactory::CreateModule( const char* moduleName )
       return it->second();
     }
   }
-  return NULL;
+  return nullptr;
 }

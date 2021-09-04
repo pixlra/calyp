@@ -32,7 +32,7 @@
 
 #define REGISTER_MODULE( X ) Register( "X", &( X::Create ) );
 
-typedef CalypModuleIf* ( *CreateModuleFn )( void );
+typedef CalypModulePtr ( *CreateModuleFn )( void );
 typedef std::map<const char*, CreateModuleFn> CalypModulesFactoryMap;
 
 // Factory for creating instances of CalypModuleIf
@@ -44,7 +44,7 @@ private:
   CalypModulesFactoryMap m_FactoryMap;
 
 public:
-  ~CalypModulesFactory();
+  ~CalypModulesFactory() = default;
 
   static CalypModulesFactory* Get()
   {
@@ -55,7 +55,7 @@ public:
   void Register( const char* moduleName, CreateModuleFn pfnCreate );
   bool RegisterDl( const char* dlName );
 
-  CalypModuleIf* CreateModule( const char* moduleName );
+  CalypModulePtr CreateModule( const char* moduleName );
   CalypModulesFactoryMap& getMap() { return m_FactoryMap; }
 };
 

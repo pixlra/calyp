@@ -47,11 +47,10 @@
 #include <vector>
 
 #include "CalypToolsCmdParser.h"
-#include "lib/CalypFrame.h"
+#include "lib/CalypModuleIf.h"
 
 class CalypFrame;
 class CalypStream;
-class CalypModuleIf;
 
 #define MAX_NUMBER_INPUTS 255
 #define MAX_NUMBER_CHANNELS 4
@@ -101,8 +100,7 @@ private:
   int m_uiQualityMetric;
   int QualityOperation();
 
-  CalypModuleIf* m_pcCurrModuleIf;
-  //CalypFrame* applyFrameModule();
+  CalypModulePtr m_pcCurrModuleIf;
   int ModuleOperation();
   int ListStatistics();
 };

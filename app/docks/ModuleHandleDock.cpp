@@ -60,7 +60,7 @@ ModuleHandleDock::ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf 
 
 ModuleHandleDock::~ModuleHandleDock() {}
 
-void ModuleHandleDock::setModulueReturnValue( double value )
+void ModuleHandleDock::setModuleReturnValue( double value )
 {
   labelModulueReturnValue->clear();
   QString strValue = QString( "%1" ).arg( value );

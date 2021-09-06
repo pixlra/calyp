@@ -150,7 +150,7 @@ private:
   QPoint viewToWindow( const QPoint& pt ) const;
   QRect viewToWindow( const QRect& rc ) const;
 
-  CalypFrame* m_pcCurrFrame;
+  const CalypFrame* m_pcCurrFrame;
 
   ClpPel m_uiPixelHalfScale;
 

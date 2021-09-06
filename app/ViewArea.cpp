@@ -73,7 +73,7 @@ void ViewArea::setImage( CalypFrame* pcFrame )
 {
   m_pcCurrFrame = pcFrame;
   m_uiPixelHalfScale = 1 << ( m_pcCurrFrame->getBitsPel() - 1 );
-  m_pcCurrFrame->fillRGBBuffer();
+  pcFrame->fillRGBBuffer();
   QImage qimg = QImage( m_pcCurrFrame->getRGBBuffer(), m_pcCurrFrame->getWidth(), m_pcCurrFrame->getHeight(),
                         QImage::Format_ARGB32 );
   setImage( QPixmap::fromImage( qimg ) );
@@ -1091,6 +1091,6 @@ void ViewArea::updateMask( const QRect& rect )
     break;
   }
   default: /* Do Nothing */
-           ;
+      ;
   }
 }

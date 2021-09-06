@@ -246,7 +246,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( Opts().hasOpt( "output" ) )
       m_pcOutputFileNames.push_back( m_strOutput );
 
-    CalypFrame* pcInputFrame = m_apcInputStreams[0]->getCurrFrame();
+    const CalypFrame* pcInputFrame = m_apcInputStreams[0]->getCurrFrame();
     CalypStream* pcOutputStream = new CalypStream;
     try
     {
@@ -479,7 +479,7 @@ int CalypTools::RateReductionOperation()
     if( ( frame % m_iRateReductionFactor ) == 0 )
     {
       log( CLP_LOG_INFO, "Writing", frame );
-      m_apcOutputStreams[0]->writeFrame( m_apcInputStreams[0]->getCurrFrameConst() );
+      m_apcOutputStreams[0]->writeFrame( *m_apcInputStreams[0]->getCurrFrame() );
     }
     abEOF = m_apcInputStreams[0]->setNextFrame();
     if( !abEOF )
@@ -692,7 +692,6 @@ int CalypTools::ListStatistics()
 {
   log( CLP_LOG_RESULT, "\n\x1B[35mCalyp Statistics:\x1B[0m\n\n" );
 
-  CalypFrame* currFrame;
   bool abEOF;
   unsigned min[MAX_NUMBER_CHANNELS], max[MAX_NUMBER_CHANNELS];
 
@@ -706,7 +705,7 @@ int CalypTools::ListStatistics()
     {
       log( CLP_LOG_RESULT, "\x1B[34m  Frame: %d\x1B[0m\n", frame );
 
-      currFrame = m_apcInputStreams[input]->getCurrFrame();
+      auto currFrame = m_apcInputStreams[input]->getCurrFrame();
       abEOF = m_apcInputStreams[input]->setNextFrame();
       if( !abEOF )
       {

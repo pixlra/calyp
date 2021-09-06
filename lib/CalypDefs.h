@@ -26,6 +26,7 @@
 #ifndef __CALYPDEFS_H__
 #define __CALYPDEFS_H__
 
+#include <cstdint>
 #include <iterator>
 #include <memory>
 #include <string>

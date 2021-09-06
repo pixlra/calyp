@@ -33,6 +33,7 @@
 #include <QDropEvent>
 #include <QSignalMapper>
 #include <QtDebug>
+#include <memory>
 
 #include "AboutDialog.h"
 #include "ModulesHandle.h"
@@ -57,6 +58,8 @@ MainWindow::MainWindow()
 #ifdef USE_QTDBUS
   m_pDBusAdaptor = new DBusAppAdaptor( this );
 #endif
+
+  m_appResourceHandle = std::make_unique<ResourceHandle>();
 
   m_pcWindowHandle = new SubWindowHandle( this );
 
@@ -196,6 +199,8 @@ void MainWindow::loadFile( QString fileName, CalypFileInfo* pStreamInfo )
     return;
   }
   videoSubWindow = new VideoSubWindow( VideoSubWindow::VIDEO_STREAM_SUBWINDOW );  // createSubWindow();
+  videoSubWindow->setResourceManaget( m_appResourceHandle.get() );
+
   if( !pStreamInfo )
   {
     int idx = findCalypStreamInfo( m_aRecentFileStreamInfo, fileName );

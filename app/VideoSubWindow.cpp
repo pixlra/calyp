@@ -32,9 +32,11 @@
 #include "ConfigureFormatDialog.h"
 #include "ModulesHandle.h"
 #include "QtConcurrent/qtconcurrentrun.h"
+#include "ResourceHandle.h"
 #include "SubWindowAbstract.h"
 
 //#define QT_NO_CONCURRENT
+//#define USE_CALYPSTREAM_RETRIEVE
 
 /**
  * \brief Functions to control data stream from stream information
@@ -146,6 +148,7 @@ protected:
 
 VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent )
     : SubWindowAbstract( parent, SubWindowAbstract::VIDEO_SUBWINDOW | category )
+    , m_pcResourceManager( nullptr )
     , m_bWindowBusy( false )
     , m_pCurrStream( NULL )
     , m_pcCurrFrame( NULL )
@@ -196,12 +199,10 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
 
 VideoSubWindow::~VideoSubWindow()
 {
-  m_pcCurrFrame = NULL;
   disableModule();
-  delete m_cViewArea;
+  m_pcResourceManager->removeResource( m_pCurrStream );
+  //delete m_cViewArea;
   delete m_pcUpdateTimer;
-  if( m_pCurrStream )
-    delete m_pCurrStream;
 }
 
 /**
@@ -319,6 +320,8 @@ void VideoSubWindow::refreshSubWindow()
 
 bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
 {
+  assert( m_pcResourceManager != nullptr );
+
   ConfigureFormatDialog formatDialog( this );
   unsigned int Width = 0, Height = 0, BitsPel = 8, FrameRate = 30;
   int Endianness = CLP_LITTLE_ENDIAN;
@@ -327,11 +330,9 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
 
   if( m_pCurrStream )
     m_pCurrStream->getFormat( Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
+  else
+    m_pCurrStream = m_pcResourceManager->getResource( nullptr );
 
-  if( !m_pCurrStream )
-  {
-    m_pCurrStream = new CalypStream;
-  }
   bool bConfig = true;
   if( !bForceDialog )
   {
@@ -383,6 +384,10 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   var.setValue<unsigned int>( BitsPel );
   appSettings.setValue( "VideoSubWindow/LastBitsPerPixel", var );
 
+#ifdef USE_CALYPSTREAM_RETRIEVE
+  m_pcResourceManager->startResourceWorker( m_pCurrStream );
+#endif
+
   QApplication::restoreOverrideCursor();
 
   refreshFrame();
@@ -397,10 +402,9 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
 
 bool VideoSubWindow::loadFile( CalypFileInfo* streamInfo )
 {
-  if( !m_pCurrStream )
-  {
-    m_pCurrStream = new CalypStream;
-  }
+  assert( m_pcResourceManager != nullptr );
+
+  m_pCurrStream = m_pcResourceManager->getResource( m_pCurrStream );
 
   if( !m_pCurrStream->open( streamInfo->m_cFilename.toStdString(), streamInfo->m_uiWidth, streamInfo->m_uiHeight,
                             streamInfo->m_iPelFormat, streamInfo->m_uiBitsPelPixel, streamInfo->m_iEndianness,
@@ -410,6 +414,10 @@ bool VideoSubWindow::loadFile( CalypFileInfo* streamInfo )
   }
 
   m_sStreamInfo = *streamInfo;
+
+#ifdef USE_CALYPSTREAM_RETRIEVE
+  m_pcResourceManager->startResourceWorker( m_pCurrStream );
+#endif
 
   QApplication::restoreOverrideCursor();
 
@@ -723,11 +731,15 @@ void VideoSubWindow::setCurrFrame( CalypFrame* pcCurrFrame )
 void VideoSubWindow::refreshFrameOperation()
 {
   bool bSetFrame = false;
-  if( m_pCurrStream )
+  if( m_pcCurrStreamFrame != nullptr )
+  {
+    m_pcCurrFrame = m_pcCurrStreamFrame.get();
+  }
+  else if( m_pCurrStream )
   {
     m_pcCurrFrame = m_pCurrStream->getCurrFrame();
-    bSetFrame = m_pcCurrFrame ? true : false;
   }
+  bSetFrame = m_pcCurrFrame ? true : false;
   if( m_pcCurrentDisplayModule )
   {
     m_bWindowBusy = true;
@@ -761,6 +773,13 @@ void VideoSubWindow::refreshFrame( bool bThreaded )
 
 bool VideoSubWindow::goToNextFrame( bool bThreaded )
 {
+#ifdef USE_CALYPSTREAM_RETRIEVE
+  m_pcCurrStreamFrame = m_pCurrStream->retrieveNextFrame();
+  if( m_pcCurrStreamFrame == nullptr )
+    return true;
+  refreshFrame();
+  return false;
+#else
 #ifndef QT_NO_CONCURRENT
   m_cRefreshResult.waitForFinished();
   m_cReadResult.waitForFinished();
@@ -783,6 +802,7 @@ bool VideoSubWindow::goToNextFrame( bool bThreaded )
     }
   }
   return bEndOfSeq;
+#endif
 }
 
 bool VideoSubWindow::save( QString filename )
@@ -867,6 +887,7 @@ void VideoSubWindow::pause()
 
 void VideoSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
 {
+  m_pcCurrStreamFrame = nullptr;
   if( m_pCurrStream )
     if( m_pCurrStream->seekInput( new_frame_num ) )
       refreshFrame();
@@ -883,7 +904,15 @@ void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
     }
     else
     {
+      m_pcCurrStreamFrame = nullptr;
       bRefresh = m_pCurrStream->seekInputRelative( bIsFoward );
+#ifdef USE_CALYPSTREAM_RETRIEVE
+      if( bRefresh )
+      {
+        m_pcCurrStreamFrame = m_pCurrStream->retrieveNextFrame();
+        bRefresh &= m_pcCurrStreamFrame != nullptr;
+      }
+#endif
     }
   }
   if( bRefresh )

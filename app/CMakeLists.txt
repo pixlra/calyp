@@ -43,6 +43,7 @@ SET(Calyp_App_SRCS
     MdiSubWindow.cpp
     SubWindowAbstract.cpp
     # Module Video
+    ResourceHandle.cpp
     VideoHandle.cpp
     VideoSubWindow.cpp
     ViewArea.cpp

@@ -36,16 +36,17 @@
 #ifndef __MAINWINDOW_H__
 #define __MAINWINDOW_H__
 
+#include <QMainWindow>
+#include <QString>
+#include <QVector>
+
 #include "CommonDefs.h"
 #include "VideoSubWindow.h"
 #include "config.h"
 #ifdef USE_QTDBUS
 #include "DBusAppAdaptor.h"
 #endif
-
-#include <QMainWindow>
-#include <QString>
-#include <QVector>
+#include "ResourceHandle.h"
 
 class QCloseEvent;
 class QDragEnterEvent;
@@ -158,6 +159,7 @@ private:
    * Quality
    * Modules
    */
+  std::unique_ptr<ResourceHandle> m_appResourceHandle;
   VideoHandle* m_appModuleVideo;
   QualityHandle* m_appModuleQuality;
   ModulesHandle* m_appModuleExtensions;

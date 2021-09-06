@@ -26,11 +26,12 @@
 #ifndef __CALYPSTREAM_H__
 #define __CALYPSTREAM_H__
 
+#include <memory>
 #include <vector>
 
 #include "CalypDefs.h"
+#include "CalypFrame.h"
 
-class CalypFrame;
 class CalypStreamHandlerIf;
 
 typedef CalypStreamHandlerIf* ( *CreateStreamHandlerFn )( void );
@@ -96,26 +97,28 @@ public:
 
   void loadAll();
 
+  CalypFrame* getCurrFrame( CalypFrame* );
+  CalypFrame* getCurrFrame();
+
+  // continuous read using smart ptrs
+  auto retrieveNextFrame() -> std::shared_ptr<CalypFrame>;
+
+  // continuous read control
+  auto getNextFrame() -> CalypFrame&;
+  bool setNextFrame();
+  void readNextFrame();
+  void readNextFrameFillRGBBuffer();
+
+  auto hasWritingSlot() -> bool;
+
   void writeFrame();
   void writeFrame( const CalypFrame& pcFrame );
 
   bool saveFrame( const ClpString& filename );
   static bool saveFrame( const ClpString& filename, const CalypFrame& saveFrame );
 
-  CalypFrame* getCurrFrame( CalypFrame* );
-
-  // continuous read control
-  bool setNextFrame();
-  void readNextFrame();
-  void readNextFrameFillRGBBuffer();
-  CalypFrame* getCurrFrame();
-  const CalypFrame& getCurrFrameConst() const;
-
   bool seekInputRelative( bool bIsFoward );
   bool seekInput( unsigned long new_frame_num );
-
-private:
-  bool readFrame( CalypFrame& frame );
 
 private:
   class CalypStreamPrivate;

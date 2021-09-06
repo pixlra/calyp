@@ -41,6 +41,7 @@ class QScrollArea;
 
 class VideoInformation;
 class VideoSubWindow;
+class ResourceHandle;
 class CalypAppModuleIf;
 
 typedef struct
@@ -65,6 +66,8 @@ class VideoSubWindow : public SubWindowAbstract
   Q_OBJECT
 
 private:
+  ResourceHandle* m_pcResourceManager;
+
   bool m_bWindowBusy;
 
   QScrollArea* m_pcScrollArea;
@@ -80,6 +83,7 @@ private:
   QString m_cStreamInformation;
   CalypFileInfo m_sStreamInfo;
   CalypStream* m_pCurrStream;
+  std::shared_ptr<CalypFrame> m_pcCurrStreamFrame;
 
   CalypFrame* m_pcCurrFrame;
   QRect m_cSelectedArea;
@@ -110,6 +114,8 @@ public:
   };
   VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent = 0 );
   ~VideoSubWindow();
+
+  void setResourceManaget( ResourceHandle* resourceManager ) { m_pcResourceManager = resourceManager; }
 
   void updateVideoWindowInfo();
 

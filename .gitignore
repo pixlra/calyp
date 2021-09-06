@@ -144,3 +144,4 @@ doc/
 
 # CLang
 compile_commands.json
+build_release/*

@@ -82,8 +82,9 @@ private:
   QString m_cFilename;
   QString m_cStreamInformation;
   CalypFileInfo m_sStreamInfo;
+  std::size_t m_uiResourceId;
   CalypStream* m_pCurrStream;
-  std::shared_ptr<CalypFrame> m_pcCurrStreamFrame;
+  std::shared_ptr<CalypFrame> m_pcCurrDisplayFrame;
 
   CalypFrame* m_pcCurrFrame;
   QRect m_cSelectedArea;
@@ -139,12 +140,14 @@ public:
   void seekRelativeEvent( bool bIsFoward );
 
   void setCurrFrame( CalypFrame* pcCurrFrame );
+  void setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame );
 
   CalypFileInfo getStreamInfo() { return m_sStreamInfo; }
   QString getStreamInformation() { return m_cStreamInformation; }
-  CalypStream* getInputStream() { return m_pCurrStream; }
-  CalypStream* getCurrStream() { return m_pCurrStream; }
+  const CalypStream* getInputStream() { return m_pCurrStream; }
+  const CalypStream* getCurrStream() { return m_pCurrStream; }
   CalypFrame* getCurrFrame() { return m_pcCurrFrame; }
+  std::shared_ptr<CalypFrame> getCurrFrameAsset() { return m_pCurrStream->getCurrFrameAsset(); };
   ViewArea* getViewArea() { return m_cViewArea; }
   void setRefSubWindow( VideoSubWindow* subWindow )
   {

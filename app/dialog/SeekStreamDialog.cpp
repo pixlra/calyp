@@ -33,7 +33,7 @@
 
 #include "lib/CalypStream.h"
 
-SeekStreamDialog::SeekStreamDialog( CalypStream* pcCurrStream, QWidget* parent )
+SeekStreamDialog::SeekStreamDialog( const CalypStream* pcCurrStream, QWidget* parent )
     : QDialog( parent, Qt::Dialog | Qt::WindowTitleHint ), m_iSelectedFrameNum()
 {
   m_iSelectedFrameNum = pcCurrStream->getCurrFrameNum();

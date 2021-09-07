@@ -25,8 +25,10 @@
 #ifndef __RESOURCEHANDLE_H__
 #define __RESOURCEHANDLE_H__
 
+#include <QMutex>
 #include <QThread>
 #include <QVector>
+#include <QWaitCondition>
 
 #include "CommonDefs.h"
 #include "lib/CalypStream.h"
@@ -34,12 +36,15 @@
 class ResourceWorker : public QThread
 {
 private:
+  QMutex m_Mutex;
+  QWaitCondition m_ResourceIdle;
   std::shared_ptr<CalypStream> m_pcStream;
   bool m_bStop{ false };
 
 public:
   ResourceWorker( std::shared_ptr<CalypStream> stream );
   void stop();
+  void wake();
   void run();
 };
 
@@ -49,12 +54,14 @@ public:
   ResourceHandle();
   ~ResourceHandle() = default;
 
-  auto getResource( CalypStream* ptr ) -> CalypStream*;
-  void removeResource( CalypStream* ptr );
-  void startResourceWorker( CalypStream* ptr );
+  auto getResource( CalypStream* ptr ) -> std::size_t;
+  auto getResourceAsset( std::size_t id ) -> CalypStream*;
+  void removeResource( std::size_t id );
+  void startResourceWorker( std::size_t id );
+  void wakeResourceWorker( std::size_t id );
 
 private:
-  auto addResource() -> CalypStream*;
+  auto addResource() -> std::size_t;
 
 private:
   std::vector<std::shared_ptr<CalypStream>> m_apcStreamResourcesList;

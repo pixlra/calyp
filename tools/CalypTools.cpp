@@ -45,17 +45,7 @@ CalypTools::CalypTools()
   m_pcCurrModuleIf = NULL;
 }
 
-CalypTools::~CalypTools()
-{
-  for( unsigned int i = 0; i < m_apcInputStreams.size(); i++ )
-  {
-    m_apcInputStreams[i]->close();
-  }
-  for( unsigned int i = 0; i < m_apcOutputStreams.size(); i++ )
-  {
-    m_apcOutputStreams[i]->close();
-  }
-}
+CalypTools::~CalypTools() = default;
 
 #define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
 

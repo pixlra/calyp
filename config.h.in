@@ -55,4 +55,7 @@
 /* Fervor update lib */
 #cmakedefine USE_FERVOR
 
+/* Use a resource manager to manage streams in different threads */
+#cmakedefine USE_RESOURCES
+
 #endif  // __CONFIG_CALYP_H__

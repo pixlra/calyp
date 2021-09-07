@@ -35,8 +35,7 @@
 #include "ResourceHandle.h"
 #include "SubWindowAbstract.h"
 
-//#define QT_NO_CONCURRENT
-//#define USE_CALYPSTREAM_RETRIEVE
+#define QT_NO_CONCURRENT
 
 /**
  * \brief Functions to control data stream from stream information
@@ -200,7 +199,7 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
 VideoSubWindow::~VideoSubWindow()
 {
   disableModule();
-  m_pcResourceManager->removeResource( m_pCurrStream );
+  m_pcResourceManager->removeResource( m_uiResourceId );
   //delete m_cViewArea;
   delete m_pcUpdateTimer;
 }
@@ -331,7 +330,9 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   if( m_pCurrStream )
     m_pCurrStream->getFormat( Width, Height, InputFormat, BitsPel, Endianness, FrameRate );
   else
-    m_pCurrStream = m_pcResourceManager->getResource( nullptr );
+    m_uiResourceId = m_pcResourceManager->getResource( nullptr );
+
+  m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
 
   bool bConfig = true;
   if( !bForceDialog )
@@ -384,8 +385,8 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   var.setValue<unsigned int>( BitsPel );
   appSettings.setValue( "VideoSubWindow/LastBitsPerPixel", var );
 
-#ifdef USE_CALYPSTREAM_RETRIEVE
-  m_pcResourceManager->startResourceWorker( m_pCurrStream );
+#ifdef USE_RESOURCES
+  m_pcResourceManager->startResourceWorker( m_uiResourceId );
 #endif
 
   QApplication::restoreOverrideCursor();
@@ -404,7 +405,8 @@ bool VideoSubWindow::loadFile( CalypFileInfo* streamInfo )
 {
   assert( m_pcResourceManager != nullptr );
 
-  m_pCurrStream = m_pcResourceManager->getResource( m_pCurrStream );
+  m_uiResourceId = m_pcResourceManager->getResource( m_pCurrStream );
+  m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
 
   if( !m_pCurrStream->open( streamInfo->m_cFilename.toStdString(), streamInfo->m_uiWidth, streamInfo->m_uiHeight,
                             streamInfo->m_iPelFormat, streamInfo->m_uiBitsPelPixel, streamInfo->m_iEndianness,
@@ -415,8 +417,8 @@ bool VideoSubWindow::loadFile( CalypFileInfo* streamInfo )
 
   m_sStreamInfo = *streamInfo;
 
-#ifdef USE_CALYPSTREAM_RETRIEVE
-  m_pcResourceManager->startResourceWorker( m_pCurrStream );
+#ifdef USE_RESOURCES
+  m_pcResourceManager->startResourceWorker( m_uiResourceId );
 #endif
 
   QApplication::restoreOverrideCursor();
@@ -728,16 +730,22 @@ void VideoSubWindow::setCurrFrame( CalypFrame* pcCurrFrame )
   m_cViewArea->setImage( m_pcCurrFrame );
 }
 
+void VideoSubWindow::setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame )
+{
+  m_pcCurrDisplayFrame = pcCurrFrame;
+  m_cViewArea->setImage( m_pcCurrDisplayFrame.get() );
+}
+
 void VideoSubWindow::refreshFrameOperation()
 {
   bool bSetFrame = false;
-  if( m_pcCurrStreamFrame != nullptr )
+  if( m_pCurrStream )
   {
-    m_pcCurrFrame = m_pcCurrStreamFrame.get();
-  }
-  else if( m_pCurrStream )
-  {
+#ifdef USE_RESOURCES
+    m_pcCurrFrame = m_pCurrStream->getCurrFrameAsset().get();
+#else
     m_pcCurrFrame = m_pCurrStream->getCurrFrame();
+#endif
   }
   bSetFrame = m_pcCurrFrame ? true : false;
   if( m_pcCurrentDisplayModule )
@@ -773,12 +781,13 @@ void VideoSubWindow::refreshFrame( bool bThreaded )
 
 bool VideoSubWindow::goToNextFrame( bool bThreaded )
 {
-#ifdef USE_CALYPSTREAM_RETRIEVE
-  m_pcCurrStreamFrame = m_pCurrStream->retrieveNextFrame();
-  if( m_pcCurrStreamFrame == nullptr )
-    return true;
-  refreshFrame();
-  return false;
+#ifdef USE_RESOURCES
+  bool bEndOfSeq = m_pCurrStream->retrieveNextFrame();
+  m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
+  if( !bEndOfSeq )
+  {
+    refreshFrame();
+  }
 #else
 #ifndef QT_NO_CONCURRENT
   m_cRefreshResult.waitForFinished();
@@ -801,8 +810,8 @@ bool VideoSubWindow::goToNextFrame( bool bThreaded )
       m_pCurrStream->readNextFrameFillRGBBuffer();
     }
   }
-  return bEndOfSeq;
 #endif
+  return bEndOfSeq;
 }
 
 bool VideoSubWindow::save( QString filename )
@@ -887,7 +896,7 @@ void VideoSubWindow::pause()
 
 void VideoSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
 {
-  m_pcCurrStreamFrame = nullptr;
+  m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
   if( m_pCurrStream )
     if( m_pCurrStream->seekInput( new_frame_num ) )
       refreshFrame();
@@ -904,14 +913,9 @@ void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
     }
     else
     {
-      m_pcCurrStreamFrame = nullptr;
       bRefresh = m_pCurrStream->seekInputRelative( bIsFoward );
-#ifdef USE_CALYPSTREAM_RETRIEVE
-      if( bRefresh )
-      {
-        m_pcCurrStreamFrame = m_pCurrStream->retrieveNextFrame();
-        bRefresh &= m_pcCurrStreamFrame != nullptr;
-      }
+#ifdef USE_RESOURCES
+      m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
 #endif
     }
   }

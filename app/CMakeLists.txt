@@ -9,6 +9,7 @@ INCLUDE_DIRECTORIES(
 
 OPTION(USE_QTDBUS "Build with QtDBus" ON)
 OPTION(USE_FERVOR "Add Fervor support" OFF)
+OPTION(USE_RESOURCES "Handle streams in separate threads" ON)
 
 ADD_SUBDIRECTORY(external)
 

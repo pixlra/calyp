@@ -297,7 +297,7 @@ void FramePropertiesDock::reset()
   setEnabled( false );
 }
 
-void FramePropertiesDock::setFrame( CalypFrame* pcFrame, bool isPlaying )
+void FramePropertiesDock::setFrame( std::shared_ptr<CalypFrame> pcFrame, bool isPlaying )
 {
   int colorSpace = pcFrame->getColorSpace();
   if( m_iLastFrameType != colorSpace )
@@ -365,7 +365,7 @@ void FramePropertiesDock::setFrame( CalypFrame* pcFrame, bool isPlaying )
     if( pcFrame )
     {
       m_bHasFrame = true;
-      m_pcFrame = std::make_shared<CalypFrame>( *pcFrame );
+      m_pcFrame = pcFrame;
     }
     else
     {

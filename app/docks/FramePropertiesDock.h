@@ -43,7 +43,7 @@ public:
 
   QSize sizeHint() const;
 
-  void setFrame( CalypFrame* m_pcFrame, bool isPlaying );
+  void setFrame( std::shared_ptr<CalypFrame> m_pcFrame, bool isPlaying );
   void setSelection( const QRect& selectionArea );
   void reset();
   void stopHistogram();

@@ -68,6 +68,10 @@ public:
   static std::vector<CalypStandardResolution> stdResolutionSizes();
 
   CalypStream();
+  CalypStream( CalypStream&& other ) noexcept = delete;
+  CalypStream& operator=( CalypStream&& other ) noexcept = delete;
+  CalypStream( const CalypStream& other ) = delete;
+  CalypStream& operator=( const CalypStream& other ) = delete;
   ~CalypStream();
 
   ClpString getFormatName() const;
@@ -81,7 +85,6 @@ public:
              bool bInput );
 
   bool reload();
-  void close();
 
   bool isNative() const;
   ClpString getFileName() const;
@@ -97,14 +100,13 @@ public:
 
   void loadAll();
 
-  CalypFrame* getCurrFrame( CalypFrame* );
-  CalypFrame* getCurrFrame();
-
   // continuous read using smart ptrs
-  auto retrieveNextFrame() -> std::shared_ptr<CalypFrame>;
+  auto retrieveNextFrame() -> bool;
+  auto getCurrFrameAsset() -> std::shared_ptr<CalypFrame>;
 
   // continuous read control
-  auto getNextFrame() -> CalypFrame&;
+  CalypFrame* getCurrFrame( CalypFrame* );
+  CalypFrame* getCurrFrame();
   bool setNextFrame();
   void readNextFrame();
   void readNextFrameFillRGBBuffer();

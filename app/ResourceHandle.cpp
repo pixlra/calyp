@@ -44,13 +44,29 @@ void ResourceWorker::stop()
   wait();
 }
 
+void ResourceWorker::wake()
+{
+  m_Mutex.lock();
+  m_ResourceIdle.wakeAll();
+  m_Mutex.unlock();
+}
+
 void ResourceWorker::run()
 {
+  // Loop forever
   while( !m_bStop )
   {
     m_pcStream->readNextFrameFillRGBBuffer();
+    if( !m_pcStream->hasWritingSlot() )
+    {
+      m_Mutex.lock();
+      m_ResourceIdle.wait( &m_Mutex );
+      m_Mutex.unlock();
+    }
     while( !m_bStop && !m_pcStream->hasWritingSlot() )
-      ;  // Keep
+    {
+      // Wait here
+    }
   }
 }
 
@@ -58,73 +74,72 @@ ResourceHandle::ResourceHandle()
 {
 }
 
-auto ResourceHandle::addResource() -> CalypStream*
+auto ResourceHandle::addResource() -> std::size_t
 {
   auto newStreamResource = std::make_shared<CalypStream>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
-  CalypStream* ptr = newStreamResource.get();
-
   m_apcStreamResourcesList.push_back( newStreamResource );
   m_apcStreamResourcesWorkersList.push_back( std::move( newStreamResourceWorker ) );
-  return ptr;
+  return m_apcStreamResourcesList.size() - 1;
 }
 
-auto ResourceHandle::getResource( CalypStream* ptr ) -> CalypStream*
+auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
 {
   if( ptr != nullptr )
   {
-    for( auto& resource_ptr : m_apcStreamResourcesList )
+    for( std::size_t i = 0; i < m_apcStreamResourcesList.size(); i++ )
     {
-      if( resource_ptr.get() == ptr )
-        return resource_ptr.get();
+      if( m_apcStreamResourcesList[i].get() == ptr )
+        return i;
     }
   }
   return addResource();
 }
 
-void ResourceHandle::removeResource( CalypStream* ptr )
+auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 {
-  std::optional<std::size_t> posToRemove;
-  for( std::size_t i = 0; i < m_apcStreamResourcesList.size(); i++ )
+  if( id < m_apcStreamResourcesList.size() )
   {
-    if( m_apcStreamResourcesList[i].get() == ptr )
-    {
-      posToRemove = i;
-      break;
-    }
+    return m_apcStreamResourcesList[id].get();
   }
-  if( !posToRemove.has_value() )
+  return nullptr;
+}
+
+void ResourceHandle::removeResource( std::size_t id )
+{
+  if( id >= m_apcStreamResourcesList.size() )
   {
     assert( false );
     return;
   }
 
   // Remove worker first
-  m_apcStreamResourcesWorkersList[*posToRemove]->stop();
-  m_apcStreamResourcesWorkersList.erase( m_apcStreamResourcesWorkersList.begin() + *posToRemove );
+  m_apcStreamResourcesWorkersList[id]->stop();
+  m_apcStreamResourcesWorkersList.erase( m_apcStreamResourcesWorkersList.begin() + id );
 
   // Then the underlying stream
-  m_apcStreamResourcesList.erase( m_apcStreamResourcesList.begin() + *posToRemove );
+  m_apcStreamResourcesList.erase( m_apcStreamResourcesList.begin() + id );
 }
 
-void ResourceHandle::startResourceWorker( CalypStream* ptr )
+void ResourceHandle::startResourceWorker( std::size_t id )
 {
-  std::optional<std::size_t> position;
-  for( std::size_t i = 0; i < m_apcStreamResourcesList.size(); i++ )
-  {
-    if( m_apcStreamResourcesList[i].get() == ptr )
-    {
-      position = i;
-      break;
-    }
-  }
-  if( !position.has_value() )
+  if( id >= m_apcStreamResourcesList.size() )
   {
     assert( false );
     return;
   }
-  m_apcStreamResourcesWorkersList[*position]->setObjectName(
+  m_apcStreamResourcesWorkersList[id]->setObjectName(
       "RW-" +
-      QFileInfo( QString::fromStdString( m_apcStreamResourcesList[*position]->getFileName() ) ).completeBaseName() );
-  m_apcStreamResourcesWorkersList[*position]->start();
+      QFileInfo( QString::fromStdString( m_apcStreamResourcesList[id]->getFileName() ) ).completeBaseName() );
+  m_apcStreamResourcesWorkersList[id]->start();
+}
+
+void ResourceHandle::wakeResourceWorker( std::size_t id )
+{
+  if( id >= m_apcStreamResourcesList.size() )
+  {
+    assert( false );
+    return;
+  }
+  m_apcStreamResourcesWorkersList[id]->wake();
 }

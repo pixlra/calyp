@@ -42,7 +42,7 @@ class SeekStreamDialog : public QDialog
   Q_OBJECT
 
 public:
-  SeekStreamDialog( CalypStream* pcCurrStream, QWidget* parent = 0 );
+  SeekStreamDialog( const CalypStream* pcCurrStream, QWidget* parent = 0 );
   int runDialog();
 
 private:

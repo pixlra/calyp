@@ -225,7 +225,6 @@ void CalypAppModuleIf::destroy()
   }
   if( m_pcModuleStream )
   {
-    m_pcModuleStream->close();
     delete m_pcModuleStream;
     m_pcModuleStream = NULL;
   }

@@ -211,6 +211,7 @@ public:
   CreateStreamHandlerFn pfctCreateHandler;
 
   std::unique_ptr<CalypStreamBufferPrivate> frameBuffer;
+  std::shared_ptr<CalypFrame> currentFrame;
 
   ClpString cFilename;
   long long int iCurrFrameNum;
@@ -369,7 +370,7 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
 {
   if( d->isInit )
   {
-    close();
+    d->close();
   }
   d->isInit = false;
   d->isInput = bInput;
@@ -399,13 +400,13 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
 
   if( !d->handler->openHandler( d->cFilename, d->isInput ) )
   {
-    close();
+    d->close();
     return d->isInit;
   }
 
   if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat < 0 )
   {
-    close();
+    d->close();
     //throw CalypFailure( "CalypStream", "Incorrect configuration: width, height or pixel format" );
     return d->isInit;
   }
@@ -419,7 +420,7 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
   }
   catch( CalypFailure& e )
   {
-    close();
+    d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated frame buffer" );
     return d->isInit;
   }
@@ -431,14 +432,14 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
 
   if( d->isInput && d->handler->m_uiTotalNumberFrames == 0 )
   {
-    close();
+    d->close();
     throw CalypFailure( "CalypStream", "Incorrect configuration: less than one frame" );
     return d->isInit;
   }
 
   if( !d->handler->configureBuffer( d->frameBuffer->ref() ) )
   {
-    close();
+    d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated buffers" );
     return d->isInit;
   }
@@ -477,11 +478,6 @@ bool CalypStream::reload()
   d->iCurrFrameNum = -1;
   seekInput( currFrameNum );
   return true;
-}
-
-void CalypStream::close()
-{
-  d->close();
 }
 
 ClpString CalypStream::getFileName() const
@@ -562,7 +558,7 @@ void CalypStream::loadAll()
   }
   catch( CalypFailure& e )
   {
-    close();
+    d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated frame buffer for the whole stream" );
   }
 
@@ -573,6 +569,38 @@ void CalypStream::loadAll()
   }
   d->bLoadAll = true;
   d->iCurrFrameNum = 0;
+}
+
+// auto CalypStream::getNextFrame() -> CalypFrame&
+// {
+//   CalypFrame& frameToTead = d->frameBuffer->readOneFrame();
+//   d->readFrame( d->frameBuffer->writeOneFrame() );
+//   return frameToTead;
+// }
+
+auto CalypStream::retrieveNextFrame() -> bool
+{
+  const std::lock_guard<std::mutex> lock( d->mutex );
+  bool bEndOfSeq = false;
+  if( d->iCurrFrameNum + 1 < (long)( d->handler->m_uiTotalNumberFrames ) )
+  {
+    d->iCurrFrameNum++;
+    d->currentFrame = d->frameBuffer->retrieveFrame();
+  }
+  else
+  {
+    bEndOfSeq = true;
+  }
+  return bEndOfSeq;
+}
+
+auto CalypStream::getCurrFrameAsset() -> std::shared_ptr<CalypFrame>
+{
+  if( d->currentFrame == nullptr )
+  {
+    d->currentFrame = d->frameBuffer->retrieveFrame();
+  }
+  return d->currentFrame;
 }
 
 CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image )
@@ -587,25 +615,6 @@ CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image )
 CalypFrame* CalypStream::getCurrFrame()
 {
   return &d->frameBuffer->currentRead();
-}
-
-auto CalypStream::getNextFrame() -> CalypFrame&
-{
-  CalypFrame& frameToTead = d->frameBuffer->readOneFrame();
-  d->readFrame( d->frameBuffer->writeOneFrame() );
-  return frameToTead;
-}
-
-auto CalypStream::retrieveNextFrame() -> std::shared_ptr<CalypFrame>
-{
-  const std::lock_guard<std::mutex> lock( d->mutex );
-
-  if( d->iCurrFrameNum + 1 < (long)( d->handler->m_uiTotalNumberFrames ) )
-  {
-    d->iCurrFrameNum++;
-    return d->frameBuffer->retrieveFrame();
-  }
-  return nullptr;
 }
 
 bool CalypStream::setNextFrame()
@@ -675,7 +684,6 @@ bool CalypStream::saveFrame( const ClpString& filename, const CalypFrame& saveFr
     return false;
   }
   auxSaveStream.writeFrame( saveFrame );
-  auxSaveStream.close();
   return true;
 }
 
@@ -703,6 +711,8 @@ bool CalypStream::seekInputRelative( bool bIsFoward )
 
 bool CalypStream::seekInput( unsigned long new_frame_num )
 {
+  const std::lock_guard<std::mutex> lock( d->mutex );
+
   if( !d->isInit || new_frame_num >= d->handler->m_uiTotalNumberFrames || long( new_frame_num ) == d->iCurrFrameNum )
     return false;
 
@@ -719,6 +729,7 @@ bool CalypStream::seekInput( unsigned long new_frame_num )
     throw CalypFailure( "CalypStream", "Cannot seek file into desired position" );
   }
 
+  d->currentFrame = nullptr;
   d->frameBuffer->reset();
   d->readFrame( d->frameBuffer->writeOneFrame() );
   if( d->handler->m_uiTotalNumberFrames > 1 )

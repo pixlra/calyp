@@ -326,8 +326,8 @@ void VideoHandle::update()
 {
   if( m_pcCurrentVideoSubWindow )
   {
-    CalypStream* pcStream = m_pcCurrentVideoSubWindow->getInputStream();
-    CalypFrame* pcFrame = m_pcCurrentVideoSubWindow->getCurrFrame();
+    const CalypStream* pcStream = m_pcCurrentVideoSubWindow->getInputStream();
+    const CalypFrame* pcFrame = m_pcCurrentVideoSubWindow->getCurrFrame();
 
     m_pcVideoFormatLabel->setText( m_pcCurrentVideoSubWindow->getStreamInformation() );
 
@@ -364,7 +364,7 @@ void VideoHandle::update()
     }
     m_pcResolutionLabel->setText( resolution );
 
-    m_pcFramePropertiesSideBar->setFrame( pcFrame, m_pcCurrentVideoSubWindow->isPlaying() );
+    m_pcFramePropertiesSideBar->setFrame( m_pcCurrentVideoSubWindow->getCurrFrameAsset(), m_pcCurrentVideoSubWindow->isPlaying() );
 
     m_pcFrameNumInfo->setTotalFrameNum( total_frame_num );
     m_pcFrameNumInfo->setCurrFrameNum( frame_num );

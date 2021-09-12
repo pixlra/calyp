@@ -438,7 +438,7 @@ void VideoHandle::closeSubWindow( SubWindowAbstract* subWindow )
   if( m_acPlayingSubWindows.contains( videoSubWindow ) )
   {
     int pos = m_acPlayingSubWindows.indexOf( videoSubWindow );
-    m_acPlayingSubWindows.at( pos )->stop();
+    // m_acPlayingSubWindows.at( pos )->stop();
     m_acPlayingSubWindows.remove( pos );
     if( m_acPlayingSubWindows.size() < 2 )
     {
@@ -675,8 +675,10 @@ void VideoHandle::calculateRealFrameRate()
 
 void VideoHandle::playEvent()
 {
+  auto start = std::chrono::steady_clock::now();
+
   // This value should only be true if it is really needed to refresh the UI after this play event
-  // Lets assum the current window is not playing. Nothing changes in the UI expect the playing windows
+  // Lets assume the current window is not playing. Nothing changes in the UI expect the playing windows
   // So no changed is emmited
   bool bShouldRefreshUI = false;
   calculateRealFrameRate();
@@ -719,6 +721,11 @@ void VideoHandle::playEvent()
   }
   if( bShouldRefreshUI )
     emit changed();
+
+  // auto end = std::chrono::steady_clock::now();
+  // std::cout << "Elapsed time going to next frame: "
+  //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
+  //           << " ms" << std::endl;
 }
 
 void VideoHandle::seekEvent( int direction )

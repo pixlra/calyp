@@ -202,7 +202,6 @@ VideoSubWindow::~VideoSubWindow()
   {
     module->destroy();
   }
-
   if( m_pcResourceManager )
     m_pcResourceManager->removeResource( m_uiResourceId );
   delete m_pcUpdateTimer;
@@ -214,7 +213,7 @@ VideoSubWindow::~VideoSubWindow()
 
 void VideoSubWindow::closeEvent( QCloseEvent* event )
 {
-  stop();
+  //stop();
   SubWindowAbstract::closeEvent( event );
 }
 
@@ -310,12 +309,17 @@ void VideoSubWindow::refreshSubWindow()
 {
   if( getCategory() & SubWindowAbstract::VIDEO_STREAM_SUBWINDOW )
   {
+#ifdef CALYP_MANAGED_RESOURCES
+    m_pcResourceManager->stopResourceWorker( m_uiResourceId );
+#endif
     if( !m_pCurrStream->reload() )
     {
       close();
       return;
     }
-    // seekAbsoluteEvent( currFrameNum );
+#ifdef CALYP_MANAGED_RESOURCES
+    m_pcResourceManager->startResourceWorker( m_uiResourceId );
+#endif
   }
   updateVideoWindowInfo();
   refreshFrame();
@@ -792,19 +796,19 @@ void VideoSubWindow::refreshFrame( bool bThreaded )
 
 bool VideoSubWindow::goToNextFrame( bool bThreaded )
 {
-#ifdef CALYP_MANAGED_RESOURCES
-  bool bEndOfSeq = m_pCurrStream->retrieveNextFrame();
-  m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
-  if( !bEndOfSeq )
-  {
-    refreshFrame();
-  }
-#else
 #ifndef QT_NO_CONCURRENT
   m_cRefreshResult.waitForFinished();
   m_cReadResult.waitForFinished();
 #endif
+#ifdef CALYP_MANAGED_RESOURCES
+  while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() )
+    ;
+#endif
   bool bEndOfSeq = m_pCurrStream->setNextFrame();
+#ifdef CALYP_MANAGED_RESOURCES
+  bThreaded = false;
+  m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
+#endif
   if( !bEndOfSeq )
   {
 #ifndef QT_NO_CONCURRENT
@@ -812,16 +816,17 @@ bool VideoSubWindow::goToNextFrame( bool bThreaded )
     if( bThreaded )
     {
       m_cReadResult = QtConcurrent::run( m_pCurrStream, &CalypStream::readNextFrameFillRGBBuffer );
-      refreshFrame();
+      refreshFrame( bThreaded );
     }
     else
 #endif
     {
-      refreshFrame();
+      refreshFrame( bThreaded );
+#ifndef CALYP_MANAGED_RESOURCES
       m_pCurrStream->readNextFrameFillRGBBuffer();
+#endif
     }
   }
-#endif
   return bEndOfSeq;
 }
 

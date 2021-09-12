@@ -57,6 +57,7 @@ public:
   auto getResource( CalypStream* ptr ) -> std::size_t;
   auto getResourceAsset( std::size_t id ) -> CalypStream*;
   void removeResource( std::size_t id );
+  void stopResourceWorker( std::size_t id );
   void startResourceWorker( std::size_t id );
   void wakeResourceWorker( std::size_t id );
 

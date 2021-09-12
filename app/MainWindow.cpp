@@ -83,11 +83,11 @@ MainWindow::MainWindow()
   setAcceptDrops( true );
   setBackgroundRole( QPalette::Background );
 
-  connect( m_pcWindowHandle, SIGNAL( windowActivated() ), this, SLOT( update() ) );
-  connect( m_pcWindowHandle, SIGNAL( changed() ), this, SLOT( update() ) );
-  connect( m_appModuleVideo, SIGNAL( changed() ), this, SLOT( update() ) );
-  connect( m_appModuleQuality, SIGNAL( changed() ), this, SLOT( update() ) );
-  connect( m_appModuleExtensions, SIGNAL( changed() ), this, SLOT( update() ) );
+  connect( m_pcWindowHandle, &SubWindowHandle::windowActivated, this, &MainWindow::update );
+  connect( m_pcWindowHandle, &SubWindowHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
+  connect( m_appModuleVideo, &VideoHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
+  connect( m_appModuleQuality, &QualityHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
+  connect( m_appModuleExtensions, &ModulesHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
 }
 
 bool MainWindow::parseArgs( int argc, char* argv[] )

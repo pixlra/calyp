@@ -30,6 +30,8 @@
 #include <QFileInfo>
 #include <QMutex>
 #include <QThread>
+#include <chrono>
+#include <iostream>
 #include <memory>
 #include <optional>
 
@@ -41,6 +43,7 @@ ResourceWorker::ResourceWorker( std::shared_ptr<CalypStream> stream )
 void ResourceWorker::stop()
 {
   m_bStop = true;
+  wake();
   wait();
 }
 
@@ -53,16 +56,23 @@ void ResourceWorker::wake()
 
 void ResourceWorker::run()
 {
+  m_bStop = false;
   // Loop forever
   while( !m_bStop )
   {
+    //auto start = std::chrono::steady_clock::now();
     m_pcStream->readNextFrameFillRGBBuffer();
-    if( !m_pcStream->hasWritingSlot() )
-    {
-      m_Mutex.lock();
-      m_ResourceIdle.wait( &m_Mutex );
-      m_Mutex.unlock();
-    }
+    // auto end = std::chrono::steady_clock::now();
+    // std::cout << "Elapsed time reading and processing a frame: "
+    //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
+    //           << " ms" << std::endl;
+
+    // if( !m_pcStream->hasWritingSlot() )
+    // {
+    //   m_Mutex.lock();
+    //   m_ResourceIdle.wait( &m_Mutex );
+    //   m_Mutex.unlock();
+    // }
     while( !m_bStop && !m_pcStream->hasWritingSlot() )
     {
       // Wait here
@@ -121,6 +131,16 @@ void ResourceHandle::removeResource( std::size_t id )
 
   // Then the underlying stream
   m_apcStreamResourcesList[id] = nullptr;
+}
+
+void ResourceHandle::stopResourceWorker( std::size_t id )
+{
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
+  {
+    assert( false );
+    return;
+  }
+  m_apcStreamResourcesWorkersList[id]->stop();
 }
 
 void ResourceHandle::startResourceWorker( std::size_t id )

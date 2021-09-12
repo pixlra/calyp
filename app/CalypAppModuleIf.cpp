@@ -188,13 +188,13 @@ void CalypAppModuleIf::run()
   {
     return;
   }
-  m_bSuccess = true;
-  m_bIsRunning = false;
 #ifdef CALYP_THREADED_MODULES
   EventData* eventData = new EventData( m_bSuccess, this );
   if( parent() )
     QCoreApplication::postEvent( parent(), eventData );
 #endif
+  m_bSuccess = true;
+  m_bIsRunning = false;
   return;
 }
 

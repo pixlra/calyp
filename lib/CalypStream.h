@@ -98,20 +98,17 @@ public:
   void getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
                   unsigned int& rFrameRate ) const;
 
+  auto hasNextFrame() -> bool;
+  auto hasWritingSlot() -> bool;
+
   void loadAll();
-
-  // continuous read using smart ptrs
-  // auto retrieveNextFrame() -> bool;
-
-  // continuous read control
   std::unique_ptr<CalypFrame> getCurrFrame( std::unique_ptr<CalypFrame> buffer );
   auto getCurrFrameAsset() -> std::shared_ptr<CalypFrame>;
   auto getCurrFrame() -> CalypFrame*;
+  bool isEof();
   bool setNextFrame();
   void readNextFrame();
   void readNextFrameFillRGBBuffer();
-
-  auto hasWritingSlot() -> bool;
 
   void writeFrame( const CalypFrame& pcFrame );
 

@@ -25,6 +25,7 @@
 #ifndef __VIDEOHANDLE_H__
 #define __VIDEOHANDLE_H__
 
+#include <QElapsedTimer>
 #include <QMenu>
 #include <QPoint>
 #include <QThread>
@@ -39,13 +40,13 @@ class QDockWidget;
 class QSignalMapper;
 class QLabel;
 class QSlider;
-class QElapsedTimer;
 
 class SubWindowHandle;
 class SubWindowAbstract;
 class VideoSubWindow;
 class FramePropertiesDock;
 class FrameNumberWidget;
+class QTimer;
 
 class VideoHandle : public QObject
 {
@@ -121,9 +122,9 @@ private:
   QTimer* m_pcPlayingTimer;
   bool m_bIsPlaying;
 
-  unsigned int m_uiNumberPlayedFrames;
-  unsigned int m_uiRealAverageFrameRate;
-  QElapsedTimer* m_pcFrameRateFeedbackTimer;
+  unsigned int m_uiNumberPlayedFrames{ 0 };
+  unsigned int m_uiRealAverageFrameRate{ 0 };
+  std::unique_ptr<QElapsedTimer> m_pcFrameRateFeedbackTimer;
 
   void configureFrameRateTimer();
   void calculateRealFrameRate();

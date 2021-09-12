@@ -29,8 +29,10 @@
 #include <QLabel>
 #include <QSignalMapper>
 #include <QSlider>
+#include <QTimer>
 #include <QToolBar>
 #include <QtGui>
+#include <memory>
 
 #include "FrameNumberWidget.h"
 #include "FramePropertiesDock.h"
@@ -45,18 +47,15 @@ VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
 {
   m_pcCurrentVideoSubWindow = NULL;
   m_bIsPlaying = false;
-  m_pcPlayingTimer = new QTimer;
-  m_pcFrameRateFeedbackTimer = new QElapsedTimer;
+  m_pcPlayingTimer = new QTimer( this );
+  m_pcFrameRateFeedbackTimer = std::make_unique<QElapsedTimer>();
   m_pcPlayingTimer->setTimerType( Qt::PreciseTimer );
-  connect( m_pcPlayingTimer, SIGNAL( timeout() ), this, SLOT( playEvent() ) );
+  connect( m_pcPlayingTimer, &QTimer::timeout,
+           this, &VideoHandle::playEvent );
   m_acPlayingSubWindows.clear();
 }
 
-VideoHandle::~VideoHandle()
-{
-  delete m_pcPlayingTimer;
-  delete m_pcFrameRateFeedbackTimer;
-}
+VideoHandle::~VideoHandle() = default;
 
 void VideoHandle::createActions()
 {
@@ -363,7 +362,6 @@ void VideoHandle::update()
       }
     }
     m_pcResolutionLabel->setText( resolution );
-
     m_pcFramePropertiesSideBar->setFrame( m_pcCurrentVideoSubWindow->getCurrFrameAsset(), m_pcCurrentVideoSubWindow->isPlaying() );
 
     m_pcFrameNumInfo->setTotalFrameNum( total_frame_num );
@@ -446,6 +444,10 @@ void VideoHandle::closeSubWindow( SubWindowAbstract* subWindow )
     {
       m_arrayActions[VIDEO_LOCK_ACT]->setVisible( false );
     }
+  }
+  if( subWindow == m_pcCurrentVideoSubWindow )
+  {
+    m_pcFramePropertiesSideBar->reset();
   }
 }
 

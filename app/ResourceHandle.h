@@ -64,8 +64,9 @@ private:
   auto addResource() -> std::size_t;
 
 private:
-  std::vector<std::shared_ptr<CalypStream>> m_apcStreamResourcesList;
-  std::vector<std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;
+  std::size_t unique_id{ 0 };
+  std::map<std::size_t, std::shared_ptr<CalypStream>> m_apcStreamResourcesList;
+  std::map<std::size_t, std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;
 };
 
 #endif  // __RESOURCEHANDLE_H__

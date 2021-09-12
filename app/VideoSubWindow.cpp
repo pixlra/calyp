@@ -150,8 +150,6 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
     , m_pcResourceManager( nullptr )
     , m_bWindowBusy( false )
     , m_pCurrStream( NULL )
-    , m_pcCurrFrame( NULL )
-    , m_pcCurrentDisplayModule( NULL )
     , m_pcReferenceSubWindow( NULL )
     , m_bIsPlaying( false )
     , m_pcUpdateTimer( NULL )
@@ -186,7 +184,7 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
   m_pcScrollArea->setWidgetResizable( true );
   setWidget( m_pcScrollArea );
 
-  m_apcCurrentModule.clear();
+  m_associatedModules.clear();
 
   m_pcUpdateTimer = new QTimer();
   m_pcUpdateTimer->setInterval( 800 );
@@ -198,9 +196,15 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
 
 VideoSubWindow::~VideoSubWindow()
 {
-  disableModule();
-  m_pcResourceManager->removeResource( m_uiResourceId );
-  //delete m_cViewArea;
+  std::vector<CalypAppModuleIf*> tmpModules = m_associatedModules;
+  m_associatedModules.clear();
+  for( auto module : tmpModules )
+  {
+    module->destroy();
+  }
+
+  if( m_pcResourceManager )
+    m_pcResourceManager->removeResource( m_uiResourceId );
   delete m_pcUpdateTimer;
 }
 
@@ -275,8 +279,8 @@ QSize VideoSubWindow::sizeHint() const
 QSize VideoSubWindow::sizeHint( const QSize& maxSize ) const
 {
   QSize isize;
-  if( m_pcCurrFrame )
-    isize = QSize( m_pcCurrFrame->getWidth() + 50, m_pcCurrFrame->getHeight() + 50 );
+  if( m_pcCurrFrameAsset )
+    isize = QSize( m_pcCurrFrameAsset->getWidth() + 50, m_pcCurrFrameAsset->getHeight() + 50 );
   else if( m_pCurrStream )
     isize = QSize( m_pCurrStream->getWidth() + 50, m_pCurrStream->getHeight() + 50 );
 
@@ -385,7 +389,7 @@ bool VideoSubWindow::loadFile( QString cFilename, bool bForceDialog )
   var.setValue<unsigned int>( BitsPel );
   appSettings.setValue( "VideoSubWindow/LastBitsPerPixel", var );
 
-#ifdef USE_RESOURCES
+#ifdef CALYP_MANAGED_RESOURCES
   m_pcResourceManager->startResourceWorker( m_uiResourceId );
 #endif
 
@@ -417,7 +421,7 @@ bool VideoSubWindow::loadFile( CalypFileInfo* streamInfo )
 
   m_sStreamInfo = *streamInfo;
 
-#ifdef USE_RESOURCES
+#ifdef CALYP_MANAGED_RESOURCES
   m_pcResourceManager->startResourceWorker( m_uiResourceId );
 #endif
 
@@ -437,15 +441,15 @@ void VideoSubWindow::updateVideoWindowInfo()
   if( m_pcCurrentDisplayModule )
   {
     m_cStreamInformation = "Module";
-    QList<VideoSubWindow*> arraySubWindows = m_pcCurrentDisplayModule->getSubWindowList();
+    const auto& arraySubWindows = m_pcCurrentDisplayModule->getSubWindowList();
     QStringList windowInfoList;
     if( arraySubWindows.size() > 0 )
     {
-      for( int i = 0; i < arraySubWindows.size(); i++ )
+      for( std::size_t i = 0; i < arraySubWindows.size(); i++ )
       {
-        if( arraySubWindows.at( i )->getWindowName() != getWindowName() )
+        if( arraySubWindows[i]->getWindowName() != getWindowName() )
         {
-          windowInfoList.append( QString( "Input %1 - " + arraySubWindows.at( i )->getWindowName() ).arg( i + 1 ) );
+          windowInfoList.append( QString( "Input %1 - " + arraySubWindows[i]->getWindowName() ).arg( i + 1 ) );
         }
       }
     }
@@ -454,7 +458,6 @@ void VideoSubWindow::updateVideoWindowInfo()
       QStringList list = QString::fromStdString( m_pcCurrentDisplayModule->moduleInfo() ).split( '\n' );
       windowInfoList.append( list );
     }
-    // qDebug( ) << sourceWindowList;
     if( windowInfoList.size() > 0 )
     {
       m_pcVideoInfo->setInformationTopLeft( windowInfoList );
@@ -466,16 +469,14 @@ void VideoSubWindow::updateVideoWindowInfo()
     QString m_cCodedName = QString::fromStdString( m_pCurrStream->getCodecName() );
     m_cStreamInformation = m_cFormatName + " | " + m_cCodedName;
   }
-  //#if 0
-  if( m_pcCurrFrame )
+  if( m_pcCurrFrameAsset )
   {
-    QString m_cPelFmtName = QString::fromStdString( m_pcCurrFrame->getPelFmtName() );
+    QString m_cPelFmtName = QString::fromStdString( m_pcCurrFrameAsset->getPelFmtName() );
     if( m_pCurrStream )
       if( !m_pCurrStream->isNative() )
         m_cPelFmtName += "*";
     m_cStreamInformation += " | " + m_cPelFmtName;
   }
-  //#endif
   if( m_cStreamInformation.isEmpty() )
   {
     m_cStreamInformation = "          ";
@@ -643,13 +644,14 @@ void VideoSubWindow::updateSelectedArea( QRect area )
  * Functions to enable a module in the
  * current SubWindow
  */
-void VideoSubWindow::enableModule( CalypAppModuleIf* pcModule )
+void VideoSubWindow::enableModule( std::unique_ptr<CalypAppModuleIf>&& pcModule )
 {
-  if( m_pcCurrentDisplayModule )
+  auto it = std::find( m_associatedModules.begin(), m_associatedModules.end(), pcModule.get() );
+  if( it != m_associatedModules.end() )
   {
-    disableModule( m_pcCurrentDisplayModule );
+    m_associatedModules.erase( it );
   }
-  m_pcCurrentDisplayModule = pcModule;
+  m_pcCurrentDisplayModule = std::move( pcModule );
   updateVideoWindowInfo();
 }
 
@@ -658,41 +660,50 @@ void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
   bool bRefresh = false;
   if( pcModule )
   {
-    int modIdx = m_apcCurrentModule.indexOf( pcModule );
-    if( modIdx != -1 )
+    auto it = std::find( m_associatedModules.begin(), m_associatedModules.end(), pcModule );
+    if( it != m_associatedModules.end() )
     {
-      m_apcCurrentModule.removeAt( modIdx );
-      ModulesHandle::destroyModuleIf( pcModule );
-      bRefresh |= true;
-    }
-    if( pcModule == m_pcCurrentDisplayModule )
-    {
-      pcModule = m_pcCurrentDisplayModule;
-      m_pcCurrentDisplayModule = 0;
-      ModulesHandle::destroyModuleIf( pcModule );
-      setWindowName( QFileInfo( m_cFilename ).fileName() );
+      m_associatedModules.erase( it );
       bRefresh |= true;
     }
   }
-  else
-  {
-    QList<CalypAppModuleIf*> apcCurrentModule = m_apcCurrentModule;
-    for( int i = 0; i < apcCurrentModule.size(); i++ )
-    {
-      m_apcCurrentModule.removeOne( apcCurrentModule.at( i ) );
-      ModulesHandle::destroyModuleIf( apcCurrentModule.at( i ) );
-      bRefresh |= true;
-    }
-    assert( m_apcCurrentModule.size() == 0 );
-    if( m_pcCurrentDisplayModule )
-    {
-      pcModule = m_pcCurrentDisplayModule;
-      m_pcCurrentDisplayModule = NULL;
-      ModulesHandle::destroyModuleIf( pcModule );
-      setWindowName( QFileInfo( m_cFilename ).fileName() );
-      bRefresh |= true;
-    }
-  }
+  // if( pcModule )
+  // {
+  //   int modIdx = m_apcCurrentModule.indexOf( pcModule );
+  //   if( modIdx != -1 )
+  //   {
+  //     m_apcCurrentModule.removeAt( modIdx );
+  //     ModulesHandle::destroyModuleIf( pcModule );
+  //     bRefresh |= true;
+  //   }
+  //   if( pcModule == m_pcCurrentDisplayModule )
+  //   {
+  //     pcModule = m_pcCurrentDisplayModule;
+  //     m_pcCurrentDisplayModule = 0;
+  //     ModulesHandle::destroyModuleIf( pcModule );
+  //     setWindowName( QFileInfo( m_cFilename ).fileName() );
+  //     bRefresh |= true;
+  //   }
+  // }
+  // else
+  // {
+  //   QList<CalypAppModuleIf*> apcCurrentModule = m_apcCurrentModule;
+  //   for( int i = 0; i < apcCurrentModule.size(); i++ )
+  //   {
+  //     m_apcCurrentModule.removeOne( apcCurrentModule.at( i ) );
+  //     ModulesHandle::destroyModuleIf( apcCurrentModule.at( i ) );
+  //     bRefresh |= true;
+  //   }
+  //   assert( m_apcCurrentModule.size() == 0 );
+  //   if( m_pcCurrentDisplayModule )
+  //   {
+  //     pcModule = m_pcCurrentDisplayModule;
+  //     m_pcCurrentDisplayModule = NULL;
+  //     ModulesHandle::destroyModuleIf( pcModule );
+  //     setWindowName( QFileInfo( m_cFilename ).fileName() );
+  //     bRefresh |= true;
+  //   }
+  // }
   if( bRefresh )
   {
     refreshFrame();
@@ -702,7 +713,7 @@ void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
 
 void VideoSubWindow::associateModule( CalypAppModuleIf* pcModule )
 {
-  m_apcCurrentModule.append( pcModule );
+  m_associatedModules.push_back( pcModule );
 }
 
 bool VideoSubWindow::hasRunningModule()
@@ -712,9 +723,9 @@ bool VideoSubWindow::hasRunningModule()
   {
     bRet |= m_pcCurrentDisplayModule->isRunning();
   }
-  for( int i = 0; i < m_apcCurrentModule.size() && !bRet; i++ )
+  for( int i = 0; i < m_associatedModules.size() && !bRet; i++ )
   {
-    bRet |= m_apcCurrentModule.at( i )->isRunning();
+    bRet |= m_associatedModules.at( i )->isRunning();
   }
   return bRet;
 }
@@ -724,16 +735,19 @@ void VideoSubWindow::setFillWindow( bool bFlag )
   m_pcVideoInfo->setBusyWindow( bFlag );
 }
 
-void VideoSubWindow::setCurrFrame( CalypFrame* pcCurrFrame )
+std::shared_ptr<CalypFrame> VideoSubWindow::getCurrFrameAsset()
 {
-  m_pcCurrFrame = pcCurrFrame;
-  m_cViewArea->setImage( m_pcCurrFrame );
-}
+  if( m_pcCurrFrameAsset == nullptr && m_pCurrStream != nullptr )
+  {
+    m_pcCurrFrameAsset = m_pCurrStream->getCurrFrameAsset();
+  }
+  return m_pcCurrFrameAsset;
+};
 
 void VideoSubWindow::setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame )
 {
-  m_pcCurrDisplayFrame = pcCurrFrame;
-  m_cViewArea->setImage( m_pcCurrDisplayFrame.get() );
+  m_pcCurrFrameAsset = pcCurrFrame;
+  m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
 }
 
 void VideoSubWindow::refreshFrameOperation()
@@ -741,26 +755,23 @@ void VideoSubWindow::refreshFrameOperation()
   bool bSetFrame = false;
   if( m_pCurrStream )
   {
-#ifdef USE_RESOURCES
-    m_pcCurrFrame = m_pCurrStream->getCurrFrameAsset().get();
-#else
-    m_pcCurrFrame = m_pCurrStream->getCurrFrame();
-#endif
+    m_pcCurrFrameAsset = m_pCurrStream->getCurrFrameAsset();
+    bSetFrame |= true;
   }
-  bSetFrame = m_pcCurrFrame ? true : false;
+
   if( m_pcCurrentDisplayModule )
   {
     m_bWindowBusy = true;
-    m_pcCurrentDisplayModule->apply( m_bIsPlaying, !m_bIsPlaying && m_apcCurrentModule.size() );
+    m_pcCurrentDisplayModule->apply( m_bIsPlaying, !m_bIsPlaying && m_associatedModules.size() );
     bSetFrame = false;
   }
   if( bSetFrame )
   {
-    m_cViewArea->setImage( m_pcCurrFrame );
+    m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
   }
-  for( int i = 0; i < m_apcCurrentModule.size(); i++ )
+  for( int i = 0; i < m_associatedModules.size(); i++ )
   {
-    m_apcCurrentModule.at( i )->update( m_bIsPlaying );
+    m_associatedModules.at( i )->update( m_bIsPlaying );
   }
 }
 
@@ -781,7 +792,7 @@ void VideoSubWindow::refreshFrame( bool bThreaded )
 
 bool VideoSubWindow::goToNextFrame( bool bThreaded )
 {
-#ifdef USE_RESOURCES
+#ifdef CALYP_MANAGED_RESOURCES
   bool bEndOfSeq = m_pCurrStream->retrieveNextFrame();
   m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
   if( !bEndOfSeq )
@@ -819,10 +830,10 @@ bool VideoSubWindow::save( QString filename )
   bool iRet = false;
   QApplication::setOverrideCursor( Qt::WaitCursor );
 
-  CalypFrame* saveFrame = m_pcCurrFrame;
+  CalypFrame* saveFrame = m_pcCurrFrameAsset.get();
   if( m_cSelectedArea.isValid() )
   {
-    saveFrame = new CalypFrame( m_pcCurrFrame, m_cSelectedArea.x(), m_cSelectedArea.y(), m_cSelectedArea.width(),
+    saveFrame = new CalypFrame( m_pcCurrFrameAsset.get(), m_cSelectedArea.x(), m_cSelectedArea.y(), m_cSelectedArea.width(),
                                 m_cSelectedArea.height() );
   }
   if( !saveFrame )
@@ -847,7 +858,7 @@ bool VideoSubWindow::saveStream( QString filename )
 void VideoSubWindow::setPlaying( bool isPlaying )
 {
   m_bIsPlaying = isPlaying;
-  for( auto module : m_apcCurrentModule )
+  for( auto module : m_associatedModules )
   {
     module->setPlaying( isPlaying );
   }
@@ -896,10 +907,15 @@ void VideoSubWindow::pause()
 
 void VideoSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
 {
-  m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
   if( m_pCurrStream )
+  {
     if( m_pCurrStream->seekInput( new_frame_num ) )
       refreshFrame();
+
+#ifdef CALYP_MANAGED_RESOURCES
+    m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
+#endif
+  }
 }
 
 void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
@@ -914,7 +930,7 @@ void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
     else
     {
       bRefresh = m_pCurrStream->seekInputRelative( bIsFoward );
-#ifdef USE_RESOURCES
+#ifdef CALYP_MANAGED_RESOURCES
       m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
 #endif
     }
@@ -1071,8 +1087,8 @@ void VideoSubWindow::scaleView( double scale, QPoint center )
 void VideoSubWindow::scaleView( const QSize& size, QPoint center )
 {
   QSize imgViewSize;
-  if( m_pcCurrFrame )
-    imgViewSize = QSize( m_pcCurrFrame->getWidth(), m_pcCurrFrame->getHeight() );
+  if( m_pcCurrFrameAsset )
+    imgViewSize = QSize( m_pcCurrFrameAsset->getWidth(), m_pcCurrFrameAsset->getHeight() );
   else
     imgViewSize = QSize( m_pCurrStream->getWidth(), m_pCurrStream->getHeight() );
   QSize newSize = imgViewSize;
@@ -1102,22 +1118,22 @@ void VideoSubWindow::scaleView( const QSize& size, QPoint center )
 
 void VideoSubWindow::updatePixelValueStatusBar( const QPoint& pos )
 {
-  if( m_pcCurrFrame )
+  if( m_pcCurrFrameAsset )
   {
     int iWidth, iHeight;
     int posX = pos.x();
     int posY = pos.y();
     QString strStatus;
 
-    iWidth = m_pcCurrFrame->getWidth();
-    iHeight = m_pcCurrFrame->getHeight();
+    iWidth = m_pcCurrFrameAsset->getWidth();
+    iHeight = m_pcCurrFrameAsset->getHeight();
 
     if( ( posX < iWidth ) && ( posX >= 0 ) && ( posY < iHeight ) && ( posY >= 0 ) )
     {
       strStatus = QString( "(%1,%2)   " ).arg( posX ).arg( posY );
 
-      int colorSpace = m_pcCurrFrame->getColorSpace();
-      CalypPixel pixelValue = m_pcCurrFrame->getPixel( pos.x(), pos.y() );
+      int colorSpace = m_pcCurrFrameAsset->getColorSpace();
+      CalypPixel pixelValue = m_pcCurrFrameAsset->getPixel( pos.x(), pos.y() );
       switch( colorSpace )
       {
       case CLP_COLOR_GRAY:

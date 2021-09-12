@@ -101,19 +101,18 @@ public:
   void loadAll();
 
   // continuous read using smart ptrs
-  auto retrieveNextFrame() -> bool;
-  auto getCurrFrameAsset() -> std::shared_ptr<CalypFrame>;
+  // auto retrieveNextFrame() -> bool;
 
   // continuous read control
-  CalypFrame* getCurrFrame( CalypFrame* );
-  CalypFrame* getCurrFrame();
+  std::unique_ptr<CalypFrame> getCurrFrame( std::unique_ptr<CalypFrame> buffer );
+  auto getCurrFrameAsset() -> std::shared_ptr<CalypFrame>;
+  auto getCurrFrame() -> CalypFrame*;
   bool setNextFrame();
   void readNextFrame();
   void readNextFrameFillRGBBuffer();
 
   auto hasWritingSlot() -> bool;
 
-  void writeFrame();
   void writeFrame( const CalypFrame& pcFrame );
 
   bool saveFrame( const ClpString& filename );

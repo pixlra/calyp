@@ -31,6 +31,7 @@
 #include <QString>
 #include <QVector>
 
+#include "CalypAppModuleIf.h"
 #include "CommonDefs.h"
 #include "SubWindowAbstract.h"
 #include "ViewArea.h"
@@ -84,13 +85,12 @@ private:
   CalypFileInfo m_sStreamInfo;
   std::size_t m_uiResourceId;
   CalypStream* m_pCurrStream;
-  std::shared_ptr<CalypFrame> m_pcCurrDisplayFrame;
-
-  CalypFrame* m_pcCurrFrame;
+  std::shared_ptr<CalypFrame> m_pcCurrFrameAsset;
+  //CalypFrame* m_pcCurrFrame;
   QRect m_cSelectedArea;
 
-  CalypAppModuleIf* m_pcCurrentDisplayModule;
-  QList<CalypAppModuleIf*> m_apcCurrentModule;
+  std::unique_ptr<CalypAppModuleIf> m_pcCurrentDisplayModule{ nullptr };
+  std::vector<CalypAppModuleIf*> m_associatedModules;
 
   VideoSubWindow* m_pcReferenceSubWindow;
 
@@ -139,21 +139,20 @@ public:
   void seekAbsoluteEvent( unsigned int new_frame_num );
   void seekRelativeEvent( bool bIsFoward );
 
-  void setCurrFrame( CalypFrame* pcCurrFrame );
   void setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame );
 
   CalypFileInfo getStreamInfo() { return m_sStreamInfo; }
   QString getStreamInformation() { return m_cStreamInformation; }
   const CalypStream* getInputStream() { return m_pCurrStream; }
   const CalypStream* getCurrStream() { return m_pCurrStream; }
-  CalypFrame* getCurrFrame() { return m_pcCurrFrame; }
-  std::shared_ptr<CalypFrame> getCurrFrameAsset() { return m_pCurrStream->getCurrFrameAsset(); };
+  CalypFrame* getCurrFrame() { return m_pcCurrFrameAsset.get(); }
+  std::shared_ptr<CalypFrame> getCurrFrameAsset();
   ViewArea* getViewArea() { return m_cViewArea; }
   void setRefSubWindow( VideoSubWindow* subWindow )
   {
     m_pcReferenceSubWindow = NULL;
     if( subWindow )
-      if( m_pcCurrFrame->haveSameFmt( subWindow->getCurrFrame() ) )
+      if( m_pcCurrFrameAsset->haveSameFmt( subWindow->getCurrFrame() ) )
         m_pcReferenceSubWindow = subWindow;
   }
 
@@ -162,17 +161,17 @@ public:
    * Functions to enable a module in the
    * current SubWindow
    */
-  void enableModule( CalypAppModuleIf* pcModule );
+  void enableModule( std::unique_ptr<CalypAppModuleIf>&& pcModule );
   void disableModule( CalypAppModuleIf* pcModule = NULL );
   void associateModule( CalypAppModuleIf* pcModule );
 
-  CalypAppModuleIf* getDisplayModule() { return m_pcCurrentDisplayModule; }
-  QList<CalypAppModuleIf*> getModuleArray()
+  CalypAppModuleIf* getDisplayModule() { return m_pcCurrentDisplayModule.get(); }
+  QVector<CalypAppModuleIf*> getModuleArray()
   {
-    QList<CalypAppModuleIf*> apcModulesArray;
+    QVector<CalypAppModuleIf*> apcModulesArray;
     if( m_pcCurrentDisplayModule )
-      apcModulesArray.append( m_pcCurrentDisplayModule );
-    apcModulesArray.append( m_apcCurrentModule );
+      apcModulesArray.append( m_pcCurrentDisplayModule.get() );
+    apcModulesArray.append( QVector<CalypAppModuleIf*>::fromStdVector( m_associatedModules ) );
     return apcModulesArray;
   }
 

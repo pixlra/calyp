@@ -76,11 +76,13 @@ ResourceHandle::ResourceHandle()
 
 auto ResourceHandle::addResource() -> std::size_t
 {
+  auto resource_id = unique_id;
+  unique_id++;
   auto newStreamResource = std::make_shared<CalypStream>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
-  m_apcStreamResourcesList.push_back( newStreamResource );
-  m_apcStreamResourcesWorkersList.push_back( std::move( newStreamResourceWorker ) );
-  return m_apcStreamResourcesList.size() - 1;
+  m_apcStreamResourcesList[resource_id] = newStreamResource;
+  m_apcStreamResourcesWorkersList[resource_id] = std::move( newStreamResourceWorker );
+  return resource_id;
 }
 
 auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
@@ -98,7 +100,7 @@ auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
 
 auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 {
-  if( id < m_apcStreamResourcesList.size() )
+  if( m_apcStreamResourcesWorkersList.contains( id ) )
   {
     return m_apcStreamResourcesList[id].get();
   }
@@ -107,7 +109,7 @@ auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 
 void ResourceHandle::removeResource( std::size_t id )
 {
-  if( id >= m_apcStreamResourcesList.size() )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;
@@ -115,15 +117,15 @@ void ResourceHandle::removeResource( std::size_t id )
 
   // Remove worker first
   m_apcStreamResourcesWorkersList[id]->stop();
-  m_apcStreamResourcesWorkersList.erase( m_apcStreamResourcesWorkersList.begin() + id );
+  m_apcStreamResourcesWorkersList[id] = nullptr;
 
   // Then the underlying stream
-  m_apcStreamResourcesList.erase( m_apcStreamResourcesList.begin() + id );
+  m_apcStreamResourcesList[id] = nullptr;
 }
 
 void ResourceHandle::startResourceWorker( std::size_t id )
 {
-  if( id >= m_apcStreamResourcesList.size() )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;
@@ -136,7 +138,7 @@ void ResourceHandle::startResourceWorker( std::size_t id )
 
 void ResourceHandle::wakeResourceWorker( std::size_t id )
 {
-  if( id >= m_apcStreamResourcesList.size() )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;

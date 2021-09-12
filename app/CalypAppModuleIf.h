@@ -33,6 +33,7 @@
 #include "config.h"
 
 #ifdef CALYP_THREADED_MODULES
+#include <QMutex>
 #include <QThread>
 #endif
 
@@ -62,24 +63,6 @@ class CalypAppModuleIf
   friend class ModuleHandleDock;
   friend class ModulesHandleOptDialog;
 
-private:
-  bool m_bIsRunning;
-  bool m_bSuccess;
-
-  QAction* m_pcModuleAction;
-  CalypModulePtr m_pcModule;
-
-  VideoSubWindow* m_pcSubWindow[CLP_MODULE_MAX_NUM_FRAMES];
-
-  VideoSubWindow* m_pcDisplaySubWindow;
-
-  QDockWidget* m_pcDockWidget;
-  ModuleHandleDock* m_pcModuleDock;
-
-  CalypStream* m_pcModuleStream;
-  CalypFrame* m_pcProcessedFrame;
-  double m_dMeasurementResult;
-
 public:
   class EventData : public QEvent
   {
@@ -95,15 +78,9 @@ public:
   };
 
   CalypAppModuleIf( QObject* parent, QAction* action, CalypModulePtr&& module );
-  virtual ~CalypAppModuleIf() {}
-  QList<VideoSubWindow*> getSubWindowList()
-  {
-    QList<VideoSubWindow*> arraySubWindows;
-    for( int i = 0; i < CLP_MODULE_MAX_NUM_FRAMES; i++ )
-      if( m_pcSubWindow[i] )
-        arraySubWindows.append( m_pcSubWindow[i] );
-    return arraySubWindows;
-  }
+  ~CalypAppModuleIf();
+
+  auto getSubWindowList() -> const std::vector<VideoSubWindow*>& { return m_pcSubWindow; }
 
   CalypModuleIf* getModule() { return m_pcModule.get(); }
   unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
@@ -117,6 +94,32 @@ public:
 
 protected:
   virtual void run();
+
+private:
+  bool m_bIsRunning{ false };
+  bool m_bSuccess{ false };
+
+  QAction* m_pcModuleAction{ nullptr };
+  CalypModulePtr m_pcModule{ nullptr };
+
+  std::vector<VideoSubWindow*> m_pcSubWindow;
+
+  VideoSubWindow* m_pcDisplaySubWindow{ nullptr };
+
+  QDockWidget* m_pcDockWidget{ nullptr };
+  ModuleHandleDock* m_pcModuleDock{ nullptr };
+
+  std::unique_ptr<CalypStream> m_pcModuleStream{ nullptr };
+
+  std::vector<std::shared_ptr<CalypFrame>> m_frameList;
+  std::vector<CalypFrame*> m_frameListPtr;
+
+  std::shared_ptr<CalypFrame> m_pcProcessedFrame{ nullptr };
+  double m_dMeasurementResult{ 0 };
+
+#ifdef CALYP_THREADED_MODULES
+  QMutex m_Mutex;
+#endif
 };
 
 #endif  // __CALYPAPPMODULESIF_H__

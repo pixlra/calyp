@@ -230,6 +230,8 @@ FramePropertiesDock::FramePropertiesDock( QWidget* parent, bool* pbMainPlaySwitc
   statisticsLayout->addWidget( labelStdDevValue, gridRow++, 1 );
   statisticsLayout->addWidget( medianLabel, gridRow, 0 );
   statisticsLayout->addWidget( labelMedianValue, gridRow++, 1 );
+  statisticsLayout->addWidget( percentileLabel, gridRow, 0 );
+  statisticsLayout->addWidget( labelPercentileValue, gridRow++, 1 );
   statisticsLayout->addWidget( entropyLabel, gridRow, 0 );
   statisticsLayout->addWidget( labelEntropyValue, gridRow++, 1 );
 
@@ -278,11 +280,15 @@ QSize FramePropertiesDock::sizeHint() const
 
 void FramePropertiesDock::reset()
 {
+  m_pcFrame = nullptr;
+  m_pcSelectedFrame = nullptr;
+
   m_bHasFrame = false;
   m_cSelectionArea = QRect();
 
   m_iLastFrameType = -1;
 
+  labelRangeValue->clear();
   labelNEBinsValue->clear();
   labelMeanValue->clear();
   labelPixelsValue->clear();
@@ -290,6 +296,7 @@ void FramePropertiesDock::reset()
   labelCountValue->clear();
   labelMedianValue->clear();
   labelPercentileValue->clear();
+  labelEntropyValue->clear();
 
   // Remove the histogram data from memory
   histogramWidget->reset();

@@ -49,6 +49,11 @@ public:
     m_parent = parent;
   }
 
+  void reset()
+  {
+    m_pcFrame = nullptr;
+  }
+
   void setup( std::shared_ptr<CalypFrame> frame )
   {
     m_pcFrame = frame;
@@ -230,8 +235,10 @@ void HistogramWidget::reset()
   d->guideVisible = false;
   d->clearFlag = HistogramWidgetPrivate::HistogramNone;
   // Remove histogram data from memory.
-  m_fullImage = NULL;
-  m_selectionImage = NULL;
+  m_fullImage = nullptr;
+  m_selectionImage = nullptr;
+  m_imageWorker->setup( nullptr );
+  m_selectionWorker->setup( nullptr );
   update();
 }
 

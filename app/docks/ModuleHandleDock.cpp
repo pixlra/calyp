@@ -33,7 +33,7 @@
 #include "ModulesHandle.h"
 
 ModuleHandleDock::ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf )
-    : QWidget( parent ), m_pcCurrModuleIf( moduleIf )
+    : QWidget( parent )
 {
   // ----------------- Dock definition -----------------
 
@@ -58,7 +58,12 @@ ModuleHandleDock::ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf 
   setEnabled( true );
 }
 
-ModuleHandleDock::~ModuleHandleDock() {}
+ModuleHandleDock::~ModuleHandleDock() = default;
+
+void ModuleHandleDock::enableModule( std::unique_ptr<CalypAppModuleIf>&& module )
+{
+  m_pcCurrModuleIf = std::move( module );
+}
 
 void ModuleHandleDock::setModuleReturnValue( double value )
 {
@@ -69,11 +74,9 @@ void ModuleHandleDock::setModuleReturnValue( double value )
 
 void ModuleHandleDock::visibilityChangedSlot( bool visiblity )
 {
-  if( !visiblity && m_pcCurrModuleIf )
+  if( !visiblity )
   {
-    CalypAppModuleIf* pcCurrentModule = m_pcCurrModuleIf;
-    m_pcCurrModuleIf = NULL;
-    ModulesHandle::destroyModuleIf( pcCurrentModule );
+    m_pcCurrModuleIf = nullptr;
   }
 }
 

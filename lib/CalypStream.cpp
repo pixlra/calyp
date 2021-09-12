@@ -26,6 +26,7 @@
 #include "CalypStream.h"
 
 #include <cassert>
+#include <deque>
 #include <iostream>
 
 #include "CalypFrame.h"
@@ -102,7 +103,8 @@ std::vector<CalypStandardResolution> CalypStream::stdResolutionSizes()
 class CalypStreamBufferPrivate
 {
 private:
-  std::vector<CalypFrame> m_apcFrameBuffer;
+  std::vector<CalypFrame> m_framePool;
+  std::deque<CalypFrame> m_frameBuffer;
   std::int64_t m_iSize;
   std::int64_t m_iReadIndex;
   std::int64_t m_iWriteIndex;
@@ -110,12 +112,12 @@ private:
 public:
   CalypStreamBufferPrivate( std::size_t size, unsigned int width, unsigned int height, int pelFormat, unsigned int bitsPixel, bool hasNegative )
   {
-    m_apcFrameBuffer.reserve( size );
+    m_framePool.reserve( size );
     for( std::size_t i = 0; i < size; i++ )
     {
-      m_apcFrameBuffer.push_back( CalypFrame{ width, height, pelFormat, bitsPixel, hasNegative } );
+      m_framePool.push_back( CalypFrame{ width, height, pelFormat, bitsPixel, hasNegative } );
     }
-    m_iSize = std::ssize( m_apcFrameBuffer );
+    m_iSize = std::ssize( m_framePool );
     m_iReadIndex = -1;
     m_iWriteIndex = 0;
   }
@@ -124,16 +126,16 @@ public:
 
   void increase( std::size_t newSize )
   {
-    m_apcFrameBuffer.reserve( newSize );
+    m_framePool.reserve( newSize );
     for( std::size_t i = m_iSize; i < newSize; i++ )
     {
-      m_apcFrameBuffer.push_back( CalypFrame{ m_apcFrameBuffer[0].getWidth(),
-                                              m_apcFrameBuffer[0].getHeight(),
-                                              m_apcFrameBuffer[0].getPelFormat(),
-                                              m_apcFrameBuffer[0].getBitsPel(),
-                                              m_apcFrameBuffer[0].getHasNegativeValues() } );
+      m_framePool.push_back( CalypFrame{ m_framePool[0].getWidth(),
+                                         m_framePool[0].getHeight(),
+                                         m_framePool[0].getPelFormat(),
+                                         m_framePool[0].getBitsPel(),
+                                         m_framePool[0].getHasNegativeValues() } );
     }
-    m_iSize = std::ssize( m_apcFrameBuffer );
+    m_iSize = std::ssize( m_framePool );
   }
 
   void setIndex( std::int64_t i )
@@ -151,52 +153,54 @@ public:
     assert( m_iWriteIndex >= 0 );
     m_iReadIndex = 0;
   }
-  CalypFrame& frame( int i ) { return m_apcFrameBuffer.at( i ); }
+  CalypFrame& frame( int i ) { return m_framePool.at( i ); }
 
   CalypFrame& currentRead()
   {
-    assert( m_iReadIndex >= 0 && m_iReadIndex < m_iSize );
-    return m_apcFrameBuffer.at( m_iReadIndex );
+    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
+    return m_framePool.at( m_iReadIndex % m_iSize );
   }
 
-  const CalypFrame& ref() { return m_apcFrameBuffer.at( m_iWriteIndex ); }
+  const CalypFrame& ref() { return m_framePool.at( m_iWriteIndex % m_iSize ); }
 
   CalypFrame& readOneFrame()
   {
-    assert( m_iReadIndex >= 0 && m_iReadIndex < m_iSize );
-    CalypFrame& frameToRead = m_apcFrameBuffer.at( m_iReadIndex );
+    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
+    CalypFrame& frameToRead = m_framePool.at( m_iReadIndex % m_iSize );
     m_iReadIndex = nextIndex( m_iReadIndex );
     return frameToRead;
   }
   CalypFrame& writeOneFrame()
   {
-    assert( m_iReadIndex != m_iWriteIndex );
-    CalypFrame& frameToWrite = m_apcFrameBuffer.at( m_iWriteIndex );
+    assert( m_iWriteIndex > m_iReadIndex && ( m_iReadIndex % m_iSize ) != ( m_iWriteIndex % m_iSize ) );
+    CalypFrame& frameToWrite = m_framePool.at( m_iWriteIndex % m_iSize );
     m_iWriteIndex = nextIndex( m_iWriteIndex );
     return frameToWrite;
   }
 
   bool hasWritingSlot()
   {
-    if( m_iWriteIndex != m_iReadIndex )
+    if( ( m_iReadIndex % m_iSize ) != ( m_iWriteIndex % m_iSize ) )
       return true;
     return false;
   }
 
   std::shared_ptr<CalypFrame> retrieveFrame()
   {
-    auto ptr = std::make_shared<CalypFrame>( std::move( m_apcFrameBuffer[m_iReadIndex] ) );
-    m_apcFrameBuffer[m_iReadIndex] = CalypFrame{ ptr->getWidth(),
-                                                 ptr->getHeight(),
-                                                 ptr->getPelFormat(),
-                                                 ptr->getBitsPel(),
-                                                 ptr->getHasNegativeValues() };
+    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
+    auto ptr = std::make_shared<CalypFrame>( std::move( m_framePool[m_iReadIndex % m_iSize] ) );
+    m_framePool[m_iReadIndex % m_iSize] = CalypFrame{ ptr->getWidth(),
+                                                      ptr->getHeight(),
+                                                      ptr->getPelFormat(),
+                                                      ptr->getBitsPel(),
+                                                      ptr->getHasNegativeValues() };
     m_iReadIndex = nextIndex( m_iReadIndex );
     return ptr;
   }
 
 private:
-  inline int nextIndex( std::int64_t curr ) { return curr + 1 >= m_iSize ? 0 : curr + 1; }
+  //inline int nextIndex( std::int64_t curr ) { return curr + 1 >= m_iSize ? 0 : curr + 1; }
+  inline int nextIndex( std::int64_t curr ) { return curr + 1; }
 };
 
 class CalypStream::CalypStreamPrivate
@@ -210,8 +214,9 @@ public:
   CalypStreamHandlerIf* handler;
   CreateStreamHandlerFn pfctCreateHandler;
 
-  std::unique_ptr<CalypStreamBufferPrivate> frameBuffer;
-  std::shared_ptr<CalypFrame> currentFrame;
+  std::vector<CalypFrame> framePool;
+  std::deque<std::shared_ptr<CalypFrame>> frameFifo;
+  std::size_t bufferIdx{ 0 };
 
   ClpString cFilename;
   long long int iCurrFrameNum;
@@ -221,7 +226,6 @@ public:
   {
     handler = nullptr;
     pfctCreateHandler = nullptr;
-    frameBuffer = nullptr;
     isInput = true;
     isInit = false;
     bLoadAll = false;
@@ -249,7 +253,21 @@ public:
     isInit = false;
   }
 
-  bool readFrame( CalypFrame& frame )
+  void increasePool( std::size_t newSize )
+  {
+    framePool.reserve( newSize );
+    auto oldSize = framePool.size();
+    for( std::size_t i = oldSize; i < newSize; i++ )
+    {
+      framePool.push_back( CalypFrame{ framePool[0].getWidth(),
+                                       framePool[0].getHeight(),
+                                       framePool[0].getPelFormat(),
+                                       framePool[0].getBitsPel(),
+                                       framePool[0].getHasNegativeValues() } );
+    }
+  }
+
+  bool readNextFrame( bool fillRgbBuffer = false )
   {
     if( !isInit || !isInput || handler->m_uiCurrFrameFileIdx >= handler->m_uiTotalNumberFrames )
       return false;
@@ -257,11 +275,23 @@ public:
     if( bLoadAll )
       return true;
 
+    assert( bufferIdx > 0 );
+    bufferIdx--;
+    CalypFrame& frame = framePool[bufferIdx];
+
     if( !handler->read( frame ) )
     {
       throw CalypFailure( "CalypStream", "Cannot read frame from stream" );
       return false;
     }
+    if( fillRgbBuffer )
+    {
+      frame.fillRGBBuffer();
+    }
+    frameFifo.push_back(
+        std::shared_ptr<CalypFrame>{
+            new CalypFrame{ std::move( frame ) },
+            [this]( CalypFrame* p ) { framePool[bufferIdx] = std::move( *p ); bufferIdx++; } } );
     return true;
   }
 };
@@ -415,8 +445,11 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
   std::size_t bufferSize = d->isInput ? 4 : 1;
   try
   {
-    d->frameBuffer = std::make_unique<CalypStreamBufferPrivate>( bufferSize, d->handler->m_uiWidth, d->handler->m_uiHeight,
-                                                                 d->handler->m_iPixelFormat, d->handler->m_uiBitsPerPixel, hasNegative );
+    d->framePool.reserve( bufferSize );
+    for( std::size_t i = 0; i < bufferSize; i++ )
+    {
+      d->framePool.push_back( CalypFrame{ d->handler->m_uiWidth, d->handler->m_uiHeight, d->handler->m_iPixelFormat, d->handler->m_uiBitsPerPixel, hasNegative } );
+    }
   }
   catch( CalypFailure& e )
   {
@@ -425,7 +458,10 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
     return d->isInit;
   }
 
-  d->handler->m_uiNBytesPerFrame = d->frameBuffer->ref().getBytesPerFrame();
+  d->frameFifo.clear();
+  d->bufferIdx = d->framePool.size();
+
+  d->handler->m_uiNBytesPerFrame = d->framePool[0].getBytesPerFrame();
 
   // Some handlers need to know how long is a frame to get frame number
   d->handler->calculateFrameNumber();
@@ -437,7 +473,7 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
     return d->isInit;
   }
 
-  if( !d->handler->configureBuffer( d->frameBuffer->ref() ) )
+  if( !d->handler->configureBuffer( d->framePool[0] ) )
   {
     d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated buffers" );
@@ -461,9 +497,9 @@ bool CalypStream::reload()
     throw CalypFailure( "CalypStream", "Cannot open stream " + d->cFilename + " with the " +
                                            ClpString( d->handler->m_pchHandlerName ) + " handler" );
   }
-  d->handler->m_uiNBytesPerFrame = d->frameBuffer->ref().getBytesPerFrame();
+  d->handler->m_uiNBytesPerFrame = d->framePool[0].getBytesPerFrame();
   d->handler->calculateFrameNumber();
-  d->handler->configureBuffer( d->frameBuffer->ref() );
+  d->handler->configureBuffer( d->framePool[0] );
 
   if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat < 0 ||
       d->handler->m_uiBitsPerPixel == 0 || d->handler->m_uiTotalNumberFrames == 0 )
@@ -554,7 +590,7 @@ void CalypStream::loadAll()
 
   try
   {
-    d->frameBuffer->increase( d->handler->m_uiTotalNumberFrames );
+    d->increasePool( d->handler->m_uiTotalNumberFrames );
   }
   catch( CalypFailure& e )
   {
@@ -565,56 +601,49 @@ void CalypStream::loadAll()
   seekInput( 0 );
   for( unsigned int i = 2; i < d->handler->m_uiTotalNumberFrames; i++ )
   {
-    d->readFrame( d->frameBuffer->frame( i ) );
+    d->readNextFrame( false );
   }
   d->bLoadAll = true;
   d->iCurrFrameNum = 0;
 }
 
-// auto CalypStream::getNextFrame() -> CalypFrame&
+// auto CalypStream::retrieveNextFrame() -> bool
 // {
-//   CalypFrame& frameToTead = d->frameBuffer->readOneFrame();
-//   d->readFrame( d->frameBuffer->writeOneFrame() );
-//   return frameToTead;
+//   const std::lock_guard<std::mutex> lock( d->mutex );
+//   bool bEndOfSeq = false;
+//   if( d->iCurrFrameNum + 1 < (long)( d->handler->m_uiTotalNumberFrames ) )
+//   {
+//     d->iCurrFrameNum++;
+//     d->currentFrame = d->frameBuffer->retrieveFrame();
+//   }
+//   else
+//   {
+//     bEndOfSeq = true;
+//   }
+//   return bEndOfSeq;
 // }
 
-auto CalypStream::retrieveNextFrame() -> bool
+std::unique_ptr<CalypFrame> CalypStream::getCurrFrame( std::unique_ptr<CalypFrame> buffer )
 {
-  const std::lock_guard<std::mutex> lock( d->mutex );
-  bool bEndOfSeq = false;
-  if( d->iCurrFrameNum + 1 < (long)( d->handler->m_uiTotalNumberFrames ) )
-  {
-    d->iCurrFrameNum++;
-    d->currentFrame = d->frameBuffer->retrieveFrame();
-  }
+  if( buffer == nullptr )
+    buffer = std::make_unique<CalypFrame>( *d->frameFifo.front() );
   else
-  {
-    bEndOfSeq = true;
-  }
-  return bEndOfSeq;
+    buffer->copyFrom( *d->frameFifo.front() );
+  return buffer;
 }
 
 auto CalypStream::getCurrFrameAsset() -> std::shared_ptr<CalypFrame>
 {
-  if( d->currentFrame == nullptr )
-  {
-    d->currentFrame = d->frameBuffer->retrieveFrame();
-  }
-  return d->currentFrame;
+  if( d->bLoadAll )
+    return d->frameFifo[d->iCurrFrameNum];
+  return d->frameFifo.front();
 }
 
-CalypFrame* CalypStream::getCurrFrame( CalypFrame* pyuv_image )
+auto CalypStream::getCurrFrame() -> CalypFrame*
 {
-  if( pyuv_image == NULL )
-    pyuv_image = new CalypFrame( d->frameBuffer->currentRead() );
-  else
-    pyuv_image->copyFrom( d->frameBuffer->currentRead() );
-  return pyuv_image;
-}
-
-CalypFrame* CalypStream::getCurrFrame()
-{
-  return &d->frameBuffer->currentRead();
+  if( d->bLoadAll )
+    return d->frameFifo[d->iCurrFrameNum].get();
+  return d->frameFifo.front().get();
 }
 
 bool CalypStream::setNextFrame()
@@ -623,8 +652,11 @@ bool CalypStream::setNextFrame()
 
   if( d->iCurrFrameNum + 1 < (long)( d->handler->m_uiTotalNumberFrames ) )
   {
-    d->frameBuffer->readOneFrame();
     d->iCurrFrameNum++;
+    if( !d->bLoadAll )
+    {
+      d->frameFifo.pop_front();
+    }
   }
   else
   {
@@ -635,32 +667,22 @@ bool CalypStream::setNextFrame()
 
 void CalypStream::readNextFrame()
 {
-  d->readFrame( d->frameBuffer->writeOneFrame() );
+  d->readNextFrame();
 }
 
 void CalypStream::readNextFrameFillRGBBuffer()
 {
-  const std::lock_guard<std::mutex> lock( d->mutex );
-
-  CalypFrame& frameToWrite = d->frameBuffer->writeOneFrame();
-  d->readFrame( frameToWrite );
-  frameToWrite.fillRGBBuffer();
-  return;
+  d->readNextFrame( true );
 }
 
 auto CalypStream::hasWritingSlot() -> bool
 {
-  return d->frameBuffer->hasWritingSlot();
+  return !d->bLoadAll && d->bufferIdx > 0;
 }
 
 /**
  * @brief Write operations
  */
-void CalypStream::writeFrame()
-{
-  writeFrame( *getCurrFrame() );
-}
-
 void CalypStream::writeFrame( const CalypFrame& pcFrame )
 {
   if( !d->handler->write( pcFrame ) )
@@ -699,7 +721,7 @@ bool CalypStream::seekInputRelative( bool bIsFoward )
   if( bIsFoward )
   {
     bRet = !setNextFrame();
-    d->readFrame( d->frameBuffer->writeOneFrame() );
+    d->readNextFrame();
   }
   else
   {
@@ -716,24 +738,20 @@ bool CalypStream::seekInput( unsigned long new_frame_num )
   if( !d->isInit || new_frame_num >= d->handler->m_uiTotalNumberFrames || long( new_frame_num ) == d->iCurrFrameNum )
     return false;
 
+  d->frameFifo.clear();
+
   d->iCurrFrameNum = new_frame_num;
 
   if( d->bLoadAll )
-  {
-    d->frameBuffer->setIndex( d->iCurrFrameNum );
     return true;
-  }
 
   if( !d->handler->seek( d->iCurrFrameNum ) )
   {
     throw CalypFailure( "CalypStream", "Cannot seek file into desired position" );
   }
 
-  d->currentFrame = nullptr;
-  d->frameBuffer->reset();
-  d->readFrame( d->frameBuffer->writeOneFrame() );
+  d->readNextFrame();
   if( d->handler->m_uiTotalNumberFrames > 1 )
-    d->readFrame( d->frameBuffer->writeOneFrame() );
-  d->frameBuffer->startRead();
+    d->readNextFrame();
   return true;
 }

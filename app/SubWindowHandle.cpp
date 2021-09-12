@@ -182,6 +182,10 @@ void SubWindowHandle::setWindowMode( int iWindowMode )
     {
       m_pcApp->setWindowTitle( QApplication::applicationName() + " :: " + m_pcActiveWindow->getWindowName() );
     }
+    else
+    {
+      m_pcApp->setWindowTitle( QApplication::applicationName() );
+    }
   }
   m_iWindowMode = iWindowMode;
   // tileSubWindows();
@@ -218,6 +222,10 @@ void SubWindowHandle::updateActiveSubWindow( SubWindowAbstract* window )
     {
       m_pcApp->setWindowTitle( QApplication::applicationName() + " :: " + m_pcActiveWindow->getWindowName() );
     }
+    else
+    {
+      m_pcApp->setWindowTitle( QApplication::applicationName() );
+    }
   }
 }
 
@@ -237,9 +245,9 @@ void SubWindowHandle::addSubWindow( SubWindowAbstract* window )
   if( window )
   {
     connect( window, SIGNAL( updateStatusBar( const QString& ) ), m_pcApp,
-            SLOT( printMessage( const QString& ) ) );
+             SLOT( printMessage( const QString& ) ) );
     connect( window, SIGNAL( zoomFactorChanged( const double, const QPoint ) ), m_pcApp,
-            SLOT( updateZoomFactorSBox() ) );
+             SLOT( updateZoomFactorSBox() ) );
     if( m_iWindowMode == DETACHEDSUBWINDOWMODE )
     {
       connect( window, SIGNAL( aboutToActivate( SubWindowAbstract* ) ), this,
@@ -278,7 +286,12 @@ void SubWindowHandle::removeSubWindow( int windowIdx )
     if( !m_apcSubWindowList.isEmpty() )
       m_apcSubWindowList.front()->setFocus();
     else
-      m_pcActiveWindow = NULL;
+      m_pcActiveWindow = nullptr;
+
+    if( m_pcActiveWindow == nullptr )
+    {
+      m_pcApp->setWindowTitle( QApplication::applicationName() );
+    }
 
     emit changed();
   }

@@ -205,20 +205,72 @@ private:
   inline int nextIndex( std::int64_t curr ) { return curr + 1; }
 };
 
+struct CalypStreamFrameBuffer : std::enable_shared_from_this<CalypStreamFrameBuffer>
+{
+  std::mutex buffer_mutex;
+  std::vector<std::unique_ptr<CalypFrame>> framePool;
+  std::size_t bufferIdx{ 0 };
+
+  CalypStreamFrameBuffer( std::size_t size, unsigned int width, unsigned int height, int pelFormat, unsigned int bitsPixel, bool hasNegative )
+  {
+    framePool.reserve( size );
+    for( std::size_t i = 0; i < size; i++ )
+    {
+      framePool.push_back( std::make_unique<CalypFrame>( width, height, pelFormat, bitsPixel, hasNegative ) );
+    }
+    bufferIdx = framePool.size();
+  }
+
+  ~CalypStreamFrameBuffer() = default;
+
+  void increase( std::size_t newSize )
+  {
+    framePool.reserve( newSize );
+    auto oldSize = framePool.size();
+    for( std::size_t i = oldSize; i < newSize; i++ )
+    {
+      framePool.push_back( std::make_unique<CalypFrame>( framePool[0]->getWidth(),
+                                                         framePool[0]->getHeight(),
+                                                         framePool[0]->getPelFormat(),
+                                                         framePool[0]->getBitsPel(),
+                                                         framePool[0]->getHasNegativeValues() ) );
+    }
+    bufferIdx += newSize - oldSize;
+  }
+
+  CalypFrame* ref() { return framePool[0].get(); }
+
+  std::shared_ptr<CalypFrame> getFrame()
+  {
+    const std::lock_guard<std::mutex> lock( buffer_mutex );
+    assert( bufferIdx > 0 );
+    bufferIdx--;
+    auto frame = framePool[bufferIdx].release();
+    auto deleter = [this, lifetime = shared_from_this()]( CalypFrame* p ) {
+      const std::lock_guard<std::mutex> lock( buffer_mutex );
+      framePool[bufferIdx].reset( p );
+      bufferIdx++;
+    };
+    return std::shared_ptr<CalypFrame>{ frame, deleter };
+  }
+};
+
 class CalypStream::CalypStreamPrivate
 {
 public:
-  std::recursive_mutex mutex;
-
+  std::recursive_mutex stream_mutex;
   bool isInit;
   bool isInput;
 
   CalypStreamHandlerIf* handler;
   CreateStreamHandlerFn pfctCreateHandler;
 
-  std::vector<std::unique_ptr<CalypFrame>> framePool;
+  std::shared_ptr<CalypStreamFrameBuffer> frameBuffer;
   std::deque<std::shared_ptr<CalypFrame>> frameFifo;
-  std::size_t bufferIdx{ 0 };
+
+  // std::vector<std::unique_ptr<CalypFrame>> framePool;
+  // std::deque<std::shared_ptr<CalypFrame>> frameFifo;
+  // std::size_t bufferIdx{ 0 };
 
   ClpString cFilename;
   long long int iCurrFrameNum;
@@ -250,62 +302,31 @@ public:
 
     bLoadAll = false;
     isInit = false;
-    framePool.clear();
-    frameFifo.clear();
-  }
-
-  void increasePool( std::size_t newSize )
-  {
-    framePool.reserve( newSize );
-    auto oldSize = framePool.size();
-    for( std::size_t i = oldSize; i < newSize; i++ )
-    {
-      framePool.push_back( std::make_unique<CalypFrame>( framePool[0]->getWidth(),
-                                                         framePool[0]->getHeight(),
-                                                         framePool[0]->getPelFormat(),
-                                                         framePool[0]->getBitsPel(),
-                                                         framePool[0]->getHasNegativeValues() ) );
-    }
   }
 
   bool readNextFrame( bool fillRgbBuffer = false )
   {
+    const std::lock_guard<std::recursive_mutex> lock( stream_mutex );
+
     if( !isInit || !isInput || handler->m_uiCurrFrameFileIdx >= handler->m_uiTotalNumberFrames )
       return false;
 
     if( bLoadAll )
       return true;
 
-    const std::lock_guard<std::recursive_mutex> lock( mutex );
-    mutex.lock();
-    assert( bufferIdx > 0 );
-    bufferIdx--;
-    auto frame = framePool[bufferIdx].release();
-    mutex.unlock();
+    auto frame = frameBuffer->getFrame();
 
     if( !handler->read( *frame ) )
     {
       throw CalypFailure( "CalypStream", "Cannot read frame from stream" );
       return false;
     }
+    frameFifo.push_back( frame );
+
     if( fillRgbBuffer )
     {
       frame->fillRGBBuffer();
     }
-
-    auto deleter = [this]( CalypFrame* p ) {
-      if( isInit )
-      {
-        const std::lock_guard<std::recursive_mutex> lock( mutex );
-        framePool[bufferIdx].reset( p );
-        bufferIdx++;
-      }
-      else
-      {
-        delete p;
-      }
-    };
-    frameFifo.push_back( std::shared_ptr<CalypFrame>{ frame, deleter } );
     return true;
   }
 };
@@ -455,21 +476,18 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
     return d->isInit;
   }
 
+  d->frameFifo.clear();
+
   // Keep past, current and future frames
-  std::size_t bufferSize = d->isInput ? 4 : 1;
+  std::size_t bufferSize = d->isInput ? 6 : 1;
   try
   {
-    d->framePool.reserve( bufferSize );
-    for( std::size_t i = 0; i < bufferSize; i++ )
-    {
-      d->framePool.push_back(
-          std::make_unique<CalypFrame>(
-              d->handler->m_uiWidth,
-              d->handler->m_uiHeight,
-              d->handler->m_iPixelFormat,
-              d->handler->m_uiBitsPerPixel,
-              hasNegative ) );
-    }
+    d->frameBuffer = std::make_shared<CalypStreamFrameBuffer>( bufferSize,
+                                                               d->handler->m_uiWidth,
+                                                               d->handler->m_uiHeight,
+                                                               d->handler->m_iPixelFormat,
+                                                               d->handler->m_uiBitsPerPixel,
+                                                               hasNegative );
   }
   catch( CalypFailure& e )
   {
@@ -478,12 +496,9 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
     return d->isInit;
   }
 
-  d->frameFifo.clear();
-  d->bufferIdx = d->framePool.size();
+  const CalypFrame* refFrame = d->frameBuffer->ref();
 
-  const CalypFrame& refFrame = *d->framePool[0];
-
-  d->handler->m_uiNBytesPerFrame = refFrame.getBytesPerFrame();
+  d->handler->m_uiNBytesPerFrame = refFrame->getBytesPerFrame();
 
   // Some handlers need to know how long is a frame to get frame number
   d->handler->calculateFrameNumber();
@@ -495,7 +510,7 @@ bool CalypStream::open( ClpString filename, unsigned int width, unsigned int hei
     return d->isInit;
   }
 
-  if( !d->handler->configureBuffer( refFrame ) )
+  if( !d->handler->configureBuffer( *refFrame ) )
   {
     d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated buffers" );
@@ -520,10 +535,10 @@ bool CalypStream::reload()
     throw CalypFailure( "CalypStream", "Cannot open stream " + d->cFilename + " with the " +
                                            ClpString( d->handler->m_pchHandlerName ) + " handler" );
   }
-  const CalypFrame& refFrame = *d->framePool[0];
-  d->handler->m_uiNBytesPerFrame = refFrame.getBytesPerFrame();
+  const CalypFrame* refFrame = d->frameBuffer->ref();
+  d->handler->m_uiNBytesPerFrame = refFrame->getBytesPerFrame();
   d->handler->calculateFrameNumber();
-  d->handler->configureBuffer( *d->framePool[0] );
+  d->handler->configureBuffer( *refFrame );
 
   if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat < 0 ||
       d->handler->m_uiBitsPerPixel == 0 || d->handler->m_uiTotalNumberFrames == 0 )
@@ -610,7 +625,7 @@ auto CalypStream::hasNextFrame() -> bool
 
 auto CalypStream::hasWritingSlot() -> bool
 {
-  return !d->bLoadAll && d->bufferIdx > 0;
+  return !d->bLoadAll && d->frameBuffer->bufferIdx > 0;
 }
 
 /**
@@ -619,19 +634,19 @@ auto CalypStream::hasWritingSlot() -> bool
 
 void CalypStream::loadAll()
 {
+  const std::lock_guard<std::recursive_mutex> lock( d->stream_mutex );
   if( d->bLoadAll || !d->isInput )
     return;
 
   try
   {
-    d->increasePool( d->handler->m_uiTotalNumberFrames );
+    d->frameBuffer->increase( d->handler->m_uiTotalNumberFrames );
   }
   catch( CalypFailure& e )
   {
     d->close();
     throw CalypFailure( "CalypStream", "Cannot allocated frame buffer for the whole stream" );
   }
-
   seekInput( 0 );
   for( unsigned int i = 2; i < d->handler->m_uiTotalNumberFrames; i++ )
   {
@@ -751,18 +766,17 @@ bool CalypStream::seekInputRelative( bool bIsFoward )
 
 bool CalypStream::seekInput( unsigned long new_frame_num )
 {
-  const std::lock_guard<std::recursive_mutex> lock( d->mutex );
+  const std::lock_guard<std::recursive_mutex> lock( d->stream_mutex );
 
   if( !d->isInit || new_frame_num >= d->handler->m_uiTotalNumberFrames || long( new_frame_num ) == d->iCurrFrameNum )
     return false;
-
-  d->frameFifo.clear();
 
   d->iCurrFrameNum = new_frame_num;
 
   if( d->bLoadAll )
     return true;
 
+  d->frameFifo.clear();
   if( !d->handler->seek( d->iCurrFrameNum ) )
   {
     throw CalypFailure( "CalypStream", "Cannot seek file into desired position" );

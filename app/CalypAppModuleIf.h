@@ -26,6 +26,7 @@
 #define __CALYPAPPMODULESIF_H__
 
 #include <QEvent>
+#include <QPointer>
 #include <QVector>
 #include <cstdio>
 #include <iostream>
@@ -52,12 +53,13 @@ class CalypFrame;
 
 class VideoSubWindow;
 
-class CalypAppModuleIf
+class CalypAppModuleIf : std::enable_shared_from_this<CalypAppModuleIf>,
 #ifdef CALYP_THREADED_MODULES
-    : public QThread
+                         public QThread
 #else
-    : public QObject
+                         public QObject
 #endif
+
 {
   friend class ModulesHandle;
   friend class ModuleHandleDock;
@@ -68,13 +70,11 @@ public:
   {
   public:
     EventData( bool success, CalypAppModuleIf* module )
-        : QEvent( QEvent::User )
+        : QEvent( QEvent::User ), m_bSuccess{ success }, m_pcModule{ module }
     {
-      m_bSuccess = success;
-      m_pcModule = module;
     }
     bool m_bSuccess;
-    CalypAppModuleIf* m_pcModule;
+    QPointer<CalypAppModuleIf> m_pcModule;
   };
 
   CalypAppModuleIf( QObject* parent, QAction* action, CalypModulePtr&& module );
@@ -87,16 +87,16 @@ public:
   ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
+  bool process();
   void setPlaying( bool isPlaying );
   bool isRunning();
   void show();
-  void destroy();
+  void disable();
 
 protected:
   virtual void run();
 
 private:
-  bool m_bIsRunning{ false };
   bool m_bSuccess{ false };
 
   QAction* m_pcModuleAction{ nullptr };
@@ -104,8 +104,8 @@ private:
 
   std::vector<VideoSubWindow*> m_pcSubWindow;
 
+  // The module owns the related widgets
   VideoSubWindow* m_pcDisplaySubWindow{ nullptr };
-
   QDockWidget* m_pcDockWidget{ nullptr };
   ModuleHandleDock* m_pcModuleDock{ nullptr };
 
@@ -118,7 +118,7 @@ private:
   double m_dMeasurementResult{ 0 };
 
 #ifdef CALYP_THREADED_MODULES
-  QMutex m_Mutex;
+  QRecursiveMutex m_Mutex;
 #endif
 };
 

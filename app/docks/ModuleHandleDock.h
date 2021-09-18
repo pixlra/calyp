@@ -42,13 +42,12 @@ public:
   ModuleHandleDock( QWidget* parent, CalypAppModuleIf* moduleIf );
   ~ModuleHandleDock();
 
-  void enableModule( std::unique_ptr<CalypAppModuleIf>&& module );
   void setModuleReturnValue( double value );
 
   QSize sizeHint() const;
 
 private:
-  std::unique_ptr<CalypAppModuleIf> m_pcCurrModuleIf;
+  CalypAppModuleIf* m_pcCurrModuleIf;
 
   bool m_bIsVisible;
   QLabel* labelModulueValueLabel;

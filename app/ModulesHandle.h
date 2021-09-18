@@ -55,10 +55,6 @@ public:
   void readSettings();
   void writeSettings();
 
-  static void destroyModuleIf( CalypAppModuleIf* pcCurrModuleIf );
-  static void applyModuleIf( QList<CalypAppModuleIf*> pcCurrModuleIfList, bool isPlaying = false,
-                             bool disableThreads = false );
-
 private:
   QWidget* m_pcParent;
   SubWindowHandle* m_pcMainWindowManager;

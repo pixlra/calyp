@@ -180,7 +180,7 @@ void ModulesHandle::updateMenus()
   }
   m_arrayActions[LOAD_EXTERNAL_ACT]->setEnabled( true );
   m_arrayActions[FORCE_NEW_WINDOW_ACT]->setEnabled( hasSubWindow );
-  m_arrayActions[DISABLE_ALL_ACT]->setEnabled( m_pcCalypAppModuleIfList.size() > 0 );
+  m_arrayActions[DISABLE_ALL_ACT]->setEnabled( true );
 
   if( pcSubWindow )
   {
@@ -276,7 +276,7 @@ void ModulesHandle::activateModule()
 
   QString ModuleIfName = pcAction->data().toString();
   auto pcCurrModuleIf = CalypModulesFactory::Get()->CreateModule( ModuleIfName.toLocal8Bit().constData() );
-  auto pcCurrAppModuleIf = std::make_unique<CalypAppModuleIf>( this, pcAction, std::move( pcCurrModuleIf ) );
+  auto pcCurrAppModuleIf = std::make_shared<CalypAppModuleIf>( this, pcAction, std::move( pcCurrModuleIf ) );
 
   QList<VideoSubWindow*> videoSubWindowList;
   int numberOfFrames = pcCurrAppModuleIf->m_pcModule->m_uiNumberOfFrames;
@@ -377,7 +377,7 @@ void ModulesHandle::activateModule()
   {
     if( ( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_NEW_WINDOW ) || bShowModulesNewWindow )
     {
-      pcModuleSubWindow = new VideoSubWindow( VideoSubWindow::MODULE_SUBWINDOW );
+      pcModuleSubWindow = new VideoSubWindow( VideoSubWindow::MODULE_SUBWINDOW, pcCurrAppModuleIf.get() );
       windowName.append( QStringLiteral( "Module " ) );
       windowName.append( pcCurrAppModuleIf->m_pcModule->m_pchModuleLongName );
       pcCurrAppModuleIf->m_pcDisplaySubWindow = pcModuleSubWindow;
@@ -387,6 +387,10 @@ void ModulesHandle::activateModule()
       //               SLOT( zoomToFactorAll( double, QPoint ) ) );
       //      connect( pcModuleSubWindow, SIGNAL( scrollBarMoved_SWindow( const QPoint ) ), m_appModuleVideo,
       //               SLOT( moveAllScrollBars( const QPoint ) ) );
+    }
+    else
+    {
+      pcCurrAppModuleIf->m_pcSubWindow[0]->setDisplayModule( pcCurrAppModuleIf.get() );
     }
   }
   else if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
@@ -406,7 +410,7 @@ void ModulesHandle::activateModule()
 
   for( int i = 0; i < videoSubWindowList.size(); i++ )
   {
-    pcCurrAppModuleIf->m_pcSubWindow[i]->associateModule( pcCurrAppModuleIf.get() );
+    pcCurrAppModuleIf->m_pcSubWindow[i]->associateModule( pcCurrAppModuleIf );
   }
 
   // Create Module
@@ -453,28 +457,16 @@ void ModulesHandle::activateModule()
   }
 
   // Change ownership of the module
-  if( !pcCurrAppModuleIf->m_pcDisplaySubWindow && !pcCurrAppModuleIf->m_pcModuleDock )
-  {
-    pcCurrAppModuleIf->m_pcSubWindow[0]->enableModule( std::move( pcCurrAppModuleIf ) );
-  }
-  else if( pcCurrAppModuleIf->m_pcDisplaySubWindow )
-  {
-    pcCurrAppModuleIf->m_pcDisplaySubWindow->enableModule( std::move( pcCurrAppModuleIf ) );
-  }
-  else if( pcCurrAppModuleIf->m_pcModuleDock )
-  {
-    pcCurrAppModuleIf->m_pcModuleDock->enableModule( std::move( pcCurrAppModuleIf ) );
-  }
+  // if( !pcCurrAppModuleIf->m_pcDisplaySubWindow && !pcCurrAppModuleIf->m_pcModuleDock )
+  // {
+  //   pcCurrAppModuleIf->m_pcSubWindow[0]->enableModule( pcCurrAppModuleIf );
+  // }
+  // else if( pcCurrAppModuleIf->m_pcDisplaySubWindow )
+  // {
+  //   pcCurrAppModuleIf->m_pcDisplaySubWindow->enableModule( pcCurrAppModuleIf );
+  // }
 
   emit changed();
-}
-
-void ModulesHandle::destroyModuleIf( CalypAppModuleIf* pcCurrModuleIf )
-{
-  if( pcCurrModuleIf )
-  {
-    pcCurrModuleIf->destroy();
-  }
 }
 
 void ModulesHandle::destroyWindowModules()
@@ -482,26 +474,21 @@ void ModulesHandle::destroyWindowModules()
   VideoSubWindow* pcVideoSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
   if( pcVideoSubWindow )
   {
-    pcVideoSubWindow->disableModule();
+    pcVideoSubWindow->disableAllModules();
     emit changed();
   }
 }
 
 void ModulesHandle::destroyAllModulesIf()
 {
-  for( int i = 0; i < m_pcCalypAppModuleIfList.size(); i++ )
+  bool emit_changed = false;
+  QList<SubWindowAbstract*> windowsList = m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
+  for( auto window : windowsList )
   {
-    destroyModuleIf( m_pcCalypAppModuleIfList.at( i ) );
+    emit_changed |= qobject_cast<VideoSubWindow*>( window )->disableAllModules();
   }
-  emit changed();
-}
-
-void ModulesHandle::applyModuleIf( QList<CalypAppModuleIf*> pcCurrModuleIfList, bool isPlaying, bool disableThreads )
-{
-  for( int i = 0; i < pcCurrModuleIfList.size() && !isPlaying; i++ )
-  {
-    pcCurrModuleIfList.at( i )->apply( isPlaying, disableThreads );
-  }
+  if( emit_changed )
+    emit changed();
 }
 
 void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
@@ -607,12 +594,15 @@ void ModulesHandle::swapModulesWindowsIf( CalypAppModuleIf* pcCurrModuleIf )
 void ModulesHandle::customEvent( QEvent* event )
 {
   if( !event )
-  {
     return;
-  }
+
   CalypAppModuleIf::EventData* eventData = (CalypAppModuleIf::EventData*)event;
   if( eventData->m_bSuccess )
   {
+    event->accept();
+    // The module could be freed by the time the event is processed
+    if( eventData->m_pcModule.isNull() )
+      return;
     eventData->m_pcModule->show();
   }
 }

@@ -106,7 +106,6 @@ public:
     m_cCenterTextFont.setPointSize( 12 );
     m_pcRefreshTimer = new QTimer;
     m_pcRefreshTimer->setSingleShot( true );
-    connect( m_pcRefreshTimer, SIGNAL( timeout() ), this, SLOT( update() ) );
   }
   void setInformationTopLeft( const QStringList& textLines )
   {
@@ -119,6 +118,7 @@ public:
   void setBusyWindow( bool bFlag )
   {
     m_bBusyWindow = bFlag;
+    // Do not show the refresh screen if it takes less than 500 ms
     m_pcRefreshTimer->start( 500 );
   }
 
@@ -136,7 +136,7 @@ protected:
         topLeftCorner += QPoint( 0, 15 );
       }
     }
-    if( m_bBusyWindow )
+    if( m_bBusyWindow && !m_pcRefreshTimer->isActive() )
     {
       painter.setFont( m_cCenterTextFont );
       painter.drawText( rect(), Qt::AlignHCenter | Qt::AlignVCenter, QStringLiteral( "Refreshing..." ) );
@@ -194,14 +194,15 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
   m_pcVideoInfo = new VideoInformation( this );
 }
 
+VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, CalypAppModuleIf* displayModule, QWidget* parent )
+    : VideoSubWindow( category, parent )
+{
+  m_pcCurrentDisplayModule = displayModule;
+}
+
 VideoSubWindow::~VideoSubWindow()
 {
-  std::vector<CalypAppModuleIf*> tmpModules = m_associatedModules;
-  m_associatedModules.clear();
-  for( auto module : tmpModules )
-  {
-    module->destroy();
-  }
+  m_pcCurrFrameAsset = nullptr;
   if( m_pcResourceManager )
     m_pcResourceManager->removeResource( m_uiResourceId );
   delete m_pcUpdateTimer;
@@ -214,6 +215,18 @@ VideoSubWindow::~VideoSubWindow()
 void VideoSubWindow::closeEvent( QCloseEvent* event )
 {
   //stop();
+  auto tmpModules = m_associatedModules;
+  m_associatedModules.clear();
+  for( auto module : tmpModules )
+  {
+    module->disable();
+  }
+  if( m_pcCurrentDisplayModule )
+  {
+    m_pcCurrentDisplayModule->disable();
+    event->ignore();
+    return;
+  }
   SubWindowAbstract::closeEvent( event );
 }
 
@@ -648,28 +661,67 @@ void VideoSubWindow::updateSelectedArea( QRect area )
  * Functions to enable a module in the
  * current SubWindow
  */
-void VideoSubWindow::enableModule( std::unique_ptr<CalypAppModuleIf>&& pcModule )
+// void VideoSubWindow::enableModule( std::shared_ptr<CalypAppModuleIf> pcModule )
+// {
+//   auto it = std::find_if( m_associatedModules.begin(), m_associatedModules.end(),
+//                           [&]( const auto& module ) { return module.get() == pcModule.get(); } );
+//   if( it != m_associatedModules.end() )
+//   {
+//     m_associatedModules.erase( it );
+//   }
+//   m_pcCurrentDisplayModule = std::move( pcModule );
+//   updateVideoWindowInfo();
+// }
+
+bool VideoSubWindow::hasAssociatedModule()
 {
-  auto it = std::find( m_associatedModules.begin(), m_associatedModules.end(), pcModule.get() );
-  if( it != m_associatedModules.end() )
+  if( m_pcCurrentDisplayModule == nullptr )
+    return !m_associatedModules.empty();
+  return m_associatedModules.size() > 1;
+}
+
+void VideoSubWindow::setDisplayModule( CalypAppModuleIf* pcModule )
+{
+  if( m_pcCurrentDisplayModule != nullptr )
   {
-    m_associatedModules.erase( it );
+    m_pcCurrentDisplayModule->disable();
   }
-  m_pcCurrentDisplayModule = std::move( pcModule );
+  m_pcCurrentDisplayModule = pcModule;
   updateVideoWindowInfo();
+}
+
+void VideoSubWindow::associateModule( std::shared_ptr<CalypAppModuleIf> pcModule )
+{
+  auto it = std::find_if( m_associatedModules.begin(), m_associatedModules.end(),
+                          [&]( const auto& module ) { return module.get() == pcModule.get(); } );
+  if( it == m_associatedModules.end() )
+  {
+    m_associatedModules.push_back( std::move( pcModule ) );
+  }
 }
 
 void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
 {
+  if( pcModule == nullptr )
+    return;
   bool bRefresh = false;
-  if( pcModule )
+
+  auto it = std::find_if( m_associatedModules.begin(), m_associatedModules.end(),
+                          [&]( const auto& module ) { return module.get() == pcModule; } );
+  if( it != m_associatedModules.end() )
   {
-    auto it = std::find( m_associatedModules.begin(), m_associatedModules.end(), pcModule );
-    if( it != m_associatedModules.end() )
-    {
-      m_associatedModules.erase( it );
-      bRefresh |= true;
-    }
+    m_associatedModules.erase( it );
+  }
+  if( pcModule == m_pcCurrentDisplayModule )
+  {
+    bRefresh |= true;
+    m_pcCurrentDisplayModule = nullptr;
+    setWindowName( QFileInfo( m_cFilename ).fileName() );
+  }
+  if( bRefresh )
+  {
+    refreshFrame();
+    updateVideoWindowInfo();
   }
   // if( pcModule )
   // {
@@ -708,25 +760,25 @@ void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
   //     bRefresh |= true;
   //   }
   // }
-  if( bRefresh )
-  {
-    refreshFrame();
-    updateVideoWindowInfo();
-  }
 }
 
-void VideoSubWindow::associateModule( CalypAppModuleIf* pcModule )
+bool VideoSubWindow::disableAllModules()
 {
-  m_associatedModules.push_back( pcModule );
+  if( m_associatedModules.empty() )
+    return false;
+  // For loop is required as we will invalidate the iterator
+  while( m_associatedModules.size() > 0 )
+  {
+    auto module = m_associatedModules.back();
+    module->disable();
+    m_associatedModules.pop_back();
+  }
+  return true;
 }
 
 bool VideoSubWindow::hasRunningModule()
 {
   bool bRet = false;
-  if( m_pcCurrentDisplayModule )
-  {
-    bRet |= m_pcCurrentDisplayModule->isRunning();
-  }
   for( int i = 0; i < m_associatedModules.size() && !bRet; i++ )
   {
     bRet |= m_associatedModules.at( i )->isRunning();
@@ -750,8 +802,13 @@ std::shared_ptr<CalypFrame> VideoSubWindow::getCurrFrameAsset()
 
 void VideoSubWindow::setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame )
 {
-  m_pcCurrFrameAsset = pcCurrFrame;
+  m_pcCurrFrameAsset = std::move( pcCurrFrame );
   m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
+  for( auto& module : m_associatedModules )
+  {
+    if( module.get() != m_pcCurrentDisplayModule )
+      module->update( m_bIsPlaying );
+  }
 }
 
 void VideoSubWindow::refreshFrameOperation()
@@ -766,16 +823,18 @@ void VideoSubWindow::refreshFrameOperation()
   if( m_pcCurrentDisplayModule )
   {
     m_bWindowBusy = true;
-    m_pcCurrentDisplayModule->apply( m_bIsPlaying, !m_bIsPlaying && m_associatedModules.size() );
+    bool disableThreads = !m_bIsPlaying && hasAssociatedModule();
+    m_pcCurrentDisplayModule->apply( m_bIsPlaying, disableThreads );
     bSetFrame = false;
   }
   if( bSetFrame )
   {
     m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
-  }
-  for( int i = 0; i < m_associatedModules.size(); i++ )
-  {
-    m_associatedModules.at( i )->update( m_bIsPlaying );
+    for( auto& module : m_associatedModules )
+    {
+      if( module.get() != m_pcCurrentDisplayModule )
+        module->update( m_bIsPlaying );
+    }
   }
 }
 
@@ -938,11 +997,8 @@ void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
 #ifdef CALYP_MANAGED_RESOURCES
       m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
 #endif
+      refreshFrame();
     }
-  }
-  if( bRefresh )
-  {
-    refreshFrame();
   }
 }
 

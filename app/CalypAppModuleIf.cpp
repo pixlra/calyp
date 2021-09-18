@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QDockWidget>
 
+#include "ModuleHandleDock.h"
 #include "VideoSubWindow.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypStream.h"
@@ -36,6 +37,9 @@ CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModul
     : m_pcModuleAction( action ), m_pcModule( std ::move( module ) )
 {
   setParent( parent );
+#ifdef CALYP_THREADED_MODULES
+  setObjectName( m_pcModule->m_pchModuleName );
+#endif
   m_frameList.reserve( m_pcModule->m_uiNumberOfFrames );
   m_frameListPtr.reserve( m_pcModule->m_uiNumberOfFrames );
   m_pcSubWindow.resize( m_pcModule->m_uiNumberOfFrames, nullptr );
@@ -43,28 +47,30 @@ CalypAppModuleIf::CalypAppModuleIf( QObject* parent, QAction* action, CalypModul
 
 CalypAppModuleIf::~CalypAppModuleIf()
 {
-  while( m_bIsRunning )
+#ifdef CALYP_THREADED_MODULES
+  wait();
+#endif
+  if( m_pcModuleDock )
   {
+    auto* ptr = m_pcModuleDock;
+    m_pcModuleDock = NULL;
+    ptr->close();
   }
-
+  if( m_pcDisplaySubWindow )
+  {
+    auto* ptr = m_pcDisplaySubWindow;
+    m_pcDisplaySubWindow = NULL;
+    ptr->closeSubWindow();
+  }
   if( m_pcDockWidget )
   {
     m_pcDockWidget->close();
-  }
-
-  for( auto& window : m_pcSubWindow )
-  {
-    if( window != nullptr )
-      window->disableModule( this );
-    window = nullptr;
   }
   if( m_pcModule )
   {
     m_pcModule->destroy();
     m_pcModule = nullptr;
   }
-
-  //assert( m_pcProcessedFrame.use_count() == 1 );
 }
 
 void CalypAppModuleIf::update( bool isPlaying )
@@ -96,11 +102,19 @@ bool CalypAppModuleIf::isRunning()
 #endif
 }
 
+void CalypAppModuleIf::run()
+{
+  bool result = process();
+  if( result )
+  {
+    EventData* eventData = new EventData( m_bSuccess, this );
+    QCoreApplication::postEvent( parent(), eventData );
+  }
+}
+
 bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
 {
-  bool bRet = false;
-
-  QApplication::setOverrideCursor( Qt::WaitCursor );
+  bool moduleExecuted = false;
   if( m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
   {
     if( m_pcDisplaySubWindow )
@@ -120,6 +134,11 @@ bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
       m_frameList.push_back( m_pcSubWindow[i]->getCurrFrameAsset() );
     }
 
+    // Skip module is is already running
+    if( isRunning() )
+      return moduleExecuted;
+
+    moduleExecuted = true;
 #ifdef CALYP_THREADED_MODULES
     if( !disableThreads )
     {
@@ -129,29 +148,26 @@ bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
     else
 #endif
     {
-      run();
+      QApplication::setOverrideCursor( Qt::WaitCursor );
+      process();
+      QApplication::restoreOverrideCursor();
       show();
     }
+  }
 
-    if( m_pcDisplaySubWindow || m_pcModule->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
-    {
-      bRet = true;
-    }
-  }
-  else
-  {
-    bRet = true;
-  }
-  QApplication::restoreOverrideCursor();
-  return bRet;
+  return moduleExecuted;
 }
 
-void CalypAppModuleIf::run()
+bool CalypAppModuleIf::process()
 {
-  m_bIsRunning = true;
   m_bSuccess = false;
 
+  if( m_frameList.empty() )
+    return false;
+
+#ifdef CALYP_THREADED_MODULES
   QMutexLocker locker( &m_Mutex );
+#endif
 
   m_frameListPtr.clear();
   for( auto& frame : m_frameList )
@@ -186,58 +202,52 @@ void CalypAppModuleIf::run()
   }
   else
   {
-    return;
+    return false;
   }
-#ifdef CALYP_THREADED_MODULES
-  EventData* eventData = new EventData( m_bSuccess, this );
-  if( parent() )
-    QCoreApplication::postEvent( parent(), eventData );
-#endif
   m_bSuccess = true;
-  m_bIsRunning = false;
-  return;
+  return true;
 }
 
 void CalypAppModuleIf::show()
 {
   switch( m_pcModule->m_iModuleType )
   {
-  case CLP_FRAME_PROCESSING_MODULE:
-    if( m_pcDisplaySubWindow )
+  case CLP_FRAME_PROCESSING_MODULE: {
+    auto displayWindow = m_pcDisplaySubWindow;
+    if( displayWindow == nullptr )
+      displayWindow = m_pcSubWindow[0];
+#ifdef CALYP_THREADED_MODULES
+    if( m_Mutex.try_lock() )
     {
+      m_pcDisplaySubWindow->setFillWindow( false );
       m_pcDisplaySubWindow->setCurrFrame( m_pcProcessedFrame );
-      m_pcDisplaySubWindow->setFillWindow( isRunning() );
+      m_Mutex.unlock();
     }
-    else
-    {
-      m_pcSubWindow[0]->setCurrFrame( m_pcProcessedFrame );
-      m_pcSubWindow[0]->setFillWindow( isRunning() );
-    }
+#endif
+    m_pcDisplaySubWindow->setFillWindow( false );
+    m_pcDisplaySubWindow->setCurrFrame( m_pcProcessedFrame );
     break;
+  }
   case CLP_FRAME_MEASUREMENT_MODULE:
     m_pcModuleDock->setModuleReturnValue( m_dMeasurementResult );
     break;
   }
 }
 
-void CalypAppModuleIf::destroy()
+void CalypAppModuleIf::disable()
 {
   QApplication::setOverrideCursor( Qt::WaitCursor );
+#ifdef CALYP_THREADED_MODULES
   QMutexLocker locker( &m_Mutex );
-  QApplication::restoreOverrideCursor();
-
+#endif
   m_frameList.clear();
   m_frameListPtr.clear();
-  if( m_pcModuleDock )
+  while( m_pcSubWindow.size() > 0 )
   {
-    auto* ptr = m_pcModuleDock;
-    m_pcModuleDock = NULL;
-    ptr->close();
+    auto window = m_pcSubWindow.back();
+    m_pcSubWindow.erase( m_pcSubWindow.end() - 1 );
+    if( window != nullptr )
+      window->disableModule( this );
   }
-  if( m_pcDisplaySubWindow )
-  {
-    auto* ptr = m_pcDisplaySubWindow;
-    m_pcDisplaySubWindow = NULL;
-    ptr->closeSubWindow();
-  }
+  QApplication::restoreOverrideCursor();
 }

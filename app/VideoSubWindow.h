@@ -89,8 +89,9 @@ private:
   //CalypFrame* m_pcCurrFrame;
   QRect m_cSelectedArea;
 
-  std::unique_ptr<CalypAppModuleIf> m_pcCurrentDisplayModule{ nullptr };
-  std::vector<CalypAppModuleIf*> m_associatedModules;
+  CalypAppModuleIf* m_pcCurrentDisplayModule{ nullptr };
+  std::vector<std::shared_ptr<CalypAppModuleIf>> m_associatedModules;
+  bool m_hasAssociatedModules;
 
   VideoSubWindow* m_pcReferenceSubWindow;
 
@@ -114,6 +115,7 @@ public:
     MODULE_SUBWINDOW = SubWindowAbstract::MODULE_SUBWINDOW,
   };
   VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent = 0 );
+  VideoSubWindow( enum VideoSubWindowCategories category, CalypAppModuleIf* displayModule, QWidget* parent = 0 );
   ~VideoSubWindow();
 
   void setResourceManaget( ResourceHandle* resourceManager ) { m_pcResourceManager = resourceManager; }
@@ -161,17 +163,23 @@ public:
    * Functions to enable a module in the
    * current SubWindow
    */
-  void enableModule( std::unique_ptr<CalypAppModuleIf>&& pcModule );
-  void disableModule( CalypAppModuleIf* pcModule = NULL );
-  void associateModule( CalypAppModuleIf* pcModule );
+  //void enableModule( std::shared_ptr<CalypAppModuleIf> pcModule );
+  bool hasAssociatedModule();
+  void setDisplayModule( CalypAppModuleIf* pcModule );
+  void associateModule( std::shared_ptr<CalypAppModuleIf> pcModule );
+  void disableModule( CalypAppModuleIf* pcModule );
+  bool disableAllModules();
 
-  CalypAppModuleIf* getDisplayModule() { return m_pcCurrentDisplayModule.get(); }
+  CalypAppModuleIf* getDisplayModule() { return m_pcCurrentDisplayModule; }
   QVector<CalypAppModuleIf*> getModuleArray()
   {
     QVector<CalypAppModuleIf*> apcModulesArray;
     if( m_pcCurrentDisplayModule )
-      apcModulesArray.append( m_pcCurrentDisplayModule.get() );
-    apcModulesArray.append( QVector<CalypAppModuleIf*>::fromStdVector( m_associatedModules ) );
+      apcModulesArray.append( m_pcCurrentDisplayModule );
+    for( const auto& module : m_associatedModules )
+    {
+      apcModulesArray.append( module.get() );
+    }
     return apcModulesArray;
   }
 

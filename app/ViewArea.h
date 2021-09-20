@@ -56,8 +56,8 @@ public:
 
   ViewArea( QWidget* parent = 0 );
 
-  void setImage( CalypFrame* pcFrame );
-  void setImage( const QPixmap& pixmap );
+  QImage& image() { return m_image; };
+  void setImage( std::shared_ptr<CalypFrame> frame );
 
   void setMode( int mode );
   void setMaskColor( const QColor& color = QColor() );
@@ -83,8 +83,6 @@ public:
    */
   void clearMask();
 
-  QPixmap image() const { return m_pixmap; }
-  QBitmap mask() const { return m_mask; }
   QRect selectedArea() const { return m_selectedArea; }
   GridManager gridManager() const { return m_grid; }
   QColor maskColor() const { return m_maskColor; }
@@ -150,7 +148,8 @@ private:
   QPoint viewToWindow( const QPoint& pt ) const;
   QRect viewToWindow( const QRect& rc ) const;
 
-  const CalypFrame* m_pcCurrFrame;
+  std::shared_ptr<CalypFrame> m_currFrame;
+  std::shared_ptr<CalypFrame> m_nextFrame;
 
   ClpPel m_uiPixelHalfScale;
 
@@ -161,7 +160,8 @@ private:
   double m_dZoomWinRatio;
   double m_dZoomFactor;
 
-  QPixmap m_pixmap;
+  QImage m_image;
+  //QPixmap m_pixmap;
   QBitmap m_mask;
   QRect m_selectedArea;
   QPoint m_lastPos;

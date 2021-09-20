@@ -48,9 +48,6 @@ ViewArea::ViewArea( QWidget* parent )
     : QWidget( parent )
 {
   setMouseTracking( true );
-
-  m_pcCurrFrame = NULL;
-  m_pixmap = QPixmap();
   m_grid = GridManager();
   m_mask = QBitmap();
   m_selectedArea = QRect();
@@ -69,31 +66,27 @@ ViewArea::ViewArea( QWidget* parent )
   connect( &m_zoomWinTimer, SIGNAL( timeout() ), this, SLOT( update() ) );
 }
 
-void ViewArea::setImage( CalypFrame* pcFrame )
+void ViewArea::setImage( std::shared_ptr<CalypFrame> frame )
 {
-  m_pcCurrFrame = pcFrame;
-  m_uiPixelHalfScale = 1 << ( m_pcCurrFrame->getBitsPel() - 1 );
-  pcFrame->fillRGBBuffer();
-  QImage qimg = QImage( m_pcCurrFrame->getRGBBuffer(), m_pcCurrFrame->getWidth(), m_pcCurrFrame->getHeight(),
-                        QImage::Format_ARGB32 );
-  setImage( QPixmap::fromImage( qimg ) );
-}
+  m_nextFrame = frame;
+  m_uiPixelHalfScale = 1 << ( m_nextFrame->getBitsPel() - 1 );
+  m_nextFrame->fillRGBBuffer();
+  m_image = QImage( m_nextFrame->getRGBBuffer(),
+                    m_nextFrame->getWidth(),
+                    m_nextFrame->getHeight(),
+                    QImage::Format_ARGB32 );
 
-void ViewArea::setImage( const QPixmap& pixmap )
-{
-  m_pixmap = pixmap;
-  m_mask = QBitmap( pixmap.width(), pixmap.height() );
-  m_mask.clear();
+  // m_mask = QBitmap( pixmap.width(), pixmap.height() );
+  // m_mask.clear();
   updateSize();
   update();
   updateGeometry();
-
   initZoomWinRect();
 }
 
 void ViewArea::clear()
 {
-  m_pixmap = QPixmap();
+  m_image = QImage();
   m_mask = QBitmap();
   m_mode = NormalMode;
   updateSize();
@@ -167,7 +160,7 @@ void ViewArea::setZoomFactor( double f )
 double ViewArea::scaleZoomFactor( double scale, QPoint center, QSize minimumSize )
 {
   double maxZoom = 100.0;
-  double minZoom = 0.01;  //( 1.0 / m_pixmap.width() );
+  double minZoom = 0.01;  //( 1.0 / m_image.width() );
   double new_scale = 1.0;
 
   if( ( m_dZoomFactor == minZoom ) && ( scale < 1 ) )
@@ -183,10 +176,10 @@ double ViewArea::scaleZoomFactor( double scale, QPoint center, QSize minimumSize
 
   if( !minimumSize.isNull() )
   {
-    double cw = m_pixmap.width() * m_dZoomFactor;
-    double ch = m_pixmap.height() * m_dZoomFactor;
-    double fw = m_pixmap.width() * newZoomFactor;
-    double fh = m_pixmap.height() * newZoomFactor;
+    double cw = m_image.width() * m_dZoomFactor;
+    double ch = m_image.height() * m_dZoomFactor;
+    double fw = m_image.width() * newZoomFactor;
+    double fh = m_image.height() * newZoomFactor;
     double mw = minimumSize.width();
     double mh = minimumSize.height();
 
@@ -319,45 +312,45 @@ void ViewArea::setSnapToGrid( bool enable )
 
 void ViewArea::initZoomWinRect()
 {
-  int iMinX = 80;
-  int iMinY = 80;
+  double iMinX = 80;
+  double iMinY = 80;
 
-  int iMaxX = iMinX * 5;
-  int iMaxY = iMinY * 5;
+  double iMaxX = iMinX * 5;
+  double iMaxY = iMinY * 5;
 
   double dSizeRatio, dWinZoomRatio;
 
-  int iHorizontalImg = ( m_pixmap.width() > m_pixmap.height() ) ? 1 : 0;
+  bool iHorizontalImg = m_image.width() > m_image.height();
 
   if( iHorizontalImg )
   {
-    dSizeRatio = (double)m_pixmap.width() / (double)m_pixmap.height();
+    dSizeRatio = (double)m_image.width() / (double)m_image.height();
   }
   else
   {
-    dSizeRatio = (double)m_pixmap.height() / (double)m_pixmap.width();
+    dSizeRatio = (double)m_image.height() / (double)m_image.width();
   }
 
   if( dSizeRatio > 5.0 )
   {
     if( iHorizontalImg )
     {
-      dWinZoomRatio = (double)( m_pixmap.width() * 1024 / iMaxX ) / 1000.0;
+      dWinZoomRatio = static_cast<double>( m_image.width() ) * 1024.0 / iMaxX / 1000.0;
     }
     else
     {
-      dWinZoomRatio = (double)( m_pixmap.height() * 1024 / iMaxY ) / 1000.0;
+      dWinZoomRatio = static_cast<double>( m_image.height() ) * 1024.0 / iMaxY / 1000.0;
     }
   }
   else
   {
     if( iHorizontalImg )
     {
-      dWinZoomRatio = (double)( m_pixmap.height() * 1024 / iMinY ) / 1000.0;
+      dWinZoomRatio = static_cast<double>( m_image.height() ) * 1024.0 / iMinY / 1000.0;
     }
     else
     {
-      dWinZoomRatio = (double)( m_pixmap.width() * 1024 / iMinX ) / 1000.0;
+      dWinZoomRatio = static_cast<double>( m_image.width() ) * 1024.0 / iMinX / 1000.0;
     }
   }
 
@@ -369,8 +362,8 @@ void ViewArea::initZoomWinRect()
 ////////////////////////////////////////////////////////////////////////////////
 void ViewArea::updateSize()
 {
-  int w = m_pixmap.width() * m_dZoomFactor;
-  int h = m_pixmap.height() * m_dZoomFactor;
+  int w = m_image.width() * m_dZoomFactor;
+  int h = m_image.height() * m_dZoomFactor;
   setMinimumSize( w, h );
 
   QWidget* p = parentWidget();
@@ -388,17 +381,17 @@ void ViewArea::updateSize()
 
 void ViewArea::updateOffset()
 {
-  if( width() > m_pixmap.width() * m_dZoomFactor )
+  if( width() > m_image.width() * m_dZoomFactor )
   {
-    m_xOffset = ( width() - m_pixmap.width() * m_dZoomFactor ) / 2;
+    m_xOffset = ( width() - m_image.width() * m_dZoomFactor ) / 2;
   }
   else
   {
     m_xOffset = 0;
   }
-  if( height() > m_pixmap.height() * m_dZoomFactor )
+  if( height() > m_image.height() * m_dZoomFactor )
   {
-    m_yOffset = ( height() - m_pixmap.height() * m_dZoomFactor ) / 2;
+    m_yOffset = ( height() - m_image.height() * m_dZoomFactor ) / 2;
   }
   else
   {
@@ -411,7 +404,7 @@ void ViewArea::updateOffset()
 ////////////////////////////////////////////////////////////////////////////////
 void ViewArea::resizeEvent( QResizeEvent* event )
 {
-  if( size().isEmpty() || m_pixmap.isNull() )
+  if( size().isEmpty() || m_image.isNull() )
     return;
 
   updateOffset();
@@ -424,12 +417,11 @@ void ViewArea::resizeEvent( QResizeEvent* event )
 
 void ViewArea::paintEvent( QPaintEvent* event )
 {
+  m_currFrame = m_nextFrame;
+
   QRect winRect = event->rect();
 
-  if( visibleRegion().isEmpty() )
-    return;
-
-  if( size().isEmpty() || m_pixmap.isNull() )
+  if( visibleRegion().isEmpty() || size().isEmpty() || m_image.isNull() || m_currFrame == nullptr )
     return;
 
   QSize windowSize = parentWidget()->size();
@@ -442,15 +434,14 @@ void ViewArea::paintEvent( QPaintEvent* event )
 
   // This line is for fast paiting. Only visible area of the image is painted.
   // We take the exposed rect from the event (that gives us scroll/expose
-  // optimizations for free – no need
-  // to draw the whole pixmap if your widget is only partially exposed), and
-  // reverse map it with the painter matrix.
+  // optimizations for free – no need to draw the whole pixmap if your widget
+  // is only partially exposed), and reverse map it with the painter matrix.
   // That gives us the part of the pixmap that has actually been exposed.
-  // See:
-  // http://blog.qt.digia.com/blog/2006/05/13/fast-transformed-pixmapimage-drawing/
-  QRect exposedRect = painter.worldTransform().inverted().mapRect( event->rect() ).adjusted( -1, -1, 1, 1 );
+  // See: http://blog.qt.digia.com/blog/2006/05/13/fast-transformed-pixmapimage-drawing/
+  QRect exposedRect = painter.worldTransform().inverted().mapRect( winRect ).adjusted( -1, -1, 1, 1 );
   // Draw the pixmap.
-  painter.drawPixmap( exposedRect, m_pixmap, exposedRect );
+  // painter.drawPixmap( exposedRect, m_pixmap, exposedRect );
+  painter.drawImage( exposedRect, m_image, exposedRect );
 
   // Draw the Grid if it's visible.
   if( m_bGridVisible )
@@ -468,13 +459,13 @@ void ViewArea::paintEvent( QPaintEvent* event )
     // is, is referenced to the not scaled image.
     // To know what image area we need to update, just intersects the
     // rectangle area with the image area.
-    vr &= QRect( 0, 0, m_pixmap.width(), m_pixmap.height() );
+    vr &= QRect( 0, 0, m_image.width(), m_image.height() );
 
     // Set up for the grid drawer.
     painter.setRenderHint( QPainter::Antialiasing );
 
     // Draw grid.
-    m_grid.drawGrid( m_pixmap, vr, &painter );
+    m_grid.drawGrid( m_image, vr, &painter );
   }
 
   painter.restore();
@@ -483,18 +474,18 @@ void ViewArea::paintEvent( QPaintEvent* event )
   /*  if( m_xOffset || m_yOffset )
 	 {
 	 painter.setPen( Qt::black );
-	 painter.drawRect( m_xOffset - 1, m_yOffset - 1, m_pixmap.width() *
-	 m_dZoomFactor + 1, m_pixmap.height() *
+	 painter.drawRect( m_xOffset - 1, m_yOffset - 1, m_image.width() *
+	 m_dZoomFactor + 1, m_image.height() *
 	 m_dZoomFactor + 1 );
 	 }*/
 
-  int frFormat = m_pcCurrFrame->getColorSpace();
+  int frFormat = m_currFrame->getColorSpace();
 
   // Draw pixel values in grid
   if( m_dZoomFactor >= 60.0 || ( frFormat != CLP_COLOR_RGBA && m_dZoomFactor >= 50.0 ) )
   {
-    int imageWidth = m_pixmap.width();
-    int imageHeight = m_pixmap.height();
+    int imageWidth = m_image.width();
+    int imageHeight = m_image.height();
     ;
 
     QFont font( "Helvetica" );
@@ -512,7 +503,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
 
         QRect pixelRect( viewToWindow( pixelTopLeft ), QSize( m_dZoomFactor, m_dZoomFactor ) );
         QString pixelValue;
-        CalypPixel pixel = m_pcCurrFrame->getPixel( pixelTopLeft.x(), pixelTopLeft.y() );
+        CalypPixel pixel = m_currFrame->getPixel( pixelTopLeft.x(), pixelTopLeft.y() );
 
         if( frFormat == CLP_COLOR_YUV || frFormat == CLP_COLOR_GRAY )
         {
@@ -559,15 +550,15 @@ void ViewArea::paintEvent( QPaintEvent* event )
       painter.drawLine( viewToWindow( QPoint( 0, y ) ), viewToWindow( QPoint( imageWidth, y ) ) );
     }
   }
-  bool showZoomRect = m_pixmap.width() * m_dZoomFactor > windowSize.width() ||
-                      m_pixmap.height() * m_dZoomFactor > windowSize.height();
+  bool showZoomRect = m_image.width() * m_dZoomFactor > windowSize.width() ||
+                      m_image.height() * m_dZoomFactor > windowSize.height();
 
   // VISIBLE ZOOM RECT
   if( m_visibleZoomRect && m_zoomWinTimer.isActive() && showZoomRect )
   {
     double dRatio = m_dZoomWinRatio;
 
-    QRect cImg = QRect( 0, 0, m_pixmap.width(), m_pixmap.height() );
+    QRect cImg = QRect( 0, 0, m_image.width(), m_image.height() );
     QPoint cZWinRBpos = QPoint( winRect.bottomRight() ) - QPoint( 15, 15 );
     QRect cImgWinRect( 0, 0, round( (double)cImg.width() / dRatio ), round( (double)cImg.height() / dRatio ) );
     cImgWinRect.moveBottomRight( cZWinRBpos );
@@ -585,7 +576,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
     painter.setPen( QColor( 50, 50, 50, 128 ) );
     //painter.drawRect( cImgWinRect );
     painter.setOpacity( 0.7 );
-    painter.drawPixmap( cImgWinRect, m_pixmap );
+    painter.drawImage( cImgWinRect, m_image );
     painter.setOpacity( 1 );
 
     cVisibleWinRect.moveTopLeft( cImgWinRect.topLeft() + cVisibleWinRect.topLeft() );
@@ -642,7 +633,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
       painter.setBrush( fill );
       painter.setPen( Qt::NoPen );
       QPainterPath myPath;
-      QRect imgr = viewToWindow( QRect( 0, 0, m_pixmap.width(), m_pixmap.height() ) );
+      QRect imgr = viewToWindow( QRect( 0, 0, m_image.width(), m_image.height() ) );
 
       myPath.addRect( imgr );
       myPath.addRect( sr );  // m_selectedArea
@@ -916,7 +907,7 @@ void ViewArea::mouseMoveEvent( QMouseEvent* event )
       // intercept the selected area with the image area to limit the
       // selection only to the image area, preventing it to come outside
       // the image.
-      m_selectedArea &= QRect( 0, 0, m_pixmap.width(), m_pixmap.height() );
+      m_selectedArea &= QRect( 0, 0, m_image.width(), m_image.height() );
 
       // Update only the united area
       //      updateRect = updateRect.united( viewToWindow( m_selectedArea ) );
@@ -1000,7 +991,7 @@ void ViewArea::mouseReleaseEvent( QMouseEvent* event )
 
 bool ViewArea::isPosValid( const QPoint& pos ) const
 {
-  if( pos.x() < 0 || pos.y() < 0 || pos.x() >= m_pixmap.width() || pos.y() >= m_pixmap.height() )
+  if( pos.x() < 0 || pos.y() < 0 || pos.x() >= m_image.width() || pos.y() >= m_image.height() )
     return false;
   else
     return true;

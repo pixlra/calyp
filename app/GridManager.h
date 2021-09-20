@@ -55,7 +55,7 @@ public:
 
   void setGridSize( int newsize );
 
-  void drawGrid( QPixmap& image, const QRect& area, QPainter* painter );
+  void drawGrid( const QImage& image, const QRect& area, QPainter* painter );
 
   /**
    * @returns a QRect defined by the grid that contains the point (x, y).

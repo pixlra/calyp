@@ -49,7 +49,8 @@ OPTION(BUILD_EXAMPLES "Build Examples" OFF)
 OPTION(BUILD_DOC "Build Documentation" OFF)
 OPTION(BUILD_TESTS "Build Google Tests" OFF)
 OPTION(BUILD_TESTS_CATCH2 "Build Catch2 Tests" OFF)
-OPTION(BUILD_WITH_SANITIZERS "Build with sanitizers options" OFF)
+OPTION(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
+OPTION(BUILD_WITH_THREAD_SANITIZER "Build with thread sanitizer" OFF)
 
 OPTION(USE_FERVOR "Add Fervor support" OFF)
 
@@ -253,6 +254,9 @@ ENDIF()
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 IF(BUILD_WITH_SANITIZERS)
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
+ENDIF()
+IF(BUILD_WITH_THREAD_SANITIZER)
+  SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread")
 ENDIF()
 
 # ####################################################################################################################################################

@@ -52,7 +52,7 @@ void GridManager::setGridSize( int newsize )
 ////////////////////////////////////////////////////////////////////////////////
 //                              Grid Drawer
 ////////////////////////////////////////////////////////////////////////////////
-void GridManager::drawGrid( QPixmap& image, const QRect& area, QPainter* painter )
+void GridManager::drawGrid( const QImage& image, const QRect& area, QPainter* painter )
 {
   int offsetx = 0;  // Grid offset doesn't applies to SCODE
   int offsety = 0;  // project for now...

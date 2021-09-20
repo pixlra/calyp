@@ -803,7 +803,7 @@ std::shared_ptr<CalypFrame> VideoSubWindow::getCurrFrameAsset()
 void VideoSubWindow::setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame )
 {
   m_pcCurrFrameAsset = std::move( pcCurrFrame );
-  m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
+  m_cViewArea->setImage( m_pcCurrFrameAsset );
   for( auto& module : m_associatedModules )
   {
     if( module.get() != m_pcCurrentDisplayModule )
@@ -829,7 +829,7 @@ void VideoSubWindow::refreshFrameOperation()
   }
   if( bSetFrame )
   {
-    m_cViewArea->setImage( m_pcCurrFrameAsset.get() );
+    m_cViewArea->setImage( m_pcCurrFrameAsset );
     for( auto& module : m_associatedModules )
     {
       if( module.get() != m_pcCurrentDisplayModule )

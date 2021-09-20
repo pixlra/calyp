@@ -519,7 +519,7 @@ ClpPel*** CalypFrame::getPelBufferYUV()
   return d->m_pppcInputPel;
 }
 
-unsigned char* CalypFrame::getRGBBuffer() const
+auto CalypFrame::getRGBBuffer() const -> const unsigned char*
 {
   if( d->m_bHasRGBPel )
   {
@@ -797,7 +797,7 @@ void fillRGBBufferYUV420p( ClpPel*** pppInputPel, uint32_t* pARGB, unsigned uiWi
   }
 }
 
-void CalypFrame::fillRGBBuffer()
+void CalypFrame::fillRGBBuffer() const
 {
   if( d->m_bHasRGBPel )
     return;

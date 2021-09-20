@@ -295,7 +295,7 @@ public:
   ClpPel*** getPelBufferYUV() const;
   ClpPel*** getPelBufferYUV();
 
-  unsigned char* getRGBBuffer() const;
+  auto getRGBBuffer() const -> const unsigned char*;
 
   /**
    * Get pixel value at coordinates
@@ -371,7 +371,7 @@ public:
   void frameFromBuffer( const std::vector<ClpByte>&, int );
   void frameToBuffer( std::vector<ClpByte>&, int ) const;
 
-  void fillRGBBuffer();
+  void fillRGBBuffer() const;
 
   /**
 	 * Histogram

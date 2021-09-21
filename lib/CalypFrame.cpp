@@ -847,7 +847,7 @@ void CalypFrame::fillRGBBuffer() const
     ClpPel* pLineV = d->m_pppcInputPel[CLP_CHROMA_V][0];
     unsigned int uiChromaStride = CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth );
 
-    int iY, iU, iV, iR, iG, iB;
+    int iR, iG, iB;
     uint32_t* pARGBLine = pARGB;
     uint32_t* pARGBAux;
 

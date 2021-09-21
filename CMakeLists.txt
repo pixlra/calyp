@@ -55,7 +55,7 @@ OPTION(BUILD_WITH_THREAD_SANITIZER "Build with thread sanitizer" OFF)
 OPTION(USE_FERVOR "Add Fervor support" OFF)
 
 OPTION(USE_DYNLOAD "Use dynamic load of modules" ON)
-OPTION(USE_SSE "Build with SSE support" OFF)
+OPTION(USE_SSE "Build with SSE support" ON)
 OPTION(USE_WERROR "Warnings as errors" OFF)
 OPTION(USE_STATIC "Use static libs" OFF)
 
@@ -114,9 +114,8 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
-INCLUDE(FetchContent)
-
 IF(BUILD_TESTS)
+  INCLUDE(FetchContent)
   FETCHCONTENT_DECLARE(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
   # For Windows: Prevent overriding the parent project's compiler/linker settings
   SET(gtest_force_shared_crt
@@ -138,7 +137,7 @@ IF(BUILD_TESTS)
 ENDIF()
 
 IF(BUILD_TESTS_CATCH2)
-
+  INCLUDE(FetchContent)
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git

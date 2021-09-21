@@ -26,7 +26,6 @@
 #ifndef __CALYPFRAME_H__
 #define __CALYPFRAME_H__
 
-#include <span>
 #include <vector>
 
 #include "CalypDefs.h"

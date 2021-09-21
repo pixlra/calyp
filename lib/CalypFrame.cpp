@@ -28,7 +28,6 @@
 #include <cmath>
 #include <cstdint>
 #include <memory>
-#include <span>
 #include <vector>
 
 #include "LibMemory.h"

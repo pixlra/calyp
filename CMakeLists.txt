@@ -220,7 +220,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # ####################################################################################################################################################
 
 SET(CMAKE_CXX_STANDARD 20)
-ADD_DEFINITIONS(-std=gnu++20)
+ADD_DEFINITIONS(-std=gnu++2a)
 
 IF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No build type selected, default to Release")

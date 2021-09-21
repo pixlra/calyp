@@ -222,9 +222,9 @@ private:
   QSize getScrollSize();
 
 protected:
-  void keyPressEvent( QKeyEvent* event );
-  void resizeEvent( QResizeEvent* event );
-  void closeEvent( QCloseEvent* event );
+  void keyPressEvent( QKeyEvent* event ) override;
+  void resizeEvent( QResizeEvent* event ) override;
+  void closeEvent( QCloseEvent* event ) override;
 
 public Q_SLOTS:
   void updateWindowOnTimeout();
@@ -235,7 +235,7 @@ public Q_SLOTS:
   void updatePixelValueStatusBar( const QPoint& pos );
 };
 
-Q_DECLARE_METATYPE( CalypFileInfo )
-Q_DECLARE_METATYPE( CalypFileInfoVector )
+Q_DECLARE_METATYPE( CalypFileInfo )        // NOLINT
+Q_DECLARE_METATYPE( CalypFileInfoVector )  // NOLINT
 
 #endif  // __VIDEOSUBWINDOW_H__

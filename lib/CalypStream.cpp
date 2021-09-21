@@ -46,6 +46,9 @@
 
 #include <cstdio>
 
+constexpr auto kDefaultBitsPerPixel = 8;
+constexpr auto kDefaultFrameRate = 30;
+
 std::vector<CalypStreamFormat> CalypStream::supportedReadFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
@@ -102,109 +105,6 @@ std::vector<CalypStandardResolution> CalypStream::stdResolutionSizes()
   return stdResList;
 }
 
-class CalypStreamBufferPrivate
-{
-private:
-  std::vector<CalypFrame> m_framePool;
-  std::deque<CalypFrame> m_frameBuffer;
-  std::int64_t m_iSize;
-  std::int64_t m_iReadIndex;
-  std::int64_t m_iWriteIndex;
-
-public:
-  CalypStreamBufferPrivate( std::size_t size, unsigned int width, unsigned int height, int pelFormat, unsigned int bitsPixel, bool hasNegative )
-  {
-    m_framePool.reserve( size );
-    for( std::size_t i = 0; i < size; i++ )
-    {
-      m_framePool.push_back( CalypFrame{ width, height, pelFormat, bitsPixel, hasNegative } );
-    }
-    m_iSize = std::ssize( m_framePool );
-    m_iReadIndex = -1;
-    m_iWriteIndex = 0;
-  }
-
-  ~CalypStreamBufferPrivate() = default;
-
-  void increase( std::size_t newSize )
-  {
-    m_framePool.reserve( newSize );
-    for( std::size_t i = m_iSize; i < newSize; i++ )
-    {
-      m_framePool.push_back( CalypFrame{ m_framePool[0].getWidth(),
-                                         m_framePool[0].getHeight(),
-                                         m_framePool[0].getPelFormat(),
-                                         m_framePool[0].getBitsPel(),
-                                         m_framePool[0].getHasNegativeValues() } );
-    }
-    m_iSize = std::ssize( m_framePool );
-  }
-
-  void setIndex( std::int64_t i )
-  {
-    m_iWriteIndex = m_iReadIndex = i;
-    m_iWriteIndex = nextIndex( m_iWriteIndex );
-  }
-  void reset()
-  {
-    m_iReadIndex = -1;
-    m_iWriteIndex = 0;
-  }
-  void startRead()
-  {
-    assert( m_iWriteIndex >= 0 );
-    m_iReadIndex = 0;
-  }
-  CalypFrame& frame( int i ) { return m_framePool.at( i ); }
-
-  CalypFrame& currentRead()
-  {
-    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
-    return m_framePool.at( m_iReadIndex % m_iSize );
-  }
-
-  const CalypFrame& ref() { return m_framePool.at( m_iWriteIndex % m_iSize ); }
-
-  CalypFrame& readOneFrame()
-  {
-    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
-    CalypFrame& frameToRead = m_framePool.at( m_iReadIndex % m_iSize );
-    m_iReadIndex = nextIndex( m_iReadIndex );
-    return frameToRead;
-  }
-  CalypFrame& writeOneFrame()
-  {
-    assert( m_iWriteIndex > m_iReadIndex && ( m_iReadIndex % m_iSize ) != ( m_iWriteIndex % m_iSize ) );
-    CalypFrame& frameToWrite = m_framePool.at( m_iWriteIndex % m_iSize );
-    m_iWriteIndex = nextIndex( m_iWriteIndex );
-    return frameToWrite;
-  }
-
-  bool hasWritingSlot()
-  {
-    if( ( m_iReadIndex % m_iSize ) != ( m_iWriteIndex % m_iSize ) )
-      return true;
-    return false;
-  }
-
-  std::shared_ptr<CalypFrame> retrieveFrame()
-  {
-    assert( m_iReadIndex < m_iWriteIndex && ( m_iReadIndex % m_iSize ) < m_iSize );
-    auto ptr = std::make_shared<CalypFrame>( std::move( m_framePool[m_iReadIndex % m_iSize] ) );
-    m_framePool[m_iReadIndex % m_iSize] = CalypFrame{ ptr->getWidth(),
-                                                      ptr->getHeight(),
-                                                      ptr->getPelFormat(),
-                                                      ptr->getBitsPel(),
-                                                      ptr->getHasNegativeValues() };
-    m_iReadIndex = nextIndex( m_iReadIndex );
-    return ptr;
-  }
-
-private:
-  //inline int nextIndex( std::int64_t curr ) { return curr + 1 >= m_iSize ? 0 : curr + 1; }
-  inline int nextIndex( std::int64_t curr ) { return curr + 1; }
-};
-
 struct CalypStreamFrameBuffer : std::enable_shared_from_this<CalypStreamFrameBuffer>
 {
   std::mutex buffer_mutex;
@@ -220,6 +120,11 @@ struct CalypStreamFrameBuffer : std::enable_shared_from_this<CalypStreamFrameBuf
     }
     bufferIdx = framePool.size();
   }
+
+  CalypStreamFrameBuffer( const CalypStreamFrameBuffer& ) = delete;
+  CalypStreamFrameBuffer( CalypStreamFrameBuffer&& ) = delete;
+  CalypStreamFrameBuffer& operator=( const CalypStreamFrameBuffer& ) = delete;
+  CalypStreamFrameBuffer& operator=( CalypStreamFrameBuffer&& ) = delete;
 
   ~CalypStreamFrameBuffer() = default;
 
@@ -276,6 +181,10 @@ public:
   long long int iCurrFrameNum;
   bool bLoadAll;
 
+  CalypStreamPrivate( const CalypStreamPrivate& ) = delete;
+  CalypStreamPrivate( CalypStreamPrivate&& ) = delete;
+  CalypStreamPrivate& operator=( const CalypStreamPrivate& ) = delete;
+  CalypStreamPrivate& operator=( CalypStreamPrivate&& ) = delete;
   CalypStreamPrivate()
   {
     handler = nullptr;
@@ -549,7 +458,7 @@ bool CalypStream::reload()
   {
     d->iCurrFrameNum = 0;
   }
-  int currFrameNum = d->iCurrFrameNum;
+  auto currFrameNum = d->iCurrFrameNum;
   d->iCurrFrameNum = -1;
   seekInput( currFrameNum );
   return true;
@@ -605,16 +514,16 @@ void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, int& r
     rInputFormat = d->handler->m_iPixelFormat;
     rBitsPerPel = d->handler->m_uiBitsPerPixel;
     rEndianness = d->handler->m_iEndianness;
-    rFrameRate = d->handler->m_dFrameRate;
+    rFrameRate = static_cast<unsigned>( std::max( 0.0, d->handler->m_dFrameRate ) );
   }
   else
   {
     rWidth = 0;
     rHeight = 0;
     rInputFormat = CLP_YUV420P;
-    rBitsPerPel = 8;
+    rBitsPerPel = kDefaultBitsPerPixel;
     rEndianness = 0;
-    rFrameRate = 30;
+    rFrameRate = kDefaultFrameRate;
   }
 }
 

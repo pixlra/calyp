@@ -41,6 +41,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #endif
 
+constexpr auto kMinBitsPerPixel = 8;
+constexpr auto kMaxBitsPerPixel = 16;
+
 std::vector<ClpString> CalypFrame::supportedColorSpacesListNames()
 {
   return std::vector<ClpString>{
@@ -74,7 +77,7 @@ std::vector<ClpString> CalypFrame::supportedPixelFormatListNames( int colorSpace
 
 int CalypFrame::numberOfFormats()
 {
-  return g_CalypPixFmtDescriptorsMap.size();
+  return static_cast<int>( g_CalypPixFmtDescriptorsMap.size() );
 }
 
 int CalypFrame::findPixelFormat( const ClpString& name )
@@ -95,40 +98,39 @@ int CalypFrame::pelformatColorSpace( const int idx )
 class CalypFrame::CalypFramePrivate
 {
 public:
-  bool m_bInit;
+  bool m_bInit{ false };
 
   //! Struct with the pixel format description.
-  const CalypPixelFormatDescriptor* m_pcPelFormat;
+  const CalypPixelFormatDescriptor* m_pcPelFormat{ nullptr };
   ClpString m_cPelFmtName;
 
-  unsigned int m_uiWidth;         //!< Width of the frame
-  unsigned int m_uiHeight;        //!< Height of the frame
-  int m_iPixelFormat;             //!< Pixel format number (it follows the list of supported pixel formats)
-  unsigned int m_uiBitsPel;       //!< Bits per pixel/channel
-  unsigned int m_uiHalfPelValue;  //!< Bits per pixel/channel
-  bool m_bHasNegativeValues;      //!< Half of the scale correspond to negative values
+  unsigned int m_uiWidth{ 0 };         //!< Width of the frame
+  unsigned int m_uiHeight{ 0 };        //!< Height of the frame
+  int m_iPixelFormat{ 0 };             //!< Pixel format number (it follows the list of supported pixel formats)
+  unsigned int m_uiBitsPel{ 0 };       //!< Bits per pixel/channel
+  unsigned int m_uiHalfPelValue{ 0 };  //!< Bits per pixel/channel
+  bool m_bHasNegativeValues{ false };  //!< Half of the scale correspond to negative values
 
-  ClpPel*** m_pppcInputPel;
+  ClpPel*** m_pppcInputPel{ nullptr };
 
-  bool m_bHasRGBPel;                     //!< Flag indicating that the ARGB buffer was computed
+  bool m_bHasRGBPel{ false };            //!< Flag indicating that the ARGB buffer was computed
   std::vector<std::uint8_t> m_pcARGB32;  //!< Buffer with the ARGB pixels used in Qt libs
 
   /** Histogram control variables **/
-  bool m_bHasHistogram;
-  bool m_bHistogramRunning;
+  bool m_bHasHistogram{ false };
+  bool m_bHistogramRunning{ false };
   /** The histogram data.*/
   std::vector<unsigned int> m_puiHistogram;
   /** If the image is RGB and calcLuma is true, we have 1 more channel */
-  unsigned int m_uiHistoChannels;
+  unsigned int m_uiHistoChannels{ 0 };
   /** Numbers of histogram segments depending of image bytes depth*/
-  unsigned int m_uiHistoSegments;
+  unsigned int m_uiHistoSegments{ 0 };
 
-  CalypFramePrivate()
-  {
-    m_bInit = false;
-    m_bHasRGBPel = false;
-    m_pppcInputPel = nullptr;
-  }
+  CalypFramePrivate() = default;
+  CalypFramePrivate( const CalypFramePrivate& ) = delete;
+  CalypFramePrivate( CalypFramePrivate&& ) = delete;
+  CalypFramePrivate& operator=( const CalypFramePrivate& ) = delete;
+  CalypFramePrivate& operator=( CalypFramePrivate&& ) = delete;
 
   void init( unsigned int width, unsigned int height, int pel_format, unsigned bitsPixel )
   {
@@ -140,11 +142,11 @@ public:
     m_uiWidth = width;
     m_uiHeight = height;
     m_iPixelFormat = pel_format;
-    m_uiBitsPel = bitsPixel < 8 ? 8 : bitsPixel;
+    m_uiBitsPel = bitsPixel < kMinBitsPerPixel ? kMinBitsPerPixel : bitsPixel;
     m_uiHalfPelValue = 1 << ( m_uiBitsPel - 1 );
     m_bHasNegativeValues = has_negative_values;
 
-    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == -1 || bitsPixel > 16 )
+    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == -1 || bitsPixel > kMaxBitsPerPixel )
     {
       throw CalypFailure( "CalypFrame", "Cannot create a CalypFrame of this type" );
     }
@@ -809,7 +811,7 @@ void CalypFrame::fillRGBBuffer() const
   if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY )
   {
     ClpPel* pY = d->m_pppcInputPel[CLP_LUMA][0];
-    unsigned char finalPel;
+    unsigned char finalPel{ 0 };
     for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
     {
       finalPel = ( *pY++ ) >> shiftBits;
@@ -844,32 +846,28 @@ void CalypFrame::fillRGBBuffer() const
     ClpPel* pLineU = d->m_pppcInputPel[CLP_CHROMA_U][0];
     ClpPel* pLineV = d->m_pppcInputPel[CLP_CHROMA_V][0];
     unsigned int uiChromaStride = CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth );
-    ClpPel* pY;
-    ClpPel* pU;
-    ClpPel* pV;
+
     int iY, iU, iV, iR, iG, iB;
     uint32_t* pARGBLine = pARGB;
     uint32_t* pARGBAux;
 
-    unsigned int y, x;
-    int i, j;
-    for( y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
+    for( int y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
-      for( i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
+      for( int i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
-        pY = pLineY;
-        pU = pLineU;
-        pV = pLineV;
+        ClpPel* pY = pLineY;
+        ClpPel* pU = pLineU;
+        ClpPel* pV = pLineV;
         pARGBAux = pARGBLine;
-        for( x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
+        for( int x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
-          iU = *pU++;
+          int iU = *pU++;
           iU >>= shiftBits;
-          iV = *pV++;
+          int iV = *pV++;
           iV >>= shiftBits;
-          for( j = 0; j < ( 1 << d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          for( int j = 0; j < ( 1 << d->m_pcPelFormat->log2ChromaWidth ); j++ )
           {
-            iY = *pY++;
+            int iY = *pY++;
             iY >>= shiftBits;
             YUV2RGB( iY, iU, iV, iR, iG, iB );
             *pARGBAux++ = PEL_RGB( iR, iG, iB );

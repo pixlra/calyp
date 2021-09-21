@@ -57,7 +57,7 @@ QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& array )
 QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
 {
   CalypFileInfo d;
-  int array_size;
+  int array_size{ 0 };
   in >> array_size;
   for( int i = 0; i < array_size; i++ )
   {
@@ -984,7 +984,6 @@ void VideoSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
 
 void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
 {
-  bool bRefresh = false;
   if( m_pCurrStream )
   {
     if( bIsFoward )
@@ -993,7 +992,7 @@ void VideoSubWindow::seekRelativeEvent( bool bIsFoward )
     }
     else
     {
-      bRefresh = m_pCurrStream->seekInputRelative( bIsFoward );
+      m_pCurrStream->seekInputRelative( bIsFoward );
 #ifdef CALYP_MANAGED_RESOURCES
       m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
 #endif

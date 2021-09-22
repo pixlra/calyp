@@ -1,8 +1,6 @@
 #
 # CMakeLists for calyp modules component
 #
-
-OPTION(CALYP_THREADED_MODULES "Use threads for modules" ON)
 SET(CALYP_EXTRA_MODULES_DIR
     "CALYP_EXTRA_MODULES_DIR"
     CACHE PATH "Location of extra Calyp modules"

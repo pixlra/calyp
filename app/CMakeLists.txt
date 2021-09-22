@@ -10,6 +10,7 @@ INCLUDE_DIRECTORIES(
 OPTION(USE_QTDBUS "Build with QtDBus" ON)
 OPTION(USE_FERVOR "Add Fervor support" OFF)
 OPTION(CALYP_MANAGED_RESOURCES "Handle streams in separate threads" ON)
+OPTION(CALYP_THREADED_MODULES "Use threads for modules" ON)
 
 ADD_SUBDIRECTORY(external)
 

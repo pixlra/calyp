@@ -118,7 +118,7 @@ private:
   double m_dMeasurementResult{ 0 };
 
 #ifdef CALYP_THREADED_MODULES
-  QRecursiveMutex m_Mutex;
+  QMutex m_Mutex;
 #endif
 };
 

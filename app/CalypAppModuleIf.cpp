@@ -239,6 +239,8 @@ void CalypAppModuleIf::disable()
   QApplication::setOverrideCursor( Qt::WaitCursor );
 #ifdef CALYP_THREADED_MODULES
   QMutexLocker locker( &m_Mutex );
+  m_Mutex.lock();
+  m_Mutex.unlock();
 #endif
   m_frameList.clear();
   m_frameListPtr.clear();

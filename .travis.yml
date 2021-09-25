@@ -1,5 +1,5 @@
 language: cpp
-dist: xenial
+dist: bionic
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install build-essential cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev libgtest-dev

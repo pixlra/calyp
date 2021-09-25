@@ -1,9 +1,9 @@
-name: Build and Test
+name: Build
 
 on:
   push:
     branches:
-      - devel
+      - master
 
 
 jobs:
@@ -17,15 +17,10 @@ jobs:
         uses: ashutoshvarma/action-cmake-build@v1
         with:
           build-dir: ${{ runner.workspace }}/build
-          # will set the CC & CXX for cmake
-          cc: gcc
-          cxx: g++
           build-type: Release
           # Extra options pass to cmake while configuring project
-          configure-options: -DBUILD_TESTS=ON -DUSE_WERROR=ON
-          run-test: true
-          #ctest-options: -R mytest
+          configure-options: -DUSE_WERROR=OFF
           # install the build using cmake --install
           install-build: true
           # run build using '-j [parallel]' to use multiple threads to build
-          parallel: 14
+          parallel: 8

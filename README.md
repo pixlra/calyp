@@ -20,7 +20,7 @@ Master branch | Development branch
 - Constant growing libs for stream and frame processing (CalypStream and CalypFrame)
 - Advanced API for frame/video processing algorithms
 - Frame level quality measurement API based on the CalypFrame class
-- Powefull command-line tool for quality and frame processing algorithms (uses the referred APIs)
+- Powerful command-line tool for quality and frame processing algorithms (uses the referred APIs)
 
 ## Modules
 - CalypLib: Low level library
@@ -30,7 +30,7 @@ Master branch | Development branch
 
 ##  Supported Quality Metrics
 - Peak Signal-to-Noise Ratio (PSNR)
-- Structural SIMilarity (SSIM) 
+- Structural SIMilarity (SSIM)
 - Mean Square Error (MSE)
 - Weighted Spherical PSNR (WS-PSNR)
 
@@ -73,13 +73,13 @@ Master branch | Development branch
 * **Dependencies**
   1. an ordinary C++ development environment (g++, make, C++ libraries and headers, ...)
   2. cmake
-  3. a Qt development environment: QtCore, QtGui, QtWidgets, QtPrintSupport and QtConcurrent (version 4 or higher)
+  3. a Qt development environment: QtCore, QtGui, QtWidgets, QtPrintSupport and QtConcurrent (version 5 or higher)
   4. Optional: QtDBus, OpenCV, FFmpeg
 * **List of required commands**
 ```
 mkdir build
 cd build
-cmake -DUSE_QT4=OFF -DUSE_FFMPEG=ON -DUSE_OPENCV=ON ..  (for FFmpeg and OpenCV support)
+cmake -DUSE_FFMPEG=ON -DUSE_OPENCV=ON ..  (for FFmpeg and OpenCV support)
 make
 make install
 ```

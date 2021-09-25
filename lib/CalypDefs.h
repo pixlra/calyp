@@ -26,6 +26,7 @@
 #ifndef __CALYPDEFS_H__
 #define __CALYPDEFS_H__
 
+#include <algorithm>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -107,14 +108,14 @@ static const double S_PI_2 = 1.57079632679489661923;
 inline ClpString clpLowercase( const ClpString& in )
 {
   ClpString out;
-  transform( in.begin(), in.end(), std::back_inserter( out ), tolower );
+  std::transform( in.begin(), in.end(), std::back_inserter( out ), tolower );
   return out;
 }
 
 inline ClpString clpUppercase( const ClpString& in )
 {
   ClpString out;
-  transform( in.begin(), in.end(), std::back_inserter( out ), toupper );
+  std::transform( in.begin(), in.end(), std::back_inserter( out ), toupper );
   return out;
 }
 

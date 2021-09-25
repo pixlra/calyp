@@ -3,9 +3,10 @@
 
 ## Build Status
 
-Master branch | Development branch
+Linux | Windows
 ------------ | -------------
-[![Linux Status](https://travis-ci.org/pixlra/calyp.svg?branch=master)](https://travis-ci.org/pixlra/calyp.svg?branch=master) [![Windows status](https://ci.appveyor.com/api/projects/status/ea2ktvtg7uqwrika/branch/master?svg=true)](https://ci.appveyor.com/project/jfmcarreira/calyp/branch/master) | Comming soon!
+[Build Action](https://github.com/pixlra/calyp/actions/workflows/build.yml/badge.svg?branch=master) |
+[![Linux Status](https://travis-ci.org/pixlra/calyp.svg?branch=master)](https://travis-ci.org/pixlra/calyp.svg?branch=master) | [![Windows status](https://ci.appveyor.com/api/projects/status/ea2ktvtg7uqwrika/branch/master?svg=true)](https://ci.appveyor.com/project/jfmcarreira/calyp/branch/master)
 
 
 ## Features

@@ -1,4 +1,4 @@
-name: CMake
+name: Build on Linux
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
     steps:
     - name: Install dependencies
       run: sudo apt-get install cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
-        
+
     - uses: actions/checkout@v2
 
     - name: Configure CMake
@@ -31,5 +31,5 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
-      
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+

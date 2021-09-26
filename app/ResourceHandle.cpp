@@ -110,7 +110,7 @@ auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
 
 auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 {
-  if( m_apcStreamResourcesWorkersList.contains( id ) )
+  if( m_apcStreamResourcesWorkersList.count( id ) )
   {
     return m_apcStreamResourcesList[id].get();
   }
@@ -119,7 +119,7 @@ auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 
 void ResourceHandle::removeResource( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.contains( id ) )
+  if( !m_apcStreamResourcesWorkersList.count( id ) )
   {
     assert( false );
     return;
@@ -135,7 +135,7 @@ void ResourceHandle::removeResource( std::size_t id )
 
 void ResourceHandle::stopResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.contains( id ) )
+  if( !m_apcStreamResourcesWorkersList.count( id ) )
   {
     assert( false );
     return;
@@ -145,7 +145,7 @@ void ResourceHandle::stopResourceWorker( std::size_t id )
 
 void ResourceHandle::startResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.contains( id ) )
+  if( !m_apcStreamResourcesWorkersList.count( id ) )
   {
     assert( false );
     return;
@@ -158,7 +158,7 @@ void ResourceHandle::startResourceWorker( std::size_t id )
 
 void ResourceHandle::wakeResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.contains( id ) )
+  if( !m_apcStreamResourcesWorkersList.count( id ) )
   {
     assert( false );
     return;

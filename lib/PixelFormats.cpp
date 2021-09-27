@@ -25,7 +25,6 @@
 #include "PixelFormats.h"
 
 #include "CalypFrame.h"
-#include "LibMemory.h"
 #include "config.h"
 #ifdef USE_FFMPEG
 #include "StreamHandlerLibav.h"

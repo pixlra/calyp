@@ -39,6 +39,7 @@ class ThreeSixtyNxN : public CalypModuleIf
   REGISTER_CLASS_FACTORY( ThreeSixtyNxN )
 private:
   unsigned m_uiDownsampling;
+  CalypFrame* m_pcOutputFrame;
   void downsamplingOperation( const CalypFrame* pcInputFrame );
   void upsamplingOperation( const CalypFrame* pcInputFrame );
 

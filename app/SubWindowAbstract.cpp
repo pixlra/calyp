@@ -40,7 +40,7 @@ SubWindowAbstract::SubWindowAbstract( QWidget* parent, unsigned int category )
   // setFocusPolicy( Qt::WheelFocus );
   setFocusPolicy( Qt::StrongFocus );
   setAttribute( Qt::WA_DeleteOnClose );
-  setBackgroundRole( QPalette::Background );
+  setBackgroundRole( QPalette::Window );
 
   setWindowIcon( QIcon( ":/logos/calyp-icon.png" ) );
 

@@ -24,25 +24,21 @@
 #ifndef __SALIENCYBASEDFILTERING_H__
 #define __SALIENCYBASEDFILTERING_H__
 
-#include <cassert>
+#include "lib/CalypModuleIf.h"
 
-#include "lib/PlaYUVerModuleIf.h"
-
-class SaliencyBasedFiltering : public PlaYUVerModuleIf
+class SaliencyBasedFiltering : public CalypModuleIf
 {
   REGISTER_CLASS_FACTORY( SaliencyBasedFiltering )
 
 private:
-  PlaYUVerFrame* m_pcProcessedFrame;
+  std::unique_ptr<CalypFrame> m_pcProcessedFrame;
 
 public:
   SaliencyBasedFiltering();
-  virtual ~SaliencyBasedFiltering()
-  {
-  }
-  Bool create( std::vector<PlaYUVerFrame*> apcFrameList );
-  PlaYUVerFrame* process( std::vector<PlaYUVerFrame*> apcFrameList );
-  Void destroy();
+  virtual ~SaliencyBasedFiltering() {}
+  bool create( std::vector<CalypFrame*> apcFrameList );
+  CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
+  void destroy();
 };
 
 #endif  // __SALIENCYBASEDFILTERING_H__

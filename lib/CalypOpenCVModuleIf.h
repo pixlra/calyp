@@ -26,6 +26,8 @@
 #ifndef __CALYPOPENCVMODULEIF_H__
 #define __CALYPOPENCVMODULEIF_H__
 
+#include <memory>
+
 #include "CalypModuleIf.h"
 
 namespace cv
@@ -40,8 +42,11 @@ class Mat;
  */
 class CalypOpenCVModuleIf : public CalypModuleIf
 {
+  using Mat = cv::Mat;
+
 protected:
-  const char* m_pchPythonFunctionName;
+  //const char* m_pchPythonFunctionName;
+  std::unique_ptr<CalypFrame> m_pcOutputFrame;
   bool m_bConvertToGray;
 
 public:
@@ -57,8 +62,8 @@ public:
   void destroy();
 
   // API using OpenCV
-  virtual cv::Mat* create_using_opencv( std::vector<cv::Mat*> apcFrameList ) { return NULL; };
-  virtual cv::Mat* process_using_opencv( std::vector<cv::Mat*> apcFrameList ) = 0;
+  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList ) { return nullptr; };
+  virtual Mat* process_using_opencv( const std::vector<Mat>& apcFrameList ) = 0;
   virtual void destroy_using_opencv(){};
 };
 

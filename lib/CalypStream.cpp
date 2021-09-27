@@ -33,7 +33,6 @@
 
 #include "CalypFrame.h"
 #include "CalypStreamHandlerIf.h"
-#include "LibMemory.h"
 #include "StreamHandlerPortableMap.h"
 #include "StreamHandlerRaw.h"
 #include "config.h"

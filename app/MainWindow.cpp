@@ -81,7 +81,7 @@ MainWindow::MainWindow()
   setUnifiedTitleAndToolBarOnMac( true );
   setCentralWidget( m_pcWindowHandle );
   setAcceptDrops( true );
-  setBackgroundRole( QPalette::Background );
+  setBackgroundRole( QPalette::Window );
 
   connect( m_pcWindowHandle, &SubWindowHandle::windowActivated, this, &MainWindow::update );
   connect( m_pcWindowHandle, &SubWindowHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );

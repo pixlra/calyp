@@ -26,8 +26,6 @@
 
 #include <cassert>
 
-#include "lib/LibMemory.h"
-
 HEVCIntraPrediction::HEVCIntraPrediction()
 {
   /* Module Definition */

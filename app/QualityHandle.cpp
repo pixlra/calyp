@@ -32,7 +32,6 @@
 #include "SubWindowHandle.h"
 #include "SubWindowSelectorDialog.h"
 #include "VideoSubWindow.h"
-#include "lib/LibMemory.h"
 
 QualityHandle::QualityHandle( QWidget* parent, SubWindowHandle* windowManager )
     : m_pcParet( parent ), m_pcMainWindowManager( windowManager )

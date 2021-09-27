@@ -49,7 +49,7 @@ public:
   MdiArea( QWidget* parent = 0 )
       : QMdiArea( parent ), m_pixmapLogo( ":/logos/calyp-logo.png" )
   {
-    setBackgroundRole( QPalette::Background );
+    setBackgroundRole( QPalette::Window );
   }
 
   void appendLogMessage( const QString& msg )

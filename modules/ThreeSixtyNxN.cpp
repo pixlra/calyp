@@ -25,14 +25,10 @@
 #include "ThreeSixtyNxN.h"
 
 #include <opencv2/core/core.hpp>
-
-#include "lib/LibMemory.h"
-//#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo.hpp>
+#include <vector>
 
-//using cv::InputArray;
-//using cv::OutputArray;
 using cv::Rect;
 using cv::Scalar;
 using cv::Size;
@@ -147,7 +143,6 @@ void ThreeSixtyNxN::downsamplingOperation( const CalypFrame* pcInputFrame )
     ClpPel* in = &pcInputFrame->getPelBufferYUV()[ch][0][0];
     ClpPel* out = &m_pcOutputFrame->getPelBufferYUV()[ch][0][0];
 
-    unsigned long nn = N * N;
     int n_2 = N / 2;
     int n1 = N - 1;
     double dist_y;
@@ -175,7 +170,6 @@ void ThreeSixtyNxN::downsamplingOperation( const CalypFrame* pcInputFrame )
         rx = x + y * N + out;
 
         *( rx ) = interpol_lanczos3( tx_y, tx_x, N * 2, max_value );
-        //*( rx ) = interpol_cub( tx_y, tx_x, N * 2, max_value );
       }
     }
   }
@@ -202,9 +196,7 @@ void ThreeSixtyNxN::upsamplingOperation( const CalypFrame* pcInputFrame )
     double Dj;
     double tx;
     ClpPel* rx;
-    ClpPel* linhaY;
-
-    getMem1D( &linhaY, n2 );
+    std::vector<ClpPel> linhaY( n2, 0 );
 
     for( y = 0; y < N; y++ )
     {
@@ -220,7 +212,7 @@ void ThreeSixtyNxN::upsamplingOperation( const CalypFrame* pcInputFrame )
         novo_x = ( dist_x > dist_y ? dist_y : ( dist_x + 1 < -dist_y ? -dist_y - 1 : dist_x ) ) + N / 2;
         novo_y = abs( dist_x ) > dist_y ? ( y < N / 2 ? dist_Lj : N - dist_Lj - 1 ) : y;
 
-        *( linhaY + x ) = *( in + (int)novo_x + (int)novo_y * N );
+        linhaY[x] = *( in + (int)novo_x + (int)novo_y * N );
       }
 
       for( x = 0; x < n2; x++ )
@@ -228,10 +220,9 @@ void ThreeSixtyNxN::upsamplingOperation( const CalypFrame* pcInputFrame )
         tx = ( x + 1 ) / Dj - 1;
         rx = x + y * n2 + out;
 
-        *( rx ) = interpol_lanczos3( linhaY, tx, Lj, max_value );
+        *( rx ) = interpol_lanczos3( linhaY.data(), tx, Lj, max_value );
       }
     }
-    freeMem1D( linhaY );
   }
 }
 

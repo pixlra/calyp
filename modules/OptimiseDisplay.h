@@ -34,14 +34,14 @@ class OptimiseDisplay : public CalypModuleIf
   REGISTER_CLASS_FACTORY( OptimiseDisplay )
 
 private:
-  CalypFrame* m_pcOptimisedFrame;
+  std::unique_ptr<CalypFrame> m_pcOptimisedFrame;
 
 public:
   OptimiseDisplay();
   virtual ~OptimiseDisplay() {}
-  bool create( std::vector<CalypFrame*> apcFrameList );
-  CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
-  void destroy();
+  bool create( std::vector<CalypFrame*> apcFrameList ) final;
+  CalypFrame* process( std::vector<CalypFrame*> apcFrameList ) final;
+  void destroy() final;
 };
 
 #endif  // __OPTIMISEDISPLAY_H__

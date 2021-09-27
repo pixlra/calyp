@@ -25,6 +25,8 @@
 
 #include "ViewArea.h"
 
+#include <qnamespace.h>
+
 #include <QColor>
 #include <QCoreApplication>
 #include <QDebug>
@@ -729,10 +731,10 @@ void ViewArea::wheelEvent( QWheelEvent* event )
 
     QWidget* p = parentWidget();
     QSize minimumSize = QSize( p->size().width() - 5, p->size().height() - 5 );
-    usedScale = scaleZoomFactor( scale, event->pos(), minimumSize );
+    usedScale = scaleZoomFactor( scale, event->position().toPoint(), minimumSize );
     if( usedScale != 1.0 )
     {
-      emit zoomFactorChanged_byWheel( usedScale, event->pos() );
+      emit zoomFactorChanged_byWheel( usedScale, event->position().toPoint() );
     }
   }
 }
@@ -743,7 +745,7 @@ void ViewArea::mousePressEvent( QMouseEvent* event )
 
   QPoint vpos = windowToView( event->pos() );
 
-  if( event->button() == Qt::MidButton )
+  if( event->button() == Qt::MiddleButton )
   {
   }
   if( event->button() == Qt::LeftButton )

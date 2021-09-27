@@ -75,12 +75,17 @@ bool ThreeSixtySpatialtoTemporal::needFrame()
   return false;
 }
 
+CalypFrame* ThreeSixtySpatialtoTemporal::getProcessedFrame()
+{
+  return m_pcTempSpatialFrame != nullptr ? m_pcTempSpatialFrame.get() : nullptr;
+}
+
 bool ThreeSixtySpatialtoTemporal::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
 
-  unsigned int iWidth;
-  unsigned int iHeight;
+  unsigned int iWidth{ 0 };
+  unsigned int iHeight{ 0 };
 
   if( m_uiSpatial2Temporal )
   {
@@ -93,10 +98,10 @@ bool ThreeSixtySpatialtoTemporal::create( std::vector<CalypFrame*> apcFrameList 
     iWidth = apcFrameList[0]->getWidth() / m_uiFacesX;
     iHeight = apcFrameList[0]->getHeight() / m_uiFacesY;
 
-    m_pcTmpInputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(),
-                                        apcFrameList[0]->getBitsPel() );
-    m_pcTmpFace = new CalypFrame( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
-                                  apcFrameList[0]->getBitsPel() );
+    m_pcTmpInputFrame = std::make_unique<CalypFrame>( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(),
+                                                      apcFrameList[0]->getBitsPel() );
+    m_pcTmpFace = std::make_unique<CalypFrame>( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
+                                                apcFrameList[0]->getBitsPel() );
     iWidth *= m_uiFacesPerFrame;
   }
   else
@@ -104,8 +109,8 @@ bool ThreeSixtySpatialtoTemporal::create( std::vector<CalypFrame*> apcFrameList 
     iWidth = apcFrameList[0]->getWidth() * m_uiFacesX / m_uiFacesPerFrame;
     iHeight = apcFrameList[0]->getHeight() * m_uiFacesY;
   }
-  m_pcOutputFrame = new CalypFrame( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
-                                    apcFrameList[0]->getBitsPel() );
+  m_pcTempSpatialFrame = std::make_unique<CalypFrame>( iWidth, iHeight, apcFrameList[0]->getPelFormat(),
+                                                       apcFrameList[0]->getBitsPel() );
   return true;
 }
 
@@ -125,8 +130,8 @@ CalypFrame* ThreeSixtySpatialtoTemporal::process( std::vector<CalypFrame*> apcFr
 
     for( unsigned i = 0; i < m_uiFacesPerFrame; i++ )
     {
-      m_pcTmpFace->copyFrom( m_pcTmpInputFrame, m_uiCopyX, m_uiCopyY );
-      m_pcOutputFrame->copyTo( m_pcTmpFace, m_pcTmpFace->getWidth() * i, 0 );
+      m_pcTmpFace->copyFrom( *m_pcTmpInputFrame, m_uiCopyX, m_uiCopyY );
+      m_pcTempSpatialFrame->copyTo( *m_pcTmpFace, m_pcTmpFace->getWidth() * i, 0 );
       m_iFrameBufferCount--;
       m_uiCopyX += m_pcTmpFace->getWidth();
       if( m_uiCopyX >= m_pcTmpInputFrame->getWidth() )
@@ -138,40 +143,28 @@ CalypFrame* ThreeSixtySpatialtoTemporal::process( std::vector<CalypFrame*> apcFr
   }
   else
   {
-    m_pcOutputFrame->copyTo( apcFrameList[0], m_uiCopyX, m_uiCopyY );
+    m_pcTempSpatialFrame->copyTo( apcFrameList[0], m_uiCopyX, m_uiCopyY );
     m_uiFacesCount += m_uiFacesPerFrame;
 
     m_uiCopyX += apcFrameList[0]->getWidth();
-    if( m_uiCopyX >= m_pcOutputFrame->getWidth() )
+    if( m_uiCopyX >= m_pcTempSpatialFrame->getWidth() )
     {
       m_uiCopyX = 0;
       m_uiCopyY += apcFrameList[0]->getHeight();
     }
     if( m_uiFacesCount < ( m_uiFacesX * m_uiFacesY ) )
     {
-      return NULL;
+      return nullptr;
     }
     m_iFrameBufferCount = 0;
     m_uiCopyX = 0;
     m_uiCopyY = 0;
     m_uiFacesCount = 0;
-    return m_pcOutputFrame;
   }
 
-  return m_pcOutputFrame;
+  return m_pcTempSpatialFrame.get();
 }
 
 void ThreeSixtySpatialtoTemporal::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
-  m_pcOutputFrame = NULL;
-
-  if( m_pcTmpInputFrame )
-    delete m_pcTmpInputFrame;
-  m_pcTmpInputFrame = NULL;
-
-  if( m_pcTmpFace )
-    delete m_pcTmpFace;
-  m_pcTmpFace = NULL;
 }

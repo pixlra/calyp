@@ -27,8 +27,6 @@
 
 #include <cmath>
 
-#include "lib/LibMemory.h"
-
 OptimiseDisplay::OptimiseDisplay()
 {
   /* Module Definition */
@@ -53,11 +51,11 @@ bool OptimiseDisplay::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
 
-  m_pcOptimisedFrame = new CalypFrame{ apcFrameList[0]->getWidth(),
-                                       apcFrameList[0]->getHeight(),
-                                       apcFrameList[0]->getPelFormat(),
-                                       apcFrameList[0]->getBitsPel(),
-                                       apcFrameList[0]->getHasNegativeValues() };
+  m_pcOptimisedFrame = std::make_unique<CalypFrame>( apcFrameList[0]->getWidth(),
+                                                     apcFrameList[0]->getHeight(),
+                                                     apcFrameList[0]->getPelFormat(),
+                                                     apcFrameList[0]->getBitsPel(),
+                                                     apcFrameList[0]->getHasNegativeValues() );
   m_pcOptimisedFrame->reset();
 
   return true;
@@ -95,11 +93,9 @@ CalypFrame* OptimiseDisplay::process( std::vector<CalypFrame*> apcFrameList )
       }
     }
   }
-  return m_pcOptimisedFrame;
+  return m_pcOptimisedFrame.get();
 }
 
 void OptimiseDisplay::destroy()
 {
-  delete m_pcOptimisedFrame;
-  m_pcOptimisedFrame = nullptr;
 }

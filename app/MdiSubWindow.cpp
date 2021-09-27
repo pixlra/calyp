@@ -32,7 +32,7 @@ MdiSubWindow::MdiSubWindow( QWidget* parent )
     : QMdiSubWindow( parent )
 {
   setAttribute( Qt::WA_DeleteOnClose );
-  setBackgroundRole( QPalette::Background );
+  setBackgroundRole( QPalette::Window );
 }
 
 QSize MdiSubWindow::sizeHint() const

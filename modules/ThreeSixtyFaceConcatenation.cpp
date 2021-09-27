@@ -56,8 +56,6 @@ ThreeSixtyFaceConcatenation::ThreeSixtyFaceConcatenation()
   m_uiNumberOfPartitionsPerFace = 1;
   m_uiFacesX = 0;
   m_uiFacesY = 0;
-
-  m_pcTmpFrame = NULL;
 }
 
 bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList )
@@ -90,14 +88,14 @@ bool ThreeSixtyFaceConcatenation::create( std::vector<CalypFrame*> apcFrameList 
   unsigned int width = apcFrameList[0]->getWidth() * m_uiFacesX;
   unsigned int height = apcFrameList[0]->getHeight() * m_uiFacesY;
 
-  m_pcOutputFrame = new CalypFrame( width, height, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
+  m_pcConcatenatedFaces = std::make_unique<CalypFrame>( width, height, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
 
   return true;
 }
 
 CalypFrame* ThreeSixtyFaceConcatenation::process( std::vector<CalypFrame*> apcFrameList )
 {
-  m_pcOutputFrame->reset();
+  m_pcConcatenatedFaces->reset();
 
   switch( m_uiProjectionType )
   {
@@ -107,19 +105,16 @@ CalypFrame* ThreeSixtyFaceConcatenation::process( std::vector<CalypFrame*> apcFr
       CalypFrame* pcFrame = apcFrameList[i];
       unsigned x = i % m_uiFacesX * pcFrame->getWidth();
       unsigned y = i / m_uiFacesX * pcFrame->getHeight();
-      m_pcOutputFrame->copyTo( pcFrame, x, y );
+      m_pcConcatenatedFaces->copyTo( pcFrame, x, y );
     }
     break;
   default:
     assert( 0 );
   }
 
-  return m_pcOutputFrame;
+  return m_pcConcatenatedFaces.get();
 }
 
 void ThreeSixtyFaceConcatenation::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
-  m_pcOutputFrame = NULL;
 }

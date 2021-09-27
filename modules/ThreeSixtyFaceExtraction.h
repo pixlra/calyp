@@ -32,7 +32,8 @@ class ThreeSixtyFaceExtraction : public CalypModuleIf
   REGISTER_CLASS_FACTORY( ThreeSixtyFaceExtraction )
 
 private:
-  CalypFrame* m_pcTmpFrame;
+  std::unique_ptr<CalypFrame> m_pcFrameExtractionFrame;
+  std::unique_ptr<CalypFrame> m_pcTmpFrame;
   unsigned m_uiFaceNum;
   unsigned m_uiProjectionType;
   unsigned m_uiNumberOfPartitionsPerFace;

@@ -518,10 +518,10 @@ bool VideoSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsign
   {
     bGuessed = false;
     // Guess pixel format
-    QVector<ClpString> formats_list = QVector<ClpString>::fromStdVector( CalypFrame::supportedPixelFormatListNames() );
-    for( int i = 0; i < formats_list.size(); i++ )
+    auto formats_list = CalypFrame::supportedPixelFormatListNames();
+    for( std::size_t i = 0; i < formats_list.size(); i++ )
     {
-      if( FilenameShort.contains( formats_list.at( i ).c_str(), Qt::CaseInsensitive ) )
+      if( FilenameShort.contains( formats_list[i].c_str(), Qt::CaseInsensitive ) )
       {
         rInputFormat = i;
         break;
@@ -779,7 +779,7 @@ bool VideoSubWindow::disableAllModules()
 bool VideoSubWindow::hasRunningModule()
 {
   bool bRet = false;
-  for( int i = 0; i < m_associatedModules.size() && !bRet; i++ )
+  for( std::size_t i = 0; i < m_associatedModules.size() && !bRet; i++ )
   {
     bRet |= m_associatedModules.at( i )->isRunning();
   }

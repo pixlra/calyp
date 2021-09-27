@@ -28,7 +28,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "CalypFrame.h"
-#include "LibMemory.h"
 #if CV_MAJOR_VERSION >= 3
 #include <opencv2/videoio.hpp>
 #endif

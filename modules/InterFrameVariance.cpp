@@ -24,8 +24,6 @@
 
 #include "InterFrameVariance.h"
 
-#include "lib/LibMemory.h"
-
 InterFrameVariance::InterFrameVariance()
 {
   /* Module Definition */
@@ -56,7 +54,8 @@ bool InterFrameVariance::create( std::vector<CalypFrame*> apcFrameList )
 
   m_pcFrameVariance =
       new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY, 8 );
-  getMem2D( &m_pVariance, apcFrameList[0]->getHeight(), apcFrameList[0]->getWidth() );
+
+  m_pVariance = CalypPlane<double>{ apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight() };
 
   return true;
 }
@@ -105,9 +104,6 @@ CalypFrame* InterFrameVariance::process( std::vector<CalypFrame*> apcFrameList )
 
 void InterFrameVariance::destroy()
 {
-  if( m_pVariance )
-    freeMem2D( m_pVariance );
-  m_pVariance = NULL;
   if( m_pcFrameVariance )
     delete m_pcFrameVariance;
   m_pcFrameVariance = NULL;

@@ -27,7 +27,6 @@
 #include <cstdio>
 
 #include "CalypFrame.h"
-#include "LibMemory.h"
 
 std::vector<CalypStreamFormat> StreamHandlerRaw::supportedReadFormats()
 {

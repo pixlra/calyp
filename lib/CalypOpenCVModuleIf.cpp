@@ -25,34 +25,28 @@
 #include "CalypOpenCVModuleIf.h"
 
 // OpenCV
+#include <memory>
 #include <opencv2/opencv.hpp>
-
-using cv::Mat;
 
 bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
   bool bRet = false;
-  std::vector<Mat*> acMatList( apcFrameList.size() );
+  std::vector<Mat> acMatList( apcFrameList.size() );
   for( unsigned i = 0; i < apcFrameList.size(); i++ )
   {
-    acMatList[i] = new Mat;
-    apcFrameList[i]->toMat( *acMatList[i], m_bConvertToGray );
+    apcFrameList[i]->toMat( acMatList[i], m_bConvertToGray );
   }
   Mat* outputMat = create_using_opencv( acMatList );
   if( outputMat )
   {
     unsigned pelFormat = m_bConvertToGray ? CalypFrame::findPixelFormat( "GRAY" ) : apcFrameList[0]->getPelFormat();
-    m_pcOutputFrame = new CalypFrame( outputMat->cols, outputMat->rows, pelFormat, apcFrameList[0]->getBitsPel() );
+    m_pcOutputFrame = std::make_unique<CalypFrame>( outputMat->cols, outputMat->rows, pelFormat, apcFrameList[0]->getBitsPel() );
     bRet = true;
   }
   else
   {
     return false;
-  }
-  for( unsigned i = 0; i < apcFrameList.size(); i++ )
-  {
-    delete acMatList[i];
   }
   return bRet;
 }
@@ -60,24 +54,16 @@ bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
 CalypFrame* CalypOpenCVModuleIf::process( std::vector<CalypFrame*> apcFrameList )
 {
   m_pcOutputFrame->reset();
-  std::vector<Mat*> acMatList( apcFrameList.size() );
+  std::vector<Mat> acMatList( apcFrameList.size() );
   for( unsigned i = 0; i < apcFrameList.size(); i++ )
   {
-    acMatList[i] = new Mat;
-    apcFrameList[i]->toMat( *acMatList[i], m_bConvertToGray );
+    apcFrameList[i]->toMat( acMatList[i], m_bConvertToGray );
   }
   Mat* cvOutput = process_using_opencv( acMatList );
   m_pcOutputFrame->fromMat( *cvOutput );
-  for( unsigned i = 0; i < apcFrameList.size(); i++ )
-  {
-    delete acMatList[i];
-  }
-  return m_pcOutputFrame;
+  return m_pcOutputFrame.get();
 }
 
 void CalypOpenCVModuleIf::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
-  m_pcOutputFrame = NULL;
 }

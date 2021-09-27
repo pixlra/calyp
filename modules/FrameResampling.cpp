@@ -80,26 +80,24 @@ bool FrameResampling::create( std::vector<CalypFrame*> apcFrameList )
   {
     m_iHeight = apcFrameList[0]->getHeight() * double( m_iWidth ) / double( apcFrameList[0]->getWidth() );
   }
-  m_pcOutputFrame = new CalypFrame( m_iWidth, m_iHeight, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
-  return m_pcOutputFrame;
+  m_resamplingFrame = std::make_unique<CalypFrame>( m_iWidth, m_iHeight, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
+  return true;
 }
 
 CalypFrame* FrameResampling::process( std::vector<CalypFrame*> apcFrameList )
 {
-  m_pcOutputFrame->reset();
+  m_resamplingFrame->reset();
   for( unsigned ch = 0; ch < apcFrameList[0]->getNumberChannels(); ch++ )
   {
     Mat inputFrame, outputFrame;
-    cv::Size outSize( m_pcOutputFrame->getWidth( ch ), m_pcOutputFrame->getHeight( ch ) );
+    cv::Size outSize( m_resamplingFrame->getWidth( ch ), m_resamplingFrame->getHeight( ch ) );
     apcFrameList[0]->toMat( inputFrame, true, false, ch );
     cv::resize( inputFrame, outputFrame, outSize, 0, 0, m_iInterpolation );
-    m_pcOutputFrame->fromMat( outputFrame, ch );
+    m_resamplingFrame->fromMat( outputFrame, ch );
   }
-  return m_pcOutputFrame;
+  return m_resamplingFrame.get();
 }
 
 void FrameResampling::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
 }

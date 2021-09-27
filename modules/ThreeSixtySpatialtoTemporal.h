@@ -33,8 +33,9 @@ class ThreeSixtySpatialtoTemporal : public CalypModuleIf
   REGISTER_CLASS_FACTORY( ThreeSixtySpatialtoTemporal )
 
 private:
-  CalypFrame* m_pcTmpInputFrame;
-  CalypFrame* m_pcTmpFace;
+  std::unique_ptr<CalypFrame> m_pcTempSpatialFrame;
+  std::unique_ptr<CalypFrame> m_pcTmpInputFrame;
+  std::unique_ptr<CalypFrame> m_pcTmpFace;
   bool m_uiSpatial2Temporal;
   unsigned int m_uiFacesX;
   unsigned int m_uiFacesY;
@@ -46,11 +47,12 @@ private:
 public:
   ThreeSixtySpatialtoTemporal();
   virtual ~ThreeSixtySpatialtoTemporal() {}
-  bool create( std::vector<CalypFrame*> apcFrameList );
-  bool needFrame();
-  CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
-  bool flush();
-  void destroy();
+  bool create( std::vector<CalypFrame*> apcFrameList ) override;
+  CalypFrame* getProcessedFrame() override;
+  bool needFrame() override;
+  CalypFrame* process( std::vector<CalypFrame*> apcFrameList ) override;
+  bool flush() override;
+  void destroy() override;
 };
 
 #endif  // __THREESIXTYSPATIALTOTEMPORAL_H__

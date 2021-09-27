@@ -53,7 +53,6 @@ SET(Calyp_App_SRCS
     # Module Quality
     QualityHandle.cpp
     PlotSubWindow.cpp
-    external/qcustomplot/qcustomplot.cpp
     # Module Plugins
     ModulesHandle.cpp
     CalypAppModuleIf.cpp
@@ -126,6 +125,8 @@ QT5_ADD_RESOURCES(Calyp_App_RCC ${Calyp_App_RCC})
 
 # Instruct CMake to run moc automatically when needed.
 SET(CMAKE_AUTOMOC ON)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-enum-enum-conversion")
 
 # Windows application icon
 IF(WIN32)

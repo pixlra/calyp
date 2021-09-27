@@ -55,6 +55,8 @@ private:
   unsigned m_uiFaceWidth;
   unsigned m_uiFaceHeight;
 
+  CalypFrame* m_pcOutputFrame;
+
 public:
   ThreeSixtyDynamicDownsampling();
   virtual ~ThreeSixtyDynamicDownsampling() {}

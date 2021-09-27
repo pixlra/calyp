@@ -25,11 +25,11 @@
 #ifndef __QUALITYMEASUREMENT_H__
 #define __QUALITYMEASUREMENT_H__
 
+#include <QFuture>
 #include <QtCore>
 #include <QtWidgets>
 
 #include "CommonDefs.h"
-#include "QFuture"
 #include "QualityMeasurementSidebar.h"
 #include "config.h"
 

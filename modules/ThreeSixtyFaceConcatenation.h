@@ -32,7 +32,7 @@ class ThreeSixtyFaceConcatenation : public CalypModuleIf
   REGISTER_CLASS_FACTORY( ThreeSixtyFaceConcatenation )
 
 private:
-  CalypFrame* m_pcTmpFrame;
+  std::unique_ptr<CalypFrame> m_pcConcatenatedFaces;
   unsigned m_uiProjectionType;
   unsigned m_uiNumberOfPartitionsPerFace;
   unsigned m_uiFacesX;

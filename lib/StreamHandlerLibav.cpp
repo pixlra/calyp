@@ -28,7 +28,6 @@
 #include <iostream>
 
 #include "CalypFrame.h"
-#include "LibMemory.h"
 #include "PixelFormats.h"
 
 #if( ( LIBAVCODEC_VERSION_MAJOR > 57 ) || ( LIBAVCODEC_VERSION_MAJOR == 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )

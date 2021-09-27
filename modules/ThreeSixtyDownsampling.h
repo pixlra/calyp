@@ -52,6 +52,7 @@ private:
 
   double m_dPixelRatio;
 
+  CalypFrame* m_pcResultedFrame;
   CalypFrame* m_pcDownsampled;
 
   // Values one per channel

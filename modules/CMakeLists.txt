@@ -70,6 +70,7 @@ ADD_MODULE_USE_OPENCV(SaliencyDetectionFineGrained "SaliencyDetection" VERSION 3
 ADD_MODULE_USE_OPENCV(SaliencyDetectionBinWangApr2014 "SaliencyDetection" VERSION 3.3.0 MODULES saliency)
 
 ADD_MODULE_USE_OPENCV(FrameResampling "FrameResampling" VERSION 3.3.0 MODULES core)
+ADD_MODULE_USE_OPENCV(SaliencyBasedFiltering "SaliencyBasedFiltering" VERSION 3.1.0 MODULES core)
 
 ADD_MODULE_USE_OPENCV(ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" VERSION 3.1.0 MODULES core)
 ADD_MODULE_USE_OPENCV(ThreeSixtyFaceExtraction "ThreeSixtyFaceExtraction" VERSION 3.1.0 MODULES core)

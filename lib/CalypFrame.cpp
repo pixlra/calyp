@@ -27,17 +27,28 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <vector>
 
-#include "LibMemory.h"
-#include "PixelFormats.h"
 #include "config.h"
 
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#endif
+
+#include "PixelFormats.h"
+#include "config.h"
+
+#define DATA_ALIGN 1  ///< use 32-bit aligned malloc/free
+#if DATA_ALIGN && _WIN32 && ( _MSC_VER > 1300 )
+#define xMalloc( len ) _aligned_malloc( len, 32 )
+#define xFreeMem( ptr ) _aligned_free( ptr )
+#else
+#define xMalloc( len ) malloc( len )
+#define xFreeMem( ptr ) free( ptr )
 #endif
 
 constexpr auto kMinBitsPerPixel = 8;
@@ -166,7 +177,7 @@ public:
     }
     mem_size += num_of_ptrs * sizeof( ClpPel* ) + sizeof( ClpPel** ) * iNumberChannels;
 
-    m_pppcInputPel = (ClpPel***)xMallocMem( mem_size );
+    m_pppcInputPel = (ClpPel***)xMalloc( mem_size );
 
     ClpPel** pelPtrMem = (ClpPel**)( m_pppcInputPel + iNumberChannels );
     ClpPel* pelMem = (ClpPel*)( pelPtrMem + num_of_ptrs );
@@ -675,7 +686,7 @@ void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndiann
     ppBuff[i] = ppBuff[i - 1] + CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ) * bytesPixel;
   }
 
-  xMemSet( ClpPel, getTotalNumberOfPixels(), d->m_pppcInputPel[0][0] );
+  memset( d->m_pppcInputPel[0][0], 0, getTotalNumberOfPixels() * sizeof( ClpPel ) );
 
   for( unsigned ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
@@ -850,7 +861,7 @@ void CalypFrame::fillRGBBuffer() const
     uint32_t* pARGBLine = pARGB;
     uint32_t* pARGBAux;
 
-    for( int y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
+    for( unsigned y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
       for( int i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
@@ -858,7 +869,7 @@ void CalypFrame::fillRGBBuffer() const
         ClpPel* pU = pLineU;
         ClpPel* pV = pLineV;
         pARGBAux = pARGBLine;
-        for( int x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
+        for( unsigned x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
           int iU = *pU++;
           iU >>= shiftBits;

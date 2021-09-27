@@ -42,9 +42,16 @@
 
 #define REGISTER_CLASS_MAKER( X ) \
   extern "C" CalypModulePtr Maker() { return std::make_unique<X>(); }
-#define REGISTER_CLASS_FACTORY( X ) \
-public:                             \
+#define REGISTER_CLASS_FACTORY( X )                   \
+public:                                               \
+  X( const X& buffer )                                \
+  noexcept = delete;                                  \
+  X( X&& buffer )                                     \
+  noexcept = delete;                                  \
+  auto operator=( const X& buffer )->X& = delete;     \
+  auto operator=( X&& buffer ) noexcept->X& = delete; \
   static CalypModulePtr Create() { return std::make_unique<X>(); }
+
 #define _BASIC_MODULE_API_2_CHECK_                        \
   if( apcFrameList.size() != m_uiNumberOfFrames )         \
     return false;                                         \
@@ -76,8 +83,9 @@ enum Module_API_Version
  */
 enum Module_Type
 {
-  CLP_FRAME_PROCESSING_MODULE,
-  CLP_FRAME_MEASUREMENT_MODULE,
+  CLP_INVALID_MODULE = -1,
+  CLP_FRAME_PROCESSING_MODULE = 0,
+  CLP_FRAME_MEASUREMENT_MODULE = 1,
   CLP_MODULE_TYPE_MAX = 255,
 };
 
@@ -114,31 +122,24 @@ enum Module_Key_Supported
 class CalypModuleIf
 {
 public:
-  int m_iModuleAPI;
-  int m_iModuleType;
-  const char* m_pchModuleCategory;
-  const char* m_pchModuleName;
-  const char* m_pchModuleTooltip;
-  const char* m_pchModuleLongName;
+  int m_iModuleAPI{ CLP_MODULE_API_1 };
+  int m_iModuleType{ CLP_INVALID_MODULE };
+  const char* m_pchModuleCategory{ "" };
+  const char* m_pchModuleName{ "" };
+  const char* m_pchModuleTooltip{ "" };
+  const char* m_pchModuleLongName{ "" };
 
   //! Number of frames
-  unsigned int m_uiNumberOfFrames;
+  unsigned int m_uiNumberOfFrames{ 1 };
   //! Features/Requirements
-  unsigned int m_uiModuleRequirements;
+  unsigned int m_uiModuleRequirements{ CLP_MODULE_REQUIRES_NOTHING };
 
-  unsigned int m_iFrameBufferCount;
-  CalypFrame* m_pcOutputFrame;
+  unsigned int m_iFrameBufferCount{ 0 };
+  //CalypFrame* m_pcOutputFrame;
 
   CalypOptions m_cModuleOptions;
 
-  CalypModuleIf()
-  {
-    m_iModuleAPI = CLP_MODULE_API_1;
-    m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
-    m_pchModuleLongName = NULL;
-    m_pcOutputFrame = NULL;
-    m_iFrameBufferCount = 0;
-  }
+  CalypModuleIf() = default;
   virtual ~CalypModuleIf() {}
   virtual void destroy() = 0;
 
@@ -164,7 +165,7 @@ public:
   /**
    * Module API version 3
    */
-  virtual CalypFrame* getProcessedFrame() { return m_pcOutputFrame; }
+  virtual CalypFrame* getProcessedFrame() { return nullptr; }
   virtual bool needFrame() { return m_iFrameBufferCount == 0 ? true : false; };
   virtual bool flush()
   {

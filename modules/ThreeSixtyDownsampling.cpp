@@ -75,7 +75,7 @@ ThreeSixtyDownsampling::ThreeSixtyDownsampling()
   m_bForceIntSlope = 0;
   m_iRearrange = 0;
   m_iWidth = -1;
-  m_pcOutputFrame = NULL;
+  m_pcResultedFrame = NULL;
   m_pcDownsampled = NULL;
   m_dPixelRatio = 0;
 
@@ -589,17 +589,17 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
   switch( m_uiDownsampling )
   {
   case 0:
-    m_pcOutputFrame = new CalypFrame( m_pcDownsampled->getWidth(), m_pcDownsampled->getHeight(), pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
+    m_pcResultedFrame = new CalypFrame( m_pcDownsampled->getWidth(), m_pcDownsampled->getHeight(), pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
     break;
   case 1:
-    m_pcOutputFrame = new CalypFrame( m_cvReshapePoints[0]->cols, m_cvReshapePoints[0]->rows, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
+    m_pcResultedFrame = new CalypFrame( m_cvReshapePoints[0]->cols, m_cvReshapePoints[0]->rows, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
     break;
   case 2:
-    m_pcOutputFrame = new CalypFrame{ pcInputFrame->getWidth(),
-                                      pcInputFrame->getHeight(),
-                                      pcInputFrame->getPelFormat(),
-                                      pcInputFrame->getBitsPel(),
-                                      pcInputFrame->getHasNegativeValues() };
+    m_pcResultedFrame = new CalypFrame{ pcInputFrame->getWidth(),
+                                        pcInputFrame->getHeight(),
+                                        pcInputFrame->getPelFormat(),
+                                        pcInputFrame->getBitsPel(),
+                                        pcInputFrame->getHasNegativeValues() };
     break;
   }
   return true;
@@ -609,7 +609,7 @@ void ThreeSixtyDownsampling::downsamplingOperation( CalypFrame* pcInputFrame )
 {
   unsigned numBytes = m_pcDownsampled->getBitsPel() > 8 ? 2 : 1;
   m_pcDownsampled->reset();
-  m_pcOutputFrame->reset();
+  m_pcResultedFrame->reset();
   for( unsigned ch = 0; ch < m_pcDownsampled->getNumberChannels(); ch++ )
   {
     int imH = int( m_pcDownsampled->getHeight( ch ) );
@@ -640,12 +640,12 @@ void ThreeSixtyDownsampling::downsamplingOperation( CalypFrame* pcInputFrame )
     }
     Mat_<Point> reshapePoints = *( m_cvReshapePoints[ch] );
     ClpPel** downSampPelBuff = m_pcDownsampled->getPelBufferYUV()[ch];
-    ClpPel* pelOutputPtr = m_pcOutputFrame->getPelBufferYUV()[ch][0];
+    ClpPel* pelOutputPtr = m_pcResultedFrame->getPelBufferYUV()[ch][0];
 
-    Mat outputMask( m_pcOutputFrame->getHeight( ch ), m_pcOutputFrame->getWidth( ch ), CV_8UC1, Scalar( 1 ) );
-    for( unsigned y = 0; y < m_pcOutputFrame->getHeight( ch ); y++ )
+    Mat outputMask( m_pcResultedFrame->getHeight( ch ), m_pcResultedFrame->getWidth( ch ), CV_8UC1, Scalar( 1 ) );
+    for( unsigned y = 0; y < m_pcResultedFrame->getHeight( ch ); y++ )
     {
-      for( unsigned x = 0; x < m_pcOutputFrame->getWidth( ch ); x++ )
+      for( unsigned x = 0; x < m_pcResultedFrame->getWidth( ch ); x++ )
       {
         Point pt = reshapePoints.at<Point>( y, x );
         if( pt.x > -1 )
@@ -659,9 +659,9 @@ void ThreeSixtyDownsampling::downsamplingOperation( CalypFrame* pcInputFrame )
     if( m_iInpaintMethod )
     {
       Mat outputFrameUnfilled, outputFrame;
-      m_pcOutputFrame->toMat( outputFrameUnfilled, true, false, ch );
+      m_pcResultedFrame->toMat( outputFrameUnfilled, true, false, ch );
       cv::inpaint( outputFrameUnfilled, outputMask, outputFrame, 16, m_iInpaintMethod );
-      m_pcOutputFrame->fromMat( outputFrame, ch );
+      m_pcResultedFrame->fromMat( outputFrame, ch );
     }
   }
 }
@@ -670,7 +670,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
 {
   unsigned numBytes = m_pcDownsampled->getBitsPel() > 8 ? 2 : 1;
   m_pcDownsampled->reset();
-  m_pcOutputFrame->reset();
+  m_pcResultedFrame->reset();
   for( unsigned ch = 0; ch < m_pcDownsampled->getNumberChannels(); ch++ )
   {
     Mat_<Point> reshapePoints = *( m_cvReshapePoints[ch] );
@@ -689,7 +689,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
 
     Mat cvDownsampled;
     m_pcDownsampled->toMat( cvDownsampled, true, false, ch );
-    int imH = m_pcOutputFrame->getHeight( ch );
+    int imH = m_pcResultedFrame->getHeight( ch );
     Mat cvUpsample( 1, 2 * imH, numBytes > 2 ? CV_16UC1 : CV_8UC1 );
     for( int y = 0; y < imH; y++ )
     {
@@ -700,7 +700,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
       cv::resize( cvDownsampled.row( y ).colRange( xpos, xpos + lineWidth ), cvUpsample, cvUpsample.size(), 0, 0, m_iInterpolation );
 
       // copy to output
-      ClpPel* outpel = &m_pcOutputFrame->getPelBufferYUV()[ch][y][0];
+      ClpPel* outpel = &m_pcResultedFrame->getPelBufferYUV()[ch][y][0];
       unsigned char* cv_data = cvUpsample.data;
       for( int i = 0; i < 2 * imH; i++ )
       {
@@ -713,7 +713,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
       }
     }
   }
-  //m_pcOutputFrame->copyFrom( m_pcDownsampled );
+  //m_pcResultedFrame->copyFrom( m_pcDownsampled );
 }
 
 CalypFrame* ThreeSixtyDownsampling::process( std::vector<CalypFrame*> apcFrameList )
@@ -725,9 +725,9 @@ CalypFrame* ThreeSixtyDownsampling::process( std::vector<CalypFrame*> apcFrameLi
   }
   if( m_uiDownsampling == 0 || m_uiDownsampling == 2 )
   {
-    upsamplingOperation( m_uiDownsampling == 2 ? m_pcOutputFrame : apcFrameList[0] );
+    upsamplingOperation( m_uiDownsampling == 2 ? m_pcResultedFrame : apcFrameList[0] );
   }
-  return m_pcOutputFrame;
+  return m_pcResultedFrame;
 }
 
 bool ThreeSixtyDownsampling::keyPressed( enum Module_Key_Supported value )
@@ -761,7 +761,7 @@ void ThreeSixtyDownsampling::destroy()
   if( m_pcDownsampled )
     delete m_pcDownsampled;
   m_pcDownsampled = NULL;
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
-  m_pcOutputFrame = NULL;
+  if( m_pcResultedFrame )
+    delete m_pcResultedFrame;
+  m_pcResultedFrame = NULL;
 }

@@ -45,7 +45,6 @@ SaliencyDetectionModule::SaliencyDetectionModule()
 
 void SaliencyDetectionModule::destroy_using_opencv()
 {
-  delete m_pcvSaliency;
 }
 
 SaliencyDetectionSpectral::SaliencyDetectionSpectral()
@@ -63,17 +62,17 @@ SaliencyDetectionSpectral::SaliencyDetectionSpectral()
   m_bBinaryMap = false;
 }
 
-cv::Mat* SaliencyDetectionSpectral::create_using_opencv( std::vector<Mat*> apcMatList )
+cv::Mat* SaliencyDetectionSpectral::create_using_opencv( const std::vector<Mat>& apcMatList )
 {
   m_ptrSaliencyAlgorithm = StaticSaliencySpectralResidual::create();
-  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
-  return m_pcvSaliency;
+  m_pcvSaliency = std::make_unique<Mat>( apcMatList[0].rows, apcMatList[0].cols, CV_8UC1 );
+  return m_pcvSaliency.get();
 }
 
-Mat* SaliencyDetectionSpectral::process_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionSpectral::process_using_opencv( const std::vector<Mat>& apcMatList )
 {
   Mat cvSaliency;
-  m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], cvSaliency );
+  m_ptrSaliencyAlgorithm->computeSaliency( apcMatList[0], cvSaliency );
   Mat cvBinaryMap;
   StaticSaliencySpectralResidual spec;
   spec.computeBinaryMap( cvSaliency, *m_pcvSaliency );
@@ -82,7 +81,7 @@ Mat* SaliencyDetectionSpectral::process_using_opencv( std::vector<Mat*> apcMatLi
     cvSaliency *= 255;
     cvSaliency.convertTo( *m_pcvSaliency, CV_8UC1 );
   }
-  return m_pcvSaliency;
+  return m_pcvSaliency.get();
 }
 
 SaliencyDetectionFineGrained::SaliencyDetectionFineGrained()
@@ -93,17 +92,17 @@ SaliencyDetectionFineGrained::SaliencyDetectionFineGrained()
   m_pchModuleTooltip = "Measure saliency using fine grained method";
 }
 
-Mat* SaliencyDetectionFineGrained::create_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionFineGrained::create_using_opencv( const std::vector<Mat>& apcMatList )
 {
   m_ptrSaliencyAlgorithm = cv::saliency::StaticSaliencyFineGrained::create();
-  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
-  return m_pcvSaliency;
+  m_pcvSaliency = std::make_unique<Mat>( apcMatList[0].rows, apcMatList[0].cols, CV_8UC1 );
+  return m_pcvSaliency.get();
 }
 
-Mat* SaliencyDetectionFineGrained::process_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionFineGrained::process_using_opencv( const std::vector<Mat>& apcMatList )
 {
-  m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], *m_pcvSaliency );
-  return m_pcvSaliency;
+  m_ptrSaliencyAlgorithm->computeSaliency( apcMatList[0], *m_pcvSaliency );
+  return m_pcvSaliency.get();
 }
 
 SaliencyDetectionBinWangApr2014::SaliencyDetectionBinWangApr2014()
@@ -114,22 +113,22 @@ SaliencyDetectionBinWangApr2014::SaliencyDetectionBinWangApr2014()
   m_pchModuleTooltip = "Measure saliency using a fast self-tuning background subtraction algorithm";
 }
 
-Mat* SaliencyDetectionBinWangApr2014::create_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionBinWangApr2014::create_using_opencv( const std::vector<Mat>& apcMatList )
 {
   m_ptrSaliencyAlgorithm = MotionSaliencyBinWangApr2014::create();
-  m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->setImagesize( apcMatList[0]->cols, apcMatList[0]->rows );
+  m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->setImagesize( apcMatList[0].cols, apcMatList[0].rows );
   m_ptrSaliencyAlgorithm.dynamicCast<MotionSaliencyBinWangApr2014>()->init();
-  m_pcvSaliency = new Mat( apcMatList[0]->rows, apcMatList[0]->cols, CV_8UC1 );
-  return m_pcvSaliency;
+  m_pcvSaliency = std::make_unique<Mat>( apcMatList[0].rows, apcMatList[0].cols, CV_8UC1 );
+  return m_pcvSaliency.get();
 }
 
-Mat* SaliencyDetectionBinWangApr2014::process_using_opencv( std::vector<Mat*> apcMatList )
+Mat* SaliencyDetectionBinWangApr2014::process_using_opencv( const std::vector<Mat>& apcMatList )
 {
-  if( m_ptrSaliencyAlgorithm->computeSaliency( *apcMatList[0], *m_pcvSaliency ) )
+  if( m_ptrSaliencyAlgorithm->computeSaliency( apcMatList[0], *m_pcvSaliency ) )
   {
     *m_pcvSaliency *= 255;
     m_pcvSaliency->convertTo( *m_pcvSaliency, CV_8UC1 );
     //cv::cvtColor(m_matSaliency, m_matSaliency, cv::COLOR_BGR2GRAY);
   }
-  return m_pcvSaliency;
+  return m_pcvSaliency.get();
 }

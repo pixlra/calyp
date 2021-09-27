@@ -29,7 +29,6 @@
 #include <QSize>
 
 #include "qcustomplot.h"
-//#include "external/qcustomplot/qcustomplot.h"
 
 void PlotSubWindow::definePlotColors()
 {

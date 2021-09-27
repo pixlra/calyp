@@ -43,6 +43,7 @@ private:
   int m_iWidth;
   int m_iHeight;
   int m_iInterpolation;
+  std::unique_ptr<CalypFrame> m_resamplingFrame;
 
 public:
   FrameResampling();

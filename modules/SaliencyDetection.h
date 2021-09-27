@@ -32,8 +32,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/saliency.hpp>
 
-using cv::Mat;
-
 /**
  * \ingroup  Calyp_Modules
  * @defgroup Calyp_Modules_Saliency Saliency
@@ -44,8 +42,10 @@ using cv::Mat;
 
 class SaliencyDetectionModule : public CalypOpenCVModuleIf
 {
+  using Mat = cv::Mat;
+
 protected:
-  Mat* m_pcvSaliency;
+  std::unique_ptr<Mat> m_pcvSaliency;
   cv::Ptr<cv::saliency::Saliency> m_ptrSaliencyAlgorithm;
 
 public:
@@ -68,6 +68,8 @@ public:
  */
 class SaliencyDetectionSpectral : public SaliencyDetectionModule
 {
+  using Mat = cv::Mat;
+
   REGISTER_CLASS_FACTORY( SaliencyDetectionSpectral )
 private:
   bool m_bBinaryMap;
@@ -75,8 +77,8 @@ private:
 public:
   SaliencyDetectionSpectral();
   virtual ~SaliencyDetectionSpectral() {}
-  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
-  Mat* process_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( const std::vector<Mat>& apcMatList ) override;
+  Mat* process_using_opencv( const std::vector<Mat>& apcMatList ) override;
 };
 
 /**
@@ -91,12 +93,14 @@ public:
  */
 class SaliencyDetectionFineGrained : public SaliencyDetectionModule
 {
+  using Mat = cv::Mat;
+
   REGISTER_CLASS_FACTORY( SaliencyDetectionFineGrained )
 public:
   SaliencyDetectionFineGrained();
   virtual ~SaliencyDetectionFineGrained() {}
-  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
-  Mat* process_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( const std::vector<Mat>& apcMatList ) override;
+  Mat* process_using_opencv( const std::vector<Mat>& apcMatList ) override;
 };
 
 /**
@@ -108,12 +112,14 @@ public:
  */
 class SaliencyDetectionBinWangApr2014 : public SaliencyDetectionModule
 {
+  using Mat = cv::Mat;
+
   REGISTER_CLASS_FACTORY( SaliencyDetectionBinWangApr2014 )
 public:
   SaliencyDetectionBinWangApr2014();
   virtual ~SaliencyDetectionBinWangApr2014() {}
-  Mat* create_using_opencv( std::vector<Mat*> apcMatList );
-  Mat* process_using_opencv( std::vector<Mat*> apcMatList );
+  Mat* create_using_opencv( const std::vector<Mat>& apcMatList ) override;
+  Mat* process_using_opencv( const std::vector<Mat>& apcMatList ) override;
 };
 
 #endif  // __SALIENCYDETECTION_H__

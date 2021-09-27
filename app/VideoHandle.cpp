@@ -675,7 +675,7 @@ void VideoHandle::calculateRealFrameRate()
 
 void VideoHandle::playEvent()
 {
-  auto start = std::chrono::steady_clock::now();
+  // auto start = std::chrono::steady_clock::now();
 
   // This value should only be true if it is really needed to refresh the UI after this play event
   // Lets assume the current window is not playing. Nothing changes in the UI expect the playing windows

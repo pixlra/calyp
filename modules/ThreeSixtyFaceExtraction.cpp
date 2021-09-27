@@ -77,14 +77,14 @@ bool ThreeSixtyFaceExtraction::create( std::vector<CalypFrame*> apcFrameList )
   unsigned int width = apcFrameList[0]->getWidth() / m_uiFacesX;
   unsigned int height = apcFrameList[0]->getHeight() / m_uiFacesY;
 
-  m_pcOutputFrame = new CalypFrame( width, height, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
+  m_pcFrameExtractionFrame = std::make_unique<CalypFrame>( width, height, apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
 
   return true;
 }
 
 CalypFrame* ThreeSixtyFaceExtraction::process( std::vector<CalypFrame*> apcFrameList )
 {
-  m_pcOutputFrame->reset();
+  m_pcFrameExtractionFrame->reset();
 
   unsigned x = -1;
   unsigned y = -1;
@@ -92,20 +92,17 @@ CalypFrame* ThreeSixtyFaceExtraction::process( std::vector<CalypFrame*> apcFrame
   switch( m_uiProjectionType )
   {
   case 1:  // Cube-map
-    x = m_uiFaceNum % m_uiFacesX * m_pcOutputFrame->getWidth();
-    y = ( m_uiFaceNum / m_uiFacesX ) * m_pcOutputFrame->getHeight();
+    x = m_uiFaceNum % m_uiFacesX * m_pcFrameExtractionFrame->getWidth();
+    y = ( m_uiFaceNum / m_uiFacesX ) * m_pcFrameExtractionFrame->getHeight();
     break;
   default:
     assert( 0 );
   }
 
-  m_pcOutputFrame->copyFrom( apcFrameList[0], x, y );
-  return m_pcOutputFrame;
+  m_pcFrameExtractionFrame->copyFrom( apcFrameList[0], x, y );
+  return m_pcFrameExtractionFrame.get();
 }
 
 void ThreeSixtyFaceExtraction::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
-  m_pcOutputFrame = NULL;
 }

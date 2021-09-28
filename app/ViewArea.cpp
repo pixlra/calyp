@@ -731,10 +731,16 @@ void ViewArea::wheelEvent( QWheelEvent* event )
 
     QWidget* p = parentWidget();
     QSize minimumSize = QSize( p->size().width() - 5, p->size().height() - 5 );
-    usedScale = scaleZoomFactor( scale, event->position().toPoint(), minimumSize );
+
+#if QT_VERSION < QT_VERSION_CHECK( 5, 14, 0 )
+    auto eventPosition = event->pos();
+#else
+    auto eventPosition = event->position().toPoint();
+#endif
+    usedScale = scaleZoomFactor( scale, eventPosition, minimumSize );
     if( usedScale != 1.0 )
     {
-      emit zoomFactorChanged_byWheel( usedScale, event->position().toPoint() );
+      emit zoomFactorChanged_byWheel( usedScale, eventPosition );
     }
   }
 }

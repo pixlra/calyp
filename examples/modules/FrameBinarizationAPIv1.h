@@ -18,29 +18,29 @@
  */
 
 /**
- * \file     FrameBinarization_APIv1.h
+ * \file     FrameBinarizationAPIv1.h
  * \brief    Binarize frame module (example of APIv1)
  */
 
-#ifndef __FRAMEBINARIZATION_APIV1_H__
-#define __FRAMEBINARIZATION_APIV1_H__
+#ifndef __FRAMEBINARIZATIONAPIV1_H__
+#define __FRAMEBINARIZATIONAPIV1_H__
 
 #include "CalypModuleIf.h"
 
-class FrameBinarization_APIv1 : public CalypModuleIf
+class FrameBinarizationAPIv1 : public CalypModuleIf
 {
-  REGISTER_CLASS_FACTORY( FrameBinarization_APIv1 )
+  REGISTER_CLASS_FACTORY( FrameBinarizationAPIv1 )
 
 private:
   CalypFrame* m_pcBinFrame;
   unsigned int m_uiThreshold;
 
 public:
-  FrameBinarization_APIv1();
-  virtual ~FrameBinarization_APIv1() {}
+  FrameBinarizationAPIv1();
+  virtual ~FrameBinarizationAPIv1() {}
   void create( CalypFrame* );
   CalypFrame* process( CalypFrame* );
   void destroy();
 };
 
-#endif  // __FRAMEBINARIZATION_APIV1_H__
+#endif  // __FRAMEBINARIZATIONAPIV1_H__

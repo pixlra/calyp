@@ -36,11 +36,6 @@ protected:
   // Can be omitted if not needed.
   static void SetUpTestCase()
   {
-    ClpString moduleName = CALYP_TEST_MODULE_NAME;
-
-    pcStream = new CalypStream;
-    pcStream->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
-                    CLP_BIG_ENDIAN, 1, true );
   }
 
   // Per-test-case tear-down.
@@ -48,9 +43,7 @@ protected:
   // Can be omitted if not needed.
   static void TearDownTestCase()
   {
-    pcStream->close();
-    delete pcStream;
-    pcStream = NULL;
+    pcStream = nullptr;
   }
 
   // Called before each test
@@ -58,7 +51,7 @@ protected:
   {
     ClpString moduleName = CALYP_TEST_MODULE_NAME;
 
-    pcStream = new CalypStream;
+    pcStream = std::make_unique<CalypStream>();
     pcStream->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                     CLP_BIG_ENDIAN, 1, true );
 
@@ -76,16 +69,15 @@ protected:
 
   void TearDown()
   {
-    pcModule->Delete();
   }
 
-  CalypModuleIf* pcModule;
+  std::unique_ptr<CalypModuleIf> pcModule;
 
   // Some expensive resource shared by all tests.
-  static CalypStream* pcStream;
+  static std::unique_ptr<CalypStream> pcStream;
 };
 
-CalypStream* TestModuleProcessNumberOfFrames::pcStream = NULL;
+std::unique_ptr<CalypStream> TestModuleProcessNumberOfFrames::pcStream{ nullptr };
 
 TEST_F( TestModuleProcessNumberOfFrames, PROCESS_OK )
 {

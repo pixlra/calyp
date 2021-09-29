@@ -48,7 +48,6 @@ OPTION(BUILD_TOOLS "Build Command Line Application" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" OFF)
 OPTION(BUILD_DOC "Build Documentation" OFF)
 OPTION(BUILD_TESTS "Build Google Tests" OFF)
-OPTION(BUILD_TESTS_CATCH2 "Build Catch2 Tests" OFF)
 OPTION(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
 OPTION(BUILD_WITH_THREAD_SANITIZER "Build with thread sanitizer" OFF)
 
@@ -123,21 +122,13 @@ IF(BUILD_TESTS)
       CACHE BOOL "" FORCE
   )
   FETCHCONTENT_MAKEAVAILABLE(googletest)
-
   SET_PACKAGE_PROPERTIES(
     googletest PROPERTIES
     URL "https://github.com/google/googletest"
     DESCRIPTION "Google unit tests"
     TYPE OPTIONAL
   )
-  SET(CALYP_TEST_DATA_DIR
-      "CALYP_TEST_DATA_DIR"
-      CACHE PATH "Location of video information for testing"
-  )
-ENDIF()
 
-IF(BUILD_TESTS_CATCH2)
-  INCLUDE(FetchContent)
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
@@ -151,7 +142,13 @@ IF(BUILD_TESTS_CATCH2)
     TYPE OPTIONAL
   )
   INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/_deps/catch2-src/contrib/Catch.cmake)
+  INCLUDE(CTest)
   ENABLE_TESTING()
+
+  SET(CALYP_TEST_DATA_DIR
+      "CALYP_TEST_DATA_DIR"
+      CACHE PATH "Location of video information for testing"
+  )
 ENDIF()
 
 OPTION(USE_OPENCV "Add OpenCV support" ON)

@@ -34,12 +34,12 @@ protected:
   // Can be omitted if not needed.
   static void SetUpTestCase()
   {
-    pcStreamPast = new CalypStream;
+    pcStreamPast = std::make_unique<CalypStream>();
     pcStreamPast->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                         CLP_BIG_ENDIAN, 1, true );
     pcFramePast = pcStreamPast->getCurrFrame();
 
-    pcStreamFuture = new CalypStream;
+    pcStreamFuture = std::make_unique<CalypStream>();
     pcStreamFuture->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F15_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                           CLP_BIG_ENDIAN, 1, true );
     pcFrameFuture = pcStreamFuture->getCurrFrame();
@@ -50,27 +50,22 @@ protected:
   // Can be omitted if not needed.
   static void TearDownTestCase()
   {
-    pcStreamPast->close();
-    delete pcStreamPast;
-    pcStreamPast = NULL;
-
-    pcStreamFuture->close();
-    delete pcStreamFuture;
-    pcStreamFuture = NULL;
+    pcStreamPast = nullptr;
+    pcStreamFuture = nullptr;
   }
 
   // Some expensive resource shared by all tests.
-  static CalypStream* pcStreamPast;
+  static std::unique_ptr<CalypStream> pcStreamPast;
   static CalypFrame* pcFramePast;
 
-  static CalypStream* pcStreamFuture;
+  static std::unique_ptr<CalypStream> pcStreamFuture;
   static CalypFrame* pcFrameFuture;
 };
 
-CalypStream* CalypFrameQualityTest::pcStreamPast = NULL;
-CalypStream* CalypFrameQualityTest::pcStreamFuture = NULL;
-CalypFrame* CalypFrameQualityTest::pcFramePast = NULL;
-CalypFrame* CalypFrameQualityTest::pcFrameFuture = NULL;
+std::unique_ptr<CalypStream> CalypFrameQualityTest::pcStreamPast{ nullptr };
+std::unique_ptr<CalypStream> CalypFrameQualityTest::pcStreamFuture{ nullptr };
+CalypFrame* CalypFrameQualityTest::pcFramePast{ nullptr };
+CalypFrame* CalypFrameQualityTest::pcFrameFuture{ nullptr };
 
 TEST_F( CalypFrameQualityTest, MSE )
 {

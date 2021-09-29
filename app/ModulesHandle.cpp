@@ -276,6 +276,10 @@ void ModulesHandle::activateModule()
 
   QString ModuleIfName = pcAction->data().toString();
   auto pcCurrModuleIf = CalypModulesFactory::Get()->CreateModule( ModuleIfName.toLocal8Bit().constData() );
+  if( pcCurrModuleIf == nullptr )
+  {
+    return;
+  }
   auto pcCurrAppModuleIf = std::make_shared<CalypAppModuleIf>( this, pcAction, std::move( pcCurrModuleIf ) );
 
   QList<VideoSubWindow*> videoSubWindowList;

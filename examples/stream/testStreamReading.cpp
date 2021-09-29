@@ -38,8 +38,7 @@ int main( int argc, char* argv[] )
 
   double n = 0;
   CalypStream stream;
-  //stream.open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/Kendo_c4_1024x768_yuv420p.yuv" ), 1024, 768, 0, 8, CLP_BIG_ENDIAN, 1, true );
-  stream.open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/SteamLocomotiveTrain_2560x1600_60_10bit_crop.yuv" ), 2560, 1600, 0, 10, CLP_LITTLE_ENDIAN, 1, true );
+  stream.open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/Foreman.yuv" ), 352, 288, 0, 8, CLP_BIG_ENDIAN, 1, true );
 
   while( 1 )
   {

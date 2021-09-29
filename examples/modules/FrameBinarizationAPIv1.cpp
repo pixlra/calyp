@@ -18,20 +18,20 @@
  */
 
 /**
- * \file     FrameBinarization_APIv1.cpp
+ * \file     FrameBinarizationAPIv1.cpp
  * \brief    Binarize frame module (example of APIv1)
  */
 
-#include "FrameBinarization_APIv1.h"
+#include "FrameBinarizationAPIv1.h"
 
-REGISTER_CLASS_MAKER( FrameBinarization_APIv1 )
+REGISTER_CLASS_MAKER( FrameBinarizationAPIv1 )
 
-FrameBinarization_APIv1::FrameBinarization_APIv1()
+FrameBinarizationAPIv1::FrameBinarizationAPIv1()
 {
   /* Module Definition */
   m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
   m_pchModuleCategory = "Utilities";
-  m_pchModuleName = "FrameBinarization_APIv1";
+  m_pchModuleName = "FrameBinarizationAPIv1";
   m_pchModuleLongName = "Frame Binarization API v1";
   m_pchModuleTooltip = "Binarize frame";
   m_uiNumberOfFrames = 1;
@@ -44,13 +44,13 @@ FrameBinarization_APIv1::FrameBinarization_APIv1()
   m_uiThreshold = 128;
 }
 
-void FrameBinarization_APIv1::create( CalypFrame* frame )
+void FrameBinarizationAPIv1::create( CalypFrame* frame )
 {
   m_pcBinFrame = NULL;
   m_pcBinFrame = new CalypFrame( frame->getWidth(), frame->getHeight(), CLP_GRAY, 8 );
 }
 
-CalypFrame* FrameBinarization_APIv1::process( CalypFrame* frame )
+CalypFrame* FrameBinarizationAPIv1::process( CalypFrame* frame )
 {
   const ClpPel* pPelInput = frame->getPelBufferYUV()[0][0];
   ClpPel* pPelBin = m_pcBinFrame->getPelBufferYUV()[0][0];
@@ -62,7 +62,7 @@ CalypFrame* FrameBinarization_APIv1::process( CalypFrame* frame )
   return m_pcBinFrame;
 }
 
-void FrameBinarization_APIv1::destroy()
+void FrameBinarizationAPIv1::destroy()
 {
   if( m_pcBinFrame )
     delete m_pcBinFrame;

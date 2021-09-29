@@ -219,13 +219,16 @@ void CalypAppModuleIf::show()
 #ifdef CALYP_THREADED_MODULES
     if( m_Mutex.try_lock() )
     {
-      m_pcDisplaySubWindow->setFillWindow( false );
-      m_pcDisplaySubWindow->setCurrFrame( m_pcProcessedFrame );
+      displayWindow->setFillWindow( false );
+      displayWindow->setCurrFrame( m_pcProcessedFrame );
       m_Mutex.unlock();
     }
+    else
+    {
 #endif
-    m_pcDisplaySubWindow->setFillWindow( false );
-    m_pcDisplaySubWindow->setCurrFrame( m_pcProcessedFrame );
+      displayWindow->setFillWindow( false );
+      displayWindow->setCurrFrame( m_pcProcessedFrame );
+    }
     break;
   }
   case CLP_FRAME_MEASUREMENT_MODULE:
@@ -238,7 +241,6 @@ void CalypAppModuleIf::disable()
 {
   QApplication::setOverrideCursor( Qt::WaitCursor );
 #ifdef CALYP_THREADED_MODULES
-  QMutexLocker locker( &m_Mutex );
   m_Mutex.lock();
   m_Mutex.unlock();
 #endif

@@ -770,8 +770,8 @@ bool VideoSubWindow::disableAllModules()
   while( m_associatedModules.size() > 0 )
   {
     auto module = m_associatedModules.back();
-    module->disable();
     m_associatedModules.pop_back();
+    module->disable();
   }
   return true;
 }

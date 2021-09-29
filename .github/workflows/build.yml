@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Install dependencies
-      run: sudo apt-get install gcc-10 g++-10 cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
+      run: sudo apt-get update &&  sudo apt-get install gcc-10 g++-10 cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
 
     - uses: actions/checkout@v2
 

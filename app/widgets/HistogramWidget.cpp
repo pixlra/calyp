@@ -45,52 +45,37 @@ private:
 
 public:
   HistogramWorker( QObject* parent )
-  {
-    m_parent = parent;
-  }
+      : m_parent{ parent } {}
 
-  void reset()
-  {
-    m_pcFrame = nullptr;
-  }
+  void reset() { m_pcFrame = nullptr; }
 
   void setup( std::shared_ptr<CalypFrame> frame )
   {
-    m_pcFrame = frame;
-    run();
-    //start();
+    m_pcFrame = std::move( frame );
+    EventData* eventData = new EventData( m_pcFrame.get() );  // NOLINT
+    eventData->starting = true;
+    start();
+    QCoreApplication::postEvent( m_parent, eventData );
   }
-  void run()
+  void run() override
   {
     if( m_pcFrame != nullptr && m_parent != nullptr )
     {
-      EventData* eventData = new EventData();
-      eventData->starting = true;
+      EventData* eventData = new EventData( m_pcFrame.get() );  // NOLINT
       m_pcFrame->calcHistogram();
-      eventData->starting = false;
       eventData->success = true;
-      eventData->frame = m_pcFrame;
       QCoreApplication::postEvent( m_parent, eventData );
     }
   }
 
-  /**
-	 * Custom Event
-	 */
   class EventData : public QEvent
   {
   public:
-    EventData()
-        : QEvent( QEvent::User )
-    {
-      starting = false;
-      success = false;
-      frame = NULL;
-    }
-
-    bool starting;
-    bool success;
-    std::shared_ptr<CalypFrame> frame;
+    EventData( CalypFrame* f )
+        : QEvent( QEvent::User ), frame{ f } {}
+    CalypFrame* frame{ nullptr };
+    bool starting{ false };
+    bool success{ false };
   };
 };
 
@@ -260,7 +245,7 @@ void HistogramWidget::customEvent( QEvent* event )
     return;
   }
 
-  if( ed->frame != m_fullImage && ed->frame != m_selectionImage )
+  if( ed->frame != m_fullImage.get() && ed->frame != m_selectionImage.get() )
   {
     return;
   }
@@ -321,8 +306,6 @@ void HistogramWidget::customEvent( QEvent* event )
       emit signalHistogramComputationFailed();
     }
   }
-
-  // delete ed;
 }
 ////////////////////////////////////////////////////////////////////////////////
 //                          Data Loading Functions

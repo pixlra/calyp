@@ -418,7 +418,11 @@ void FramePropertiesDock::updateDataHistogram()
 {
   if( m_bHasFrame && isVisible() )
   {
-    if( !m_bIsPlaying )
+    if( m_bIsPlaying )
+    {
+      histogramWidget->setLoadingSkipped();
+    }
+    else
     {
       if( m_cSelectionArea.isValid() )
       {
@@ -437,10 +441,7 @@ void FramePropertiesDock::updateDataHistogram()
       }
       histogramWidget->updateData( m_pcFrame, m_cSelectionArea.isValid() ? m_pcSelectedFrame : nullptr );
     }
-    else
-    {
-      histogramWidget->setLoadingSkipped();
-    }
+
     histogramWidget->update();
   }
   else

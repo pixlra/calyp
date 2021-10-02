@@ -126,7 +126,9 @@ QT5_ADD_RESOURCES(Calyp_App_RCC ${Calyp_App_RCC})
 # Instruct CMake to run moc automatically when needed.
 SET(CMAKE_AUTOMOC ON)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-enum-enum-conversion")
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-enum-enum-conversion")
+ENDIF()
 
 # Windows application icon
 IF(WIN32)

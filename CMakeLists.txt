@@ -217,10 +217,10 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # ####################################################################################################################################################
 
 SET(CMAKE_CXX_STANDARD 20)
-IF(CMAKE_COMPILER_IS_GNUCC AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+IF(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
   ADD_DEFINITIONS(-std=gnu++2a)
 ELSE()
-  ADD_DEFINITIONS(-std=gnu++20)
+  ADD_DEFINITIONS(-std=c++20)
 ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)

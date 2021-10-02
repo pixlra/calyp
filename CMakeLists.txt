@@ -217,7 +217,11 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 # ####################################################################################################################################################
 
 SET(CMAKE_CXX_STANDARD 20)
-ADD_DEFINITIONS(-std=gnu++2a)
+IF(CMAKE_COMPILER_IS_GNUCC AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+  ADD_DEFINITIONS(-std=gnu++2a)
+ELSE()
+  ADD_DEFINITIONS(-std=gnu++20)
+ENDIF()
 
 IF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No build type selected, default to Release")
@@ -237,9 +241,7 @@ ADD_DEFINITIONS(
 # if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic") endif()
 
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  IF(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0.0")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wlogical-op")
-  ENDIF()
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wlogical-op")
   # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 ENDIF()
 

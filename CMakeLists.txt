@@ -57,6 +57,7 @@ OPTION(USE_DYNLOAD "Use dynamic load of modules" ON)
 OPTION(USE_SSE "Build with SSE support" ON)
 OPTION(USE_WERROR "Warnings as errors" OFF)
 OPTION(USE_STATIC "Use static libs" OFF)
+OPTION(USE_IWYU "Use include what you use tool" OFF)
 
 # ####################################################################################################################################################
 # Release configuration
@@ -237,10 +238,6 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -funroll-loops")
 
 # if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic") endif()
 
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wlogical-op")
-ENDIF()
-
 IF(USE_WERROR)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 ENDIF()
@@ -251,6 +248,11 @@ IF(BUILD_WITH_SANITIZERS)
 ENDIF()
 IF(BUILD_WITH_THREAD_SANITIZER)
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread")
+ENDIF()
+
+IF(USE_IWYU)
+  FIND_PROGRAM(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
+  SET(CXX_INCLUDE_WHAT_YOU_USE ON)
 ENDIF()
 
 # ####################################################################################################################################################

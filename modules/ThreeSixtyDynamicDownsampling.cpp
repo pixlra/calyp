@@ -59,7 +59,7 @@ ThreeSixtyDynamicDownsampling::ThreeSixtyDynamicDownsampling()
   m_uiFaceHeight = 0;
 }
 
-void processFPSString( const ClpString& fps, ClpVideoFPStruct* pcFPSStruct )
+void processFPSString( const std::string& fps, ClpVideoFPStruct* pcFPSStruct )
 {
   std::istringstream ss( fps );
   ss >> pcFPSStruct->numFaces;

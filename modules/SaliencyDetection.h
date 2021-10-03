@@ -26,7 +26,7 @@
 #define __SALIENCYDETECTION_H__
 
 // CalypLib
-#include "lib/CalypOpenCVModuleIf.h"
+#include "lib/CalypModuleIf.h"
 
 // OpenCV
 #include <opencv2/core/core.hpp>

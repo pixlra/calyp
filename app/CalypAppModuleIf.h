@@ -84,7 +84,7 @@ public:
 
   CalypModuleIf* getModule() { return m_pcModule.get(); }
   unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
-  ClpString moduleInfo() { return m_pcModule->moduleInfo(); }
+  std::string moduleInfo() { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool process();

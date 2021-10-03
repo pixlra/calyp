@@ -8,7 +8,7 @@ EXPORT(PACKAGE MyLib)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-SET(Calyp_Lib_Frame_SRCS CalypPixel.cpp PixelFormats.h PixelFormats.cpp CalypFrame.h CalypFrame.cpp CalypPlane.h)
+SET(Calyp_Lib_Frame_SRCS CalypPixel.cpp PixelFormats.h PixelFormats.cpp CalypFrame.h CalypFrame.cpp)
 
 SET(Calyp_Lib_Stream_SRCS
     CalypStream.h
@@ -57,7 +57,7 @@ IF(USE_OPENCV)
   LIST(APPEND CALYP_LIB_LINKER_DEPENDENCIES ${OpenCV_LIBRARIES})
 ENDIF()
 
-SET(Calyp_Lib_HEADERS CalypDefs.h CalypFrame.h CalypStream.h CalypOptions.h CalypModuleIf.h CalypOpenCVModuleIf.h)
+SET(Calyp_Lib_HEADERS CalypFrame.h CalypStream.h CalypOptions.h CalypModuleIf.h)
 
 INCLUDE(CMakePackageConfigHelpers)
 

@@ -35,12 +35,12 @@ protected:
   static void SetUpTestCase()
   {
     pcStreamPast = std::make_unique<CalypStream>();
-    pcStreamPast->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
+    pcStreamPast->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                         CLP_BIG_ENDIAN, 1, true );
     pcFramePast = pcStreamPast->getCurrFrame();
 
     pcStreamFuture = std::make_unique<CalypStream>();
-    pcStreamFuture->open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/BasketballDrill_F15_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
+    pcStreamFuture->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F15_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
                           CLP_BIG_ENDIAN, 1, true );
     pcFrameFuture = pcStreamFuture->getCurrFrame();
   }

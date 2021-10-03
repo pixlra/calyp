@@ -22,10 +22,9 @@
  * \brief    Calyp modules interface for OpenCV
  */
 
-#include "CalypOpenCVModuleIf.h"
+#include "CalypModuleIf.h"
 
 // OpenCV
-#include <memory>
 #include <opencv2/opencv.hpp>
 
 bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )

@@ -40,10 +40,10 @@ class StreamHandlerOpenCV : public CalypStreamHandlerIf
 public:
   StreamHandlerOpenCV();
   ~StreamHandlerOpenCV() {}
-  bool openHandler( ClpString strFilename, bool bInput );
+  bool openHandler( std::string strFilename, bool bInput );
   void closeHandler();
   bool configureBuffer( const CalypFrame& pcFrame );
-  bool seek( ClpULong iFrameNum );
+  bool seek( std::uint64_t iFrameNum );
   bool read( CalypFrame& pcFrame );
   bool write( const CalypFrame& pcFrame );
 

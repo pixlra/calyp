@@ -79,12 +79,12 @@ private:
     STATISTICS_OPERATION,
   };
 
-  ClpULong m_uiNumberOfFrames;
+  std::uint64_t m_uiNumberOfFrames;
   unsigned int m_uiNumberOfComponents;
   std::vector<CalypStream*> m_apcInputStreams;
   std::vector<CalypStream*> m_apcOutputStreams;
 
-  void reportStreamInfo( const CalypStream* stream, ClpString strPrefix = "" );
+  void reportStreamInfo( const CalypStream* stream, std::string strPrefix = "" );
   int openInputs();
   std::vector<CalypFrame*> readInput();
 
@@ -92,7 +92,7 @@ private:
   FpProcess m_fpProcess;
 
   long long int m_iFrameNum;
-  std::vector<ClpString> m_pcOutputFileNames;
+  std::vector<std::string> m_pcOutputFileNames;
   int SaveOperation();
 
   int RateReductionOperation();

@@ -68,7 +68,7 @@ public:
   virtual ~ThreeSixtyDownsampling() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
-  ClpString moduleInfo();
+  std::string moduleInfo();
   bool keyPressed( enum Module_Key_Supported value );
   void destroy();
 };

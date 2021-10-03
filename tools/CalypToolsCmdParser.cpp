@@ -109,7 +109,7 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 
 void CalypToolsCmdParser::listModuleHelp()
 {
-  ClpString moduleName = m_strModule;
+  std::string moduleName = m_strModule;
 
   CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
   CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
@@ -154,7 +154,7 @@ void CalypToolsCmdParser::listModules()
     printf( "%-33s", it->first );
     if( bDetailed )
     {
-      ClpString ModuleNameString;
+      std::string ModuleNameString;
       auto pcCurrModuleIf = it->second();
 
       if( pcCurrModuleIf->m_pchModuleCategory )

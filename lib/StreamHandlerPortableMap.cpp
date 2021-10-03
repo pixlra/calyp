@@ -47,7 +47,7 @@ std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedWriteFormats()
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 
-bool StreamHandlerPortableMap::openHandler( ClpString strFilename, bool bInput )
+bool StreamHandlerPortableMap::openHandler( std::string strFilename, bool bInput )
 {
   m_bIsInput = bInput;
   m_pFile = NULL;
@@ -131,7 +131,7 @@ bool StreamHandlerPortableMap::configureBuffer( const CalypFrame& pcFrame )
   return true;
 }
 
-bool StreamHandlerPortableMap::seek( ClpULong iFrameNum )
+bool StreamHandlerPortableMap::seek( std::uint64_t iFrameNum )
 {
   // m_uiCurrFrameFileIdx =
   return true;

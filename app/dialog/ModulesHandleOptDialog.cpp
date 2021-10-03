@@ -72,13 +72,13 @@ public:
     }
     return m_pcValue->text();
   }
-  const ClpString& getName() { return m_cName; }
+  const std::string& getName() { return m_cName; }
 
 private:
   QLineEdit* m_pcValue;
   QCheckBox* m_pcChecked;
   QLabel* m_pcDescription;
-  ClpString m_cName;
+  std::string m_cName;
 };
 
 ModulesHandleOptDialog::ModulesHandleOptDialog( QWidget* parent, CalypAppModuleIf* pcCurrModuleIf )
@@ -121,8 +121,8 @@ int ModulesHandleOptDialog::runConfiguration()
     return QDialog::Rejected;
   }
 
-  std::vector<ClpString> argsArray;
-  ClpString optionString;
+  std::vector<std::string> argsArray;
+  std::string optionString;
   QString valueString( "" );
 
   for( int i = 0; i < m_apcOptionList.size(); i++ )

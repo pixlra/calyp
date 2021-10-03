@@ -38,7 +38,7 @@ int main( int argc, char* argv[] )
 
   double n = 0;
   CalypStream stream;
-  stream.open( ClpString( CALYP_TEST_DATA_DIR ) + ClpString( "/Foreman.yuv" ), 352, 288, 0, 8, CLP_BIG_ENDIAN, 1, true );
+  stream.open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/Foreman.yuv" ), 352, 288, 0, 8, CLP_BIG_ENDIAN, 1, true );
 
   while( 1 )
   {

@@ -176,7 +176,7 @@ public:
   // std::deque<std::shared_ptr<CalypFrame>> frameFifo;
   // std::size_t bufferIdx{ 0 };
 
-  ClpString cFilename;
+  std::string cFilename;
   long long int iCurrFrameNum;
   bool bLoadAll;
 
@@ -239,13 +239,13 @@ public:
   }
 };
 
-std::vector<ClpString> CalypStreamFormat::getExts()
+std::vector<std::string> CalypStreamFormat::getExts()
 {
-  std::vector<ClpString> arrayExt;
-  ClpString::size_type prev_pos = 0, pos = 0;
-  while( ( pos = formatExt.find( ',', pos ) ) != ClpString::npos )
+  std::vector<std::string> arrayExt;
+  std::string::size_type prev_pos = 0, pos = 0;
+  while( ( pos = formatExt.find( ',', pos ) ) != std::string::npos )
   {
-    ClpString substring( formatExt.substr( prev_pos, pos - prev_pos ) );
+    std::string substring( formatExt.substr( prev_pos, pos - prev_pos ) );
     arrayExt.push_back( substring );
     prev_pos = ++pos;
   }
@@ -253,9 +253,9 @@ std::vector<ClpString> CalypStreamFormat::getExts()
   return arrayExt;
 }
 
-CreateStreamHandlerFn CalypStream::findStreamHandler( ClpString strFilename, bool bRead )
+CreateStreamHandlerFn CalypStream::findStreamHandler( std::string strFilename, bool bRead )
 {
-  ClpString currExt = strFilename.substr( strFilename.find_last_of( "." ) + 1 );
+  std::string currExt = strFilename.substr( strFilename.find_last_of( "." ) + 1 );
   currExt = clpLowercase( currExt );
 
   std::vector<CalypStreamFormat> supportedFmts;
@@ -269,14 +269,14 @@ CreateStreamHandlerFn CalypStream::findStreamHandler( ClpString strFilename, boo
   }
   for( unsigned int i = 0; i < supportedFmts.size(); i++ )
   {
-    std::vector<ClpString> arrayExt = supportedFmts[i].getExts();
-    for( std::vector<ClpString>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
+    std::vector<std::string> arrayExt = supportedFmts[i].getExts();
+    for( std::vector<std::string>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
     {
       if( currExt != "" && currExt == *e )
       {
         return supportedFmts[i].formatFct;
       }
-      else if( strFilename.find( *e ) != ClpString::npos )
+      else if( strFilename.find( *e ) != std::string::npos )
       {
         return supportedFmts[i].formatFct;
       }
@@ -297,16 +297,16 @@ CalypStream::CalypStream()
 
 CalypStream::~CalypStream() = default;
 
-ClpString CalypStream::getFormatName() const
+std::string CalypStream::getFormatName() const
 {
   return !d->handler ? "" : d->handler->getFormatName();
 }
-ClpString CalypStream::getCodecName() const
+std::string CalypStream::getCodecName() const
 {
   return !d->handler ? "" : d->handler->getCodecName();
 }
 
-bool CalypStream::open( ClpString filename, ClpString resolution, ClpString input_format_name, unsigned int bitsPel, int endianness, bool hasNegative,
+bool CalypStream::open( std::string filename, std::string resolution, std::string input_format_name, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, bool bInput )
 {
   unsigned int width = 0;
@@ -332,13 +332,13 @@ bool CalypStream::open( ClpString filename, ClpString resolution, ClpString inpu
   return open( filename, width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput );
 }
 
-bool CalypStream::open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
                         unsigned int frame_rate, bool bInput )
 {
   return open( filename, width, height, input_format, bitsPel, endianness, false, frame_rate, bInput );
 }
 
-bool CalypStream::open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, bool bInput )
 {
   if( d->isInit )
@@ -441,7 +441,7 @@ bool CalypStream::reload()
   if( !d->handler->openHandler( d->cFilename, d->isInput ) )
   {
     throw CalypFailure( "CalypStream", "Cannot open stream " + d->cFilename + " with the " +
-                                           ClpString( d->handler->m_pchHandlerName ) + " handler" );
+                                           std::string( d->handler->m_pchHandlerName ) + " handler" );
   }
   const CalypFrame* refFrame = d->frameBuffer->ref();
   d->handler->m_uiNBytesPerFrame = refFrame->getBytesPerFrame();
@@ -463,7 +463,7 @@ bool CalypStream::reload()
   return true;
 }
 
-ClpString CalypStream::getFileName() const
+std::string CalypStream::getFileName() const
 {
   return d->cFilename;
 }
@@ -473,7 +473,7 @@ bool CalypStream::isNative() const
   return d->handler->m_bNative;
 }
 
-ClpULong CalypStream::getFrameNum() const
+std::uint64_t CalypStream::getFrameNum() const
 {
   return d->handler->m_uiTotalNumberFrames;
 }
@@ -633,12 +633,12 @@ void CalypStream::writeFrame( const CalypFrame& pcFrame )
   return;
 }
 
-bool CalypStream::saveFrame( const ClpString& filename )
+bool CalypStream::saveFrame( const std::string& filename )
 {
   return saveFrame( filename, *getCurrFrame() );
 }
 
-bool CalypStream::saveFrame( const ClpString& filename, const CalypFrame& saveFrame )
+bool CalypStream::saveFrame( const std::string& filename, const CalypFrame& saveFrame )
 {
   CalypStream auxSaveStream;
   if( !auxSaveStream.open( filename, saveFrame.getWidth(), saveFrame.getHeight(), saveFrame.getPelFormat(),

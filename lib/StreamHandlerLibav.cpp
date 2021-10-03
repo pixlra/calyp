@@ -63,7 +63,7 @@ StreamHandlerLibav::StreamHandlerLibav()
   m_pchHandlerName = "FFmpeg";
 }
 
-bool StreamHandlerLibav::openHandler( ClpString strFilename, bool bInput )
+bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
 {
   const char* filename = strFilename.c_str();
 
@@ -332,7 +332,7 @@ bool StreamHandlerLibav::configureBuffer( const CalypFrame& pcFrame )
 
 void StreamHandlerLibav::calculateFrameNumber()
 {
-  ClpULong num_frames;
+  std::uint64_t num_frames;
   /*if( m_cStream->nb_frames )
   {
     num_frames = m_cStream->nb_frames;
@@ -439,7 +439,7 @@ bool StreamHandlerLibav::write( const CalypFrame& pcFrame )
   return false;
 }
 
-bool StreamHandlerLibav::seek( ClpULong iFrameNum )
+bool StreamHandlerLibav::seek( std::uint64_t iFrameNum )
 {
   if( m_uiTotalNumberFrames == 1 )
     return true;

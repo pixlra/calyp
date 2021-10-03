@@ -63,7 +63,7 @@ StreamHandlerOpenCV::StreamHandlerOpenCV()
   pcVideoCapture = NULL;
 }
 
-bool StreamHandlerOpenCV::openHandler( ClpString strFilename, bool bInput )
+bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
 {
   m_cFilename = strFilename;
   if( bInput )
@@ -72,12 +72,12 @@ bool StreamHandlerOpenCV::openHandler( ClpString strFilename, bool bInput )
     /*
      * Special filename to handle webcam input
      */
-    if( m_cFilename.find( "/dev/video" ) != ClpString::npos )
+    if( m_cFilename.find( "/dev/video" ) != std::string::npos )
     {
       int iDeviceId = 0;
-      if( m_cFilename.find( "/dev/video0" ) != ClpString::npos )
+      if( m_cFilename.find( "/dev/video0" ) != std::string::npos )
         iDeviceId = 0;
-      else if( m_cFilename.find( "/dev/video1" ) != ClpString::npos )
+      else if( m_cFilename.find( "/dev/video1" ) != std::string::npos )
         iDeviceId = 1;
 
       m_strFormatName = "DEV";
@@ -130,7 +130,7 @@ bool StreamHandlerOpenCV::configureBuffer( const CalypFrame& pcFrame )
   return true;
 }
 
-bool StreamHandlerOpenCV::seek( ClpULong iFrameNum )
+bool StreamHandlerOpenCV::seek( std::uint64_t iFrameNum )
 {
   // m_uiCurrFrameFileIdx =
   return true;

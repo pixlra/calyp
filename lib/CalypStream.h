@@ -38,16 +38,16 @@ typedef CalypStreamHandlerIf* ( *CreateStreamHandlerFn )( void );
 
 struct CalypStreamFormat
 {
-  ClpString formatName;
-  ClpString formatExt;
-  std::vector<ClpString> getExts();
-  ClpString formatPattern;
+  std::string formatName;
+  std::string formatExt;
+  std::vector<std::string> getExts();
+  std::string formatPattern;
   CreateStreamHandlerFn formatFct;
 };
 
 struct CalypStandardResolution
 {
-  ClpString shortName;
+  std::string shortName;
   unsigned int uiWidth;
   unsigned int uiHeight;
 };
@@ -63,7 +63,7 @@ public:
   static std::vector<CalypStreamFormat> supportedReadFormats();
   static std::vector<CalypStreamFormat> supportedWriteFormats();
 
-  static CreateStreamHandlerFn findStreamHandler( ClpString strFilename, bool bRead );
+  static CreateStreamHandlerFn findStreamHandler( std::string strFilename, bool bRead );
 
   static std::vector<CalypStandardResolution> stdResolutionSizes();
 
@@ -74,21 +74,21 @@ public:
   CalypStream& operator=( const CalypStream& other ) = delete;
   ~CalypStream();
 
-  ClpString getFormatName() const;
-  ClpString getCodecName() const;
+  std::string getFormatName() const;
+  std::string getCodecName() const;
 
-  bool open( ClpString filename, ClpString resolution, ClpString input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
+  bool open( std::string filename, std::string resolution, std::string input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
-  bool open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
+  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
              bool bInput );
-  bool open( ClpString filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
+  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
 
   bool reload();
 
   bool isNative() const;
-  ClpString getFileName() const;
-  ClpULong getFrameNum() const;
+  std::string getFileName() const;
+  std::uint64_t getFrameNum() const;
   unsigned int getWidth() const;
   unsigned int getHeight() const;
   unsigned int getBitsPerPixel() const;
@@ -112,8 +112,8 @@ public:
 
   void writeFrame( const CalypFrame& pcFrame );
 
-  bool saveFrame( const ClpString& filename );
-  static bool saveFrame( const ClpString& filename, const CalypFrame& saveFrame );
+  bool saveFrame( const std::string& filename );
+  static bool saveFrame( const std::string& filename, const CalypFrame& saveFrame );
 
   bool seekInputRelative( bool bIsFoward );
   bool seekInput( unsigned long new_frame_num );

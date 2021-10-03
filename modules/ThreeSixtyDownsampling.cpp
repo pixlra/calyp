@@ -88,9 +88,9 @@ ThreeSixtyDownsampling::ThreeSixtyDownsampling()
   //#endif
 }
 
-ClpString ThreeSixtyDownsampling::moduleInfo()
+std::string ThreeSixtyDownsampling::moduleInfo()
 {
-  ClpString info( "" );
+  std::string info( "" );
   info += "Interpolation: ";
   switch( m_iInterpolation )
   {

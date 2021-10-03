@@ -44,7 +44,7 @@ std::vector<CalypStreamFormat> StreamHandlerRaw::supportedWriteFormats()
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 
-bool StreamHandlerRaw::openHandler( ClpString strFilename, bool bInput )
+bool StreamHandlerRaw::openHandler( std::string strFilename, bool bInput )
 {
   m_bIsInput = bInput;
   m_pFile = NULL;
@@ -82,7 +82,7 @@ void StreamHandlerRaw::calculateFrameNumber()
   }
 }
 
-bool StreamHandlerRaw::seek( ClpULong iFrameNum )
+bool StreamHandlerRaw::seek( std::uint64_t iFrameNum )
 {
   if( m_bIsInput && m_pFile )
   {

@@ -95,9 +95,9 @@ bool MainWindow::parseArgs( int argc, char* argv[] )
   bool bRet = false;
   CalypOptions pcCmdParser;
 
-  std::vector<ClpString> m_apcInputs;
-  ClpString strResolution( "" );
-  ClpString strPelFmt( "" );
+  std::vector<std::string> m_apcInputs;
+  std::string strResolution( "" );
+  std::string strPelFmt( "" );
 
   pcCmdParser.addOptions()                      /**/
       ( "input,i", m_apcInputs, "input file" )  /**/
@@ -261,12 +261,12 @@ QStringList MainWindow::showFileDialog( bool bRead )
 
   for( unsigned int i = 0; i < supportedFmts.size(); i++ )
   {
-    std::vector<ClpString> arrayExt = supportedFmts[i].getExts();
+    std::vector<std::string> arrayExt = supportedFmts[i].getExts();
     if( arrayExt.size() > 0 )
     {
       QString currFmt( QString::fromStdString( supportedFmts[i].formatName ) );
       currFmt.append( " (" );
-      for( std::vector<ClpString>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
+      for( std::vector<std::string>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
       {
         supported.append( " *." );
         currFmt.append( "*." );

@@ -87,36 +87,36 @@ public:
   virtual ~CalypStreamHandlerIf() {}
   virtual void Delete() = 0;
 
-  virtual bool openHandler( ClpString strFilename, bool bInput ) = 0;
+  virtual bool openHandler( std::string strFilename, bool bInput ) = 0;
   virtual void closeHandler() = 0;
   virtual bool configureBuffer( const CalypFrame& pcFrame ) = 0;
-  virtual bool seek( ClpULong iFrameNum ) = 0;
+  virtual bool seek( std::uint64_t iFrameNum ) = 0;
   virtual bool read( CalypFrame& pcFrame ) = 0;
   virtual bool write( const CalypFrame& pcFrame ) = 0;
 
   virtual void calculateFrameNumber(){};
 
-  ClpString getFormatName() { return m_strFormatName; }
-  ClpString getCodecName() { return m_strCodecName; }
+  std::string getFormatName() { return m_strFormatName; }
+  std::string getCodecName() { return m_strCodecName; }
 
 protected:
   const char* m_pchHandlerName;
 
-  ClpString m_strFormatName;
-  ClpString m_strCodecName;
+  std::string m_strFormatName;
+  std::string m_strCodecName;
   bool m_bIsInput;
   bool m_bNative;
-  ClpString m_cFilename;
+  std::string m_cFilename;
   unsigned int m_uiWidth;
   unsigned int m_uiHeight;
   int m_iPixelFormat;
   unsigned int m_uiBitsPerPixel;
   int m_iEndianness;
   double m_dFrameRate;
-  ClpULong m_uiCurrFrameFileIdx;
-  ClpULong m_uiTotalNumberFrames;
+  std::uint64_t m_uiCurrFrameFileIdx;
+  std::uint64_t m_uiTotalNumberFrames;
   std::vector<ClpByte> m_pStreamBuffer;
-  ClpULong m_uiNBytesPerFrame;
+  std::uint64_t m_uiNBytesPerFrame;
   bool m_isEOF;
 };
 

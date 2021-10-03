@@ -47,7 +47,7 @@ public:
   bool create( std::vector<CalypFrame*> apcFrameList );
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
   bool keyPressed( enum Module_Key_Supported value );
-  ClpString moduleInfo();
+  std::string moduleInfo();
   void destroy();
 };
 

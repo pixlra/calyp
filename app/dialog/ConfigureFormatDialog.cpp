@@ -395,7 +395,7 @@ int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, un
   int sampling = 0;
   if( rInputFormat >= 0 )
   {
-    ClpString pelFmtName = CalypFrame::supportedPixelFormatListNames()[rInputFormat];
+    std::string pelFmtName = CalypFrame::supportedPixelFormatListNames()[rInputFormat];
     for( unsigned int j = 0; j < CalypFrame::supportedColorSpacesListNames().size(); j++ )
     {
       for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames( j ).size(); i++ )
@@ -442,7 +442,7 @@ int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, un
   rHeight = m_spinBoxheight->value();
   colorSpace = m_comboBoxColorSpace->currentIndex();
   sampling = m_comboBoxPixelFormat->currentIndex();
-  ClpString pelFmtName = CalypFrame::supportedPixelFormatListNames( colorSpace )[sampling];
+  std::string pelFmtName = CalypFrame::supportedPixelFormatListNames( colorSpace )[sampling];
   for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames().size(); i++ )
   {
     if( pelFmtName == CalypFrame::supportedPixelFormatListNames()[i] )

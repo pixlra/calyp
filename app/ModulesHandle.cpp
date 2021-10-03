@@ -510,12 +510,12 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
 
       for( unsigned int i = 0; i < supportedFmts.size(); i++ )
       {
-        std::vector<ClpString> arrayExt = supportedFmts[i].getExts();
+        std::vector<std::string> arrayExt = supportedFmts[i].getExts();
         if( arrayExt.size() > 0 )
         {
           QString currFmt( QString::fromStdString( supportedFmts[i].formatName ) );
           currFmt.append( " (" );
-          for( std::vector<ClpString>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
+          for( std::vector<std::string>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
           {
             supported.append( " *." );
             currFmt.append( "*." );
@@ -554,8 +554,8 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
   if( pcCurrModuleIf->m_pcModuleStream )
   {
     unsigned int numberOfWindows = pcCurrModuleIf->m_pcModule->m_uiNumberOfFrames;
-    ClpULong currFrames = 0;
-    ClpULong numberOfFrames = -1;
+    std::uint64_t currFrames = 0;
+    std::uint64_t numberOfFrames = -1;
     for( unsigned int i = 0; i < numberOfWindows; i++ )
     {
       currFrames = pcCurrModuleIf->m_pcSubWindow[i]->getInputStream()->getFrameNum();

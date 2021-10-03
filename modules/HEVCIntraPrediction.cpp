@@ -199,9 +199,9 @@ bool HEVCIntraPrediction::keyPressed( enum Module_Key_Supported value )
   return false;
 }
 
-ClpString HEVCIntraPrediction::moduleInfo()
+std::string HEVCIntraPrediction::moduleInfo()
 {
-  return ClpString( "Intra mode: " ) + std::to_string( m_uiMode );
+  return std::string( "Intra mode: " ) + std::to_string( m_uiMode );
 }
 
 void HEVCIntraPrediction::destroy()

@@ -56,17 +56,17 @@
 class OptionBase
 {
 public:
-  OptionBase( const ClpString& name, const ClpString& desc, const ClpString& def )
+  OptionBase( const std::string& name, const std::string& desc, const std::string& def )
       : arg_count( 0 ), opt_string( name ), opt_desc( desc ), opt_defaults( def ) {}
   virtual ~OptionBase() {}
   /* parse argument arg, to obtain a value for the option */
-  virtual void parse( const ClpString& arg ) = 0;
+  virtual void parse( const std::string& arg ) = 0;
   int count() { return arg_count; }
   bool isBinary() { return is_binary; }
   int arg_count;
-  ClpString opt_string;
-  ClpString opt_desc;
-  ClpString opt_defaults;
+  std::string opt_string;
+  std::string opt_desc;
+  std::string opt_defaults;
   bool is_binary;
 };
 
@@ -82,25 +82,25 @@ public:
   {
     Option();
     ~Option();
-    std::list<ClpString> opt_long;
-    std::list<ClpString> opt_short;
+    std::list<std::string> opt_long;
+    std::list<std::string> opt_short;
     OptionBase* opt;
   };
   typedef std::list<Option*> OptionsList;
 
-  CalypOptions( const ClpString& name = "" );
+  CalypOptions( const std::string& name = "" );
   ~CalypOptions();
 
   int parse( unsigned int argc, char* argv[] );
-  void parse( std::vector<ClpString> args_array );
+  void parse( std::vector<std::string> args_array );
 
   std::list<const char*>& getUnhandledArgs() { return m_aUnhandledArgs; }
   void doHelp( std::ostream& out, unsigned columns = 80 );
 
-  OptionBase* operator[]( const ClpString& optName );
-  OptionBase* getOption( const ClpString& optName );
+  OptionBase* operator[]( const std::string& optName );
+  OptionBase* getOption( const std::string& optName );
 
-  bool hasOpt( const ClpString& optName );
+  bool hasOpt( const std::string& optName );
 
   OptionsList getOptionList() { return opt_list; }
   void addDefaultOptions();
@@ -113,7 +113,7 @@ public:
    *   with default_val as the default value
    *   with desc as an optional help description
    */
-  CalypOptions& operator()( const ClpString& name, const ClpString& desc );
+  CalypOptions& operator()( const std::string& name, const std::string& desc );
 
   /**
    * Add option described by name to the parent Options list,
@@ -122,28 +122,28 @@ public:
    *   description and range along with default value
    */
   template <typename T>
-  CalypOptions& operator()( const ClpString& name, T& storage, const ClpString& desc );
+  CalypOptions& operator()( const std::string& name, T& storage, const std::string& desc );
 
   template <typename T>
-  CalypOptions& operator()( const ClpString& name, T& storage, const ClpString& desc, const ClpString& defaults );
+  CalypOptions& operator()( const std::string& name, T& storage, const std::string& desc, const std::string& defaults );
 
   bool checkListingOpts();
 
 private:
-  typedef std::map<ClpString, OptionsList> OptionMap;
+  typedef std::map<std::string, OptionsList> OptionMap;
   OptionMap opt_long_map;
   OptionMap opt_short_map;
 
   OptionsList opt_list;
 
-  ClpString m_cOptionGroupName;
+  std::string m_cOptionGroupName;
   bool m_bAllowUnkonw;
   std::list<const char*> m_aUnhandledArgs;
 
-  bool storePair( bool allow_long, bool allow_short, const ClpString& name, const ClpString& value );
-  bool storePair( const ClpString& name, const ClpString& value );
+  bool storePair( bool allow_long, bool allow_short, const std::string& name, const std::string& value );
+  bool storePair( const std::string& name, const std::string& value );
   unsigned int parseLONG( unsigned int argc, char* argv[] );
-  unsigned int parseLONG( ClpString arg );
+  unsigned int parseLONG( std::string arg );
   unsigned int parseSHORT( unsigned int argc, char* argv[] );
   std::list<const char*> scanArgv( unsigned int argc, char* argv[] );
 };

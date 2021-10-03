@@ -49,7 +49,7 @@ CalypTools::~CalypTools() = default;
 
 #define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
 
-void CalypTools::reportStreamInfo( const CalypStream* stream, ClpString strPrefix )
+void CalypTools::reportStreamInfo( const CalypStream* stream, std::string strPrefix )
 {
   log( CLP_LOG_INFO, "%sStream name: %s \n", strPrefix.c_str(), stream->getFileName().c_str() );
   log( CLP_LOG_INFO, "%sResolution: %dx%d@%d \n", strPrefix.c_str(), stream->getWidth(), stream->getHeight(), stream->getFrameRate() );
@@ -63,10 +63,10 @@ int CalypTools::openInputs()
    */
   if( Opts().hasOpt( "input" ) )
   {
-    std::vector<ClpString> inputFileNames = m_apcInputs;
+    std::vector<std::string> inputFileNames = m_apcInputs;
 
-    ClpString resolutionString( "" );
-    ClpString fmtString( "yuv420p" );
+    std::string resolutionString( "" );
+    std::string fmtString( "yuv420p" );
     unsigned int uiBitsPerPixel = 8;
     unsigned int uiEndianness = 0;
     bool hasNegativeValues = false;
@@ -273,7 +273,7 @@ int CalypTools::Open( int argc, char* argv[] )
    */
   if( Opts().hasOpt( "quality" ) )
   {
-    ClpString qualityMetric = m_strQualityMetric;
+    std::string qualityMetric = m_strQualityMetric;
     if( m_apcInputStreams.size() < 2 )
     {
       log( CLP_LOG_ERROR, "Invalid number of inputs! " );
@@ -301,7 +301,7 @@ int CalypTools::Open( int argc, char* argv[] )
    */
   if( Opts().hasOpt( "module" ) )
   {
-    ClpString moduleName = m_strModule;
+    std::string moduleName = m_strModule;
 
     CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
     CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
@@ -359,7 +359,7 @@ int CalypTools::Open( int argc, char* argv[] )
     if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
     {
       // Check outputs
-      std::vector<ClpString> outputFileNames;
+      std::vector<std::string> outputFileNames;
       if( Opts().hasOpt( "output" ) )
         outputFileNames.push_back( m_strOutput );
 
@@ -488,7 +488,7 @@ int CalypTools::QualityOperation()
   double adAverageQuality[MAX_NUMBER_INPUTS - 1][MAX_NUMBER_CHANNELS];
   double dQuality;
 
-  ClpString metric_fmt = " ";
+  std::string metric_fmt = " ";
   switch( m_uiQualityMetric )
   {
   case CalypFrame::PSNR_METRIC:

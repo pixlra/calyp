@@ -66,19 +66,19 @@ protected:
   bool m_bShowVersion;
   bool m_bQuiet;
 
-  std::vector<ClpString> m_apcInputs;
-  std::vector<ClpString> m_strResolution;
-  std::vector<ClpString> m_strPelFmt;
-  std::vector<ClpString> m_strBitsPerPixel;
-  std::vector<ClpString> m_strEndianness;
-  std::vector<ClpString> m_strHasNegativeValues;
-  ClpString m_strOutput;
+  std::vector<std::string> m_apcInputs;
+  std::vector<std::string> m_strResolution;
+  std::vector<std::string> m_strPelFmt;
+  std::vector<std::string> m_strBitsPerPixel;
+  std::vector<std::string> m_strEndianness;
+  std::vector<std::string> m_strHasNegativeValues;
+  std::string m_strOutput;
   long m_iFrames;
   unsigned m_uiOutEndianness;
 
   int m_iRateReductionFactor;
-  ClpString m_strQualityMetric;
-  ClpString m_strModule;
+  std::string m_strQualityMetric;
+  std::string m_strModule;
 
   bool m_bListPelFmts;
   bool m_bListQuality;

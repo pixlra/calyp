@@ -26,14 +26,76 @@
 #ifndef __CALYPFRAME_H__
 #define __CALYPFRAME_H__
 
+#include <cstdint>
+#include <memory>
+#include <span>
+#include <string>
 #include <vector>
-
-#include "CalypDefs.h"
 
 namespace cv
 {
 class Mat;
 }
+
+using ClpPel = std::uint16_t;
+using ClpByte = std::uint8_t;
+
+/**
+ * \enum CalypColorSpace
+ * \brief List of supported color spaces
+ * \ingroup CalypLibGrp
+ */
+enum CalypColorSpace
+{
+  CLP_COLOR_INVALID = -1,  //!< Invalid
+  CLP_COLOR_YUV = 0,       //!< YUV
+  CLP_COLOR_RGB = 1,       //!< RGB
+  CLP_COLOR_GRAY = 2,      //!< Grayscale
+  CLP_COLOR_RGBA = 3,      //!< RGB + Alpha
+  CLP_COLOR_MAX = 255,     //!< Account for future formats
+};
+
+/**
+ * \enum CalypPixelFormats
+ * \brief List of supported pixel formats
+ * \ingroup CalypLibGrp
+ */
+enum CalypPixelFormats
+{
+  CLP_INVALID_FMT = -1,  //!< Invalid
+  CLP_YUV420P = 0,       //!< YUV 420 progressive
+  CLP_YUV422P,           //!< YUV 422 progressive
+  CLP_YUV444P,           //!< YUV 444 progressive
+  CLP_YUYV422,           //!< YUV 422 interleaved
+  CLP_GRAY,              //!< Grayscale
+  CLP_RGB24P,            //!< RGB 32 bpp progressive
+  CLP_RGB24,             //!< RGB 32 bpp
+  CLP_BGR24,             //!< BGR 32 bpp
+  CLP_RGBA32,            //!< RGBA 32 bpp
+  CLP_BGRA32,            //!< BGRA 32 bpp
+  CLP_MAX_FMT = 255,     //!< Account for future formats
+};
+
+enum CLP_YUV_Components
+{
+  CLP_LUMA = 0,
+  CLP_CHROMA_U,
+  CLP_CHROMA_V,
+};
+
+enum CLP_RGB_Components
+{
+  CLP_COLOR_R = 0,
+  CLP_COLOR_G,
+  CLP_COLOR_B,
+  CLP_COLOR_A,
+};
+
+enum CLP_Endianness
+{
+  CLP_BIG_ENDIAN = 0,
+  CLP_LITTLE_ENDIAN = 1,
+};
 
 #define CHROMASHIFT( SIZE, SHIFT ) (unsigned int)( -( ( -( (int)( SIZE ) ) ) >> ( SHIFT ) ) )
 
@@ -80,6 +142,48 @@ private:
 };
 
 /**
+ * \class    CalypPlane
+ * \ingroup	 CalypLibGrp CalypPlaneGrp
+ * \brief    Frame handling class
+ */
+template <typename T>
+class CalypPlane
+{
+public:
+  CalypPlane() noexcept = default;
+  CalypPlane( std::size_t width, std::size_t height ) noexcept { resize( width, height ); }
+
+  ~CalypPlane() noexcept = default;
+  CalypPlane( const CalypPlane& buffer ) noexcept = default;
+  CalypPlane( CalypPlane&& buffer ) noexcept = default;
+  auto operator=( const CalypPlane& buffer ) -> CalypPlane& = default;
+  auto operator=( CalypPlane&& buffer ) noexcept -> CalypPlane& = default;
+
+  auto operator[]( std::size_t row ) const& noexcept -> const std::span<T>& { return m_rows[row]; }
+  auto operator[]( std::size_t row ) & noexcept -> std::span<T>& { return m_rows[row]; }
+
+  auto operator[]( std::size_t row ) const&& noexcept { return m_rows[row]; }
+  auto operator[]( std::size_t row ) && noexcept { return m_rows[row]; }
+
+  auto data() noexcept { return std::span<T>( m_data ); }
+  auto data() const noexcept { return std::span<const T>( m_data ); }
+
+  void resize( std::size_t width, std::size_t height ) noexcept
+  {
+    m_data.resize( width * height );
+    m_rows.resize( height );
+    for( std::size_t y = 0; y < height; y++ )
+    {
+      m_rows[y] = std::span<T>( m_data ).subspan( y * width, width );
+    }
+  }
+
+private:
+  std::vector<T> m_data;
+  std::vector<std::span<T>> m_rows;
+};
+
+/**
  * \class    CalypFrame
  * \ingroup	 CalypLibGrp CalypFrameGrp
  * \brief    Frame handling class
@@ -92,17 +196,17 @@ public:
 	 * of CalypFrame
 	 * @return vector of strings with pixel formats names
 	 */
-  static std::vector<ClpString> supportedColorSpacesListNames();
+  static std::vector<std::string> supportedColorSpacesListNames();
 
   /**
 	 * Function that handles the supported pixel formats
 	 * of CalypFrame
 	 * @return vector of strings with pixel formats names
 	 */
-  static std::vector<ClpString> supportedPixelFormatListNames();
-  static std::vector<ClpString> supportedPixelFormatListNames( int colorSpace );
+  static std::vector<std::string> supportedPixelFormatListNames();
+  static std::vector<std::string> supportedPixelFormatListNames( int colorSpace );
   static int numberOfFormats();
-  static int findPixelFormat( const ClpString& name );
+  static int findPixelFormat( const std::string& name );
   static int pelformatColorSpace( const int idx );
 
   /**
@@ -203,7 +307,7 @@ public:
 	 * Get pixel format information
 	 * @return pixel format name
 	 */
-  ClpString getPelFmtName();
+  std::string getPelFmtName();
 
   /**
 	 * Get color space information
@@ -242,13 +346,13 @@ public:
 	 * @param channel/component
 	 * @return number of pixels
 	 */
-  ClpULong getPixels( unsigned channel = 0 ) const;
+  std::uint64_t getPixels( unsigned channel = 0 ) const;
 
   /**
    * Get the total number of pixels of the frame
    * @return number of pixels
    */
-  ClpULong getTotalNumberOfPixels() const;
+  std::uint64_t getTotalNumberOfPixels() const;
 
   /**
 	 * Get chroma width ratio
@@ -266,7 +370,7 @@ public:
 	 * Get number of pixels in each chroma channel
 	 * @return number of pixels
 	 */
-  ClpULong getChromaLength() const;
+  std::uint64_t getChromaLength() const;
 
   /**
 	 * Get number of bits per pixel
@@ -278,13 +382,13 @@ public:
 	 * Get number of bytes per frame of an existing frame
 	 * @return number of bytes per frame
 	 */
-  ClpULong getBytesPerFrame() const;
+  std::uint64_t getBytesPerFrame() const;
 
   /**
 	 * Get number of bytes per frame of a specific pixel format
 	 * @return number of bytes per frame
 	 */
-  static ClpULong getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
+  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
 
   /**
 	 * Reset frame pixels to zero
@@ -430,8 +534,8 @@ public:
     NUMBER_METRICS,
   };
 
-  static std::vector<ClpString> supportedQualityMetricsList();
-  static std::vector<ClpString> supportedQualityMetricsUnitsList();
+  static std::vector<std::string> supportedQualityMetricsList();
+  static std::vector<std::string> supportedQualityMetricsUnitsList();
   double getQuality( int Metric, CalypFrame* Org, unsigned int component );
   double getMSE( CalypFrame* Org, unsigned int component );
   double getPSNR( CalypFrame* Org, unsigned int component );

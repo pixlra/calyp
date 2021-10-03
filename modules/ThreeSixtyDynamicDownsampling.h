@@ -48,8 +48,8 @@ class ThreeSixtyDynamicDownsampling : public CalypModuleIf
   REGISTER_CLASS_FACTORY( ThreeSixtyDynamicDownsampling )
 
 private:
-  ClpString m_arrayInputDefinitionString;
-  ClpString m_arrayOutputDefinitionString;
+  std::string m_arrayInputDefinitionString;
+  std::string m_arrayOutputDefinitionString;
   ClpVideoFPStruct m_cInputFPSStruct;
   ClpVideoFPStruct m_cOutputFPSStruct;
   unsigned m_uiFaceWidth;

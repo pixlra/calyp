@@ -28,9 +28,9 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <memory>
 #include <vector>
 
+#include "CalypDefs.h"
 #include "config.h"
 
 #ifdef USE_OPENCV
@@ -54,9 +54,9 @@
 constexpr auto kMinBitsPerPixel = 8;
 constexpr auto kMaxBitsPerPixel = 16;
 
-std::vector<ClpString> CalypFrame::supportedColorSpacesListNames()
+std::vector<std::string> CalypFrame::supportedColorSpacesListNames()
 {
-  return std::vector<ClpString>{
+  return std::vector<std::string>{
       "YUV",
       "RGB",
       "GRAY",
@@ -64,9 +64,9 @@ std::vector<ClpString> CalypFrame::supportedColorSpacesListNames()
   };
 }
 
-std::vector<ClpString> CalypFrame::supportedPixelFormatListNames()
+std::vector<std::string> CalypFrame::supportedPixelFormatListNames()
 {
-  std::vector<ClpString> formatsList;
+  std::vector<std::string> formatsList;
   for( int i = 0; i < numberOfFormats(); i++ )
   {
     formatsList.push_back( g_CalypPixFmtDescriptorsMap.at( i ).name );
@@ -74,9 +74,9 @@ std::vector<ClpString> CalypFrame::supportedPixelFormatListNames()
   return formatsList;
 }
 
-std::vector<ClpString> CalypFrame::supportedPixelFormatListNames( int colorSpace )
+std::vector<std::string> CalypFrame::supportedPixelFormatListNames( int colorSpace )
 {
-  std::vector<ClpString> formatsList;
+  std::vector<std::string> formatsList;
   for( int i = 0; i < numberOfFormats(); i++ )
   {
     if( g_CalypPixFmtDescriptorsMap.at( i ).colorSpace == colorSpace )
@@ -90,7 +90,7 @@ int CalypFrame::numberOfFormats()
   return static_cast<int>( g_CalypPixFmtDescriptorsMap.size() );
 }
 
-int CalypFrame::findPixelFormat( const ClpString& name )
+int CalypFrame::findPixelFormat( const std::string& name )
 {
   for( int i = 0; i < numberOfFormats(); i++ )
   {
@@ -112,7 +112,7 @@ public:
 
   //! Struct with the pixel format description.
   const CalypPixelFormatDescriptor* m_pcPelFormat{ nullptr };
-  ClpString m_cPelFmtName;
+  std::string m_cPelFmtName;
 
   unsigned int m_uiWidth{ 0 };         //!< Width of the frame
   unsigned int m_uiHeight{ 0 };        //!< Height of the frame
@@ -418,7 +418,7 @@ int CalypFrame::getPelFormat() const
   return d->m_iPixelFormat;
 }
 
-ClpString CalypFrame::getPelFmtName()
+std::string CalypFrame::getPelFmtName()
 {
   return d->m_pcPelFormat->name;
 }
@@ -447,14 +447,14 @@ bool CalypFrame::getHasNegativeValues() const
   return d->m_bHasNegativeValues;
 }
 
-ClpULong CalypFrame::getPixels( unsigned channel ) const
+std::uint64_t CalypFrame::getPixels( unsigned channel ) const
 {
   return getWidth( channel ) * getHeight( channel );
 }
 
-ClpULong CalypFrame::getTotalNumberOfPixels() const
+std::uint64_t CalypFrame::getTotalNumberOfPixels() const
 {
-  ClpULong numberPixels = 0;
+  std::uint64_t numberPixels = 0;
   for( unsigned i = 0; i < getNumberChannels(); i++ )
   {
     numberPixels += getPixels( i );
@@ -472,7 +472,7 @@ unsigned CalypFrame::getChromaHeightRatio() const
   return d->m_pcPelFormat->log2ChromaHeight;
 }
 
-ClpULong CalypFrame::getChromaLength() const
+std::uint64_t CalypFrame::getChromaLength() const
 {
   return getWidth( 1 ) * getHeight( 1 );
 }
@@ -482,19 +482,19 @@ unsigned int CalypFrame::getBitsPel() const
   return d->m_uiBitsPel;
 }
 
-ClpULong CalypFrame::getBytesPerFrame() const
+std::uint64_t CalypFrame::getBytesPerFrame() const
 {
   return getBytesPerFrame( d->m_uiWidth, d->m_uiHeight, d->m_iPixelFormat, d->m_uiBitsPel );
 }
 
-ClpULong CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel )
+std::uint64_t CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel )
 {
   const CalypPixelFormatDescriptor* pcPelFormat = &( g_CalypPixFmtDescriptorsMap.at( iPixelFormat ) );
   unsigned int bytesPerPixel = ( bitsPixel - 1 ) / 8 + 1;
-  ClpULong numberBytes = uiWidth * uiHeight;
+  std::uint64_t numberBytes = uiWidth * uiHeight;
   if( pcPelFormat->numberChannels > 1 )
   {
-    ClpULong numberBytesChroma =
+    std::uint64_t numberBytesChroma =
         CHROMASHIFT( uiWidth, pcPelFormat->log2ChromaWidth ) * CHROMASHIFT( uiHeight, pcPelFormat->log2ChromaHeight );
     numberBytes += ( pcPelFormat->numberChannels - 1 ) * numberBytesChroma;
   }
@@ -1400,9 +1400,9 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
  **************************************************************
  */
 
-std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
+std::vector<std::string> CalypFrame::supportedQualityMetricsList()
 {
-  return std::vector<ClpString>{
+  return std::vector<std::string>{
       "PSNR",
       "MSE",
       "SSIM",
@@ -1410,9 +1410,9 @@ std::vector<ClpString> CalypFrame::supportedQualityMetricsList()
   };
 }
 
-std::vector<ClpString> CalypFrame::supportedQualityMetricsUnitsList()
+std::vector<std::string> CalypFrame::supportedQualityMetricsUnitsList()
 {
-  return std::vector<ClpString>{
+  return std::vector<std::string>{
       "dB",
       "",
       "",
@@ -1450,8 +1450,8 @@ double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
 {
   ClpPel* pPelYUV = getPelBufferYUV()[component][0];
   ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
-  ClpULong numberOfPixels = Org->getHeight( component ) * Org->getWidth( component );
-  ClpULong ssd = 0;
+  std::uint64_t numberOfPixels = Org->getHeight( component ) * Org->getWidth( component );
+  std::uint64_t ssd = 0;
   for( unsigned int i = 0; i < numberOfPixels; i++ )
   {
     int diff = int( *pPelYUV++ ) - int( *pOrgPelYUV++ );
@@ -1466,7 +1466,7 @@ double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
 
 double CalypFrame::getPSNR( CalypFrame* Org, unsigned int component )
 {
-  ClpULong uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
+  std::uint64_t uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
   double dPSNR = 100;
   double dMSE = getMSE( Org, component );
   if( dMSE != 0 )

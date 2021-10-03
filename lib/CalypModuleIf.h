@@ -161,7 +161,7 @@ public:
   virtual CalypFrame* process( std::vector<CalypFrame*> ) { return NULL; }
   virtual double measure( std::vector<CalypFrame*> ) { return 0; }
   virtual bool keyPressed( enum Module_Key_Supported ) { return false; }
-  virtual ClpString moduleInfo() { return ClpString(); }
+  virtual std::string moduleInfo() { return std::string(); }
   /**
    * Module API version 3
    */
@@ -172,6 +172,43 @@ public:
     m_iFrameBufferCount = 0;
     return true;
   };
+};
+
+namespace cv
+{
+class Mat;
+}
+
+/**
+ * \class    CalypOpenCVModuleIf
+ * \ingroup  CalypLib Calyp_Modules
+ * \brief    Abstract class for modules using OpenCV library
+ */
+class CalypOpenCVModuleIf : public CalypModuleIf
+{
+  using Mat = cv::Mat;
+
+protected:
+  //const char* m_pchPythonFunctionName;
+  std::unique_ptr<CalypFrame> m_pcOutputFrame;
+  bool m_bConvertToGray;
+
+public:
+  CalypOpenCVModuleIf()
+  {
+    m_bConvertToGray = false;
+  };
+  virtual ~CalypOpenCVModuleIf() {}
+
+  // Common API
+  bool create( std::vector<CalypFrame*> apcFrameList );
+  CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
+  void destroy();
+
+  // API using OpenCV
+  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList ) { return nullptr; };
+  virtual Mat* process_using_opencv( const std::vector<Mat>& apcFrameList ) = 0;
+  virtual void destroy_using_opencv(){};
 };
 
 using CalypModulePtr = std::unique_ptr<CalypModuleIf>;

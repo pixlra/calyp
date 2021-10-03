@@ -156,8 +156,8 @@ void QualityHandle::update( VideoSubWindow* currSubWindow )
 void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
 {
   unsigned numberOfWindows = apcWindowList.size();
-  ClpULong currFrames = 0;
-  ClpULong numberOfFrames = -1;
+  std::uint64_t currFrames = 0;
+  std::uint64_t numberOfFrames = -1;
 
   //! Check reference window
   for( unsigned i = 0; i < numberOfWindows; i++ )

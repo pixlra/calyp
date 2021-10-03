@@ -27,7 +27,6 @@
 
 // CalypLib
 #include "lib/CalypModuleIf.h"
-#include "lib/CalypPlane.h"
 
 class InterFrameVariance : public CalypModuleIf
 {

@@ -49,9 +49,9 @@ using namespace std;
 
 struct ParseFailure : public std::exception
 {
-  ClpString arg;
-  ClpString val;
-  ParseFailure( ClpString arg0, ClpString val0 ) throw()
+  std::string arg;
+  std::string val;
+  ParseFailure( std::string arg0, std::string val0 ) throw()
       : arg( arg0 ), val( val0 ) {}
   ~ParseFailure() throw() {}
   const char* what() const throw() { return "Option Parse Failure"; }
@@ -61,9 +61,9 @@ struct ParseFailure : public std::exception
 class boolOption : public OptionBase
 {
 public:
-  boolOption( const ClpString& name, const ClpString& desc )
+  boolOption( const std::string& name, const std::string& desc )
       : OptionBase( name, desc, "(1-0)" ) { is_binary = true; }
-  void parse( const ClpString& arg ) { arg_count++; }
+  void parse( const std::string& arg ) { arg_count++; }
 };
 
 /** Type specific option storage */
@@ -71,20 +71,20 @@ template <typename T>
 class StandardOption : public OptionBase
 {
 public:
-  StandardOption( const ClpString& name, T& storage, const ClpString& desc, const ClpString& def )
+  StandardOption( const std::string& name, T& storage, const std::string& desc, const std::string& def )
       : OptionBase( name, desc, def ), opt_storage( storage )
   {
     is_binary = false;
   }
 
-  void parse( const ClpString& arg );
+  void parse( const std::string& arg );
   T& opt_storage;
   std::vector<T> opt_storage_array;
 };
 
 /* Generic parsing */
 template <typename T>
-inline void StandardOption<T>::parse( const ClpString& arg )
+inline void StandardOption<T>::parse( const std::string& arg )
 {
   if( !is_binary )
   {
@@ -103,7 +103,7 @@ inline void StandardOption<T>::parse( const ClpString& arg )
 }
 
 template <>
-inline void StandardOption<std::vector<unsigned int>>::parse( const ClpString& arg )
+inline void StandardOption<std::vector<unsigned int>>::parse( const std::string& arg )
 {
   unsigned int aux_opt_storage;
   std::istringstream arg_ss( arg, std::istringstream::in );
@@ -121,7 +121,7 @@ inline void StandardOption<std::vector<unsigned int>>::parse( const ClpString& a
 }
 
 template <>
-inline void StandardOption<std::vector<int>>::parse( const ClpString& arg )
+inline void StandardOption<std::vector<int>>::parse( const std::string& arg )
 {
   int aux_opt_storage;
   std::istringstream arg_ss( arg, std::istringstream::in );
@@ -140,7 +140,7 @@ inline void StandardOption<std::vector<int>>::parse( const ClpString& arg )
 
 /* string parsing is specialized */
 template <>
-inline void StandardOption<ClpString>::parse( const ClpString& arg )
+inline void StandardOption<std::string>::parse( const std::string& arg )
 {
   opt_storage = arg;
   arg_count++;
@@ -148,7 +148,7 @@ inline void StandardOption<ClpString>::parse( const ClpString& arg )
 
 /* string vector parsing is specialized */
 template <>
-inline void StandardOption<std::vector<ClpString>>::parse( const ClpString& arg )
+inline void StandardOption<std::vector<std::string>>::parse( const std::string& arg )
 {
   opt_storage.push_back( arg );
   arg_count++;
@@ -158,15 +158,15 @@ inline void StandardOption<std::vector<ClpString>>::parse( const ClpString& arg 
 struct FunctionOption : public OptionBase
 {
 public:
-  typedef void( Func )( CalypOptions&, const ClpString& );
+  typedef void( Func )( CalypOptions&, const std::string& );
 
-  FunctionOption( const ClpString& name, CalypOptions& parent_, Func* func_, const ClpString& desc, const ClpString& def )
+  FunctionOption( const std::string& name, CalypOptions& parent_, Func* func_, const std::string& desc, const std::string& def )
       : OptionBase( name, desc, def ), parent( parent_ ), func( func_ )
   {
     is_binary = false;
   }
 
-  void parse( const ClpString& arg )
+  void parse( const std::string& arg )
   {
     func( parent, arg );
     arg_count++;
@@ -174,7 +174,7 @@ public:
 
 private:
   CalypOptions& parent;
-  void ( *func )( CalypOptions&, const ClpString& );
+  void ( *func )( CalypOptions&, const std::string& );
 };
 
 /* Helper method to initiate adding options to Options */
@@ -185,7 +185,7 @@ private:
  *   with default_val as the default value
  *   with desc as an optional help description
  */
-CalypOptions& CalypOptions::operator()( const ClpString& name, const ClpString& desc )
+CalypOptions& CalypOptions::operator()( const std::string& name, const std::string& desc )
 {
   addOption( new boolOption( name, desc ) );
   return *this;
@@ -197,31 +197,31 @@ CalypOptions& CalypOptions::operator()( const ClpString& name, const ClpString& 
  *   with desc as an optional help description
  */
 template <typename T>
-CalypOptions& CalypOptions::operator()( const ClpString& name, T& storage, const ClpString& desc )
+CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc )
 {
-  addOption( new StandardOption<T>( name, storage, desc, ClpString( "" ) ) );
+  addOption( new StandardOption<T>( name, storage, desc, std::string( "" ) ) );
   return *this;
 }
 
 template <typename T>
-CalypOptions& CalypOptions::operator()( const ClpString& name, T& storage, const ClpString& desc, const ClpString& defaults )
+CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc, const std::string& defaults )
 {
   addOption( new StandardOption<T>( name, storage, desc ) );
   return *this;
 }
 
-template CalypOptions& CalypOptions::operator()( const ClpString& name, bool& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, unsigned int& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, int& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, long& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, long long int& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, ClpString& storage, const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, std::vector<unsigned int>& storage,
-                                                 const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, std::vector<int>& storage,
-                                                 const ClpString& desc );
-template CalypOptions& CalypOptions::operator()( const ClpString& name, std::vector<ClpString>& storage,
-                                                 const ClpString& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, bool& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, unsigned int& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, int& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, long& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, long long int& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, std::string& storage, const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, std::vector<unsigned int>& storage,
+                                                 const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, std::vector<int>& storage,
+                                                 const std::string& desc );
+template CalypOptions& CalypOptions::operator()( const std::string& name, std::vector<std::string>& storage,
+                                                 const std::string& desc );
 
 CalypOptions::Option::Option()
     : opt( 0 ) {}
@@ -232,7 +232,7 @@ CalypOptions::Option::~Option()
     delete opt;
 }
 
-CalypOptions::CalypOptions( const ClpString& name )
+CalypOptions::CalypOptions( const std::string& name )
 {
   m_cOptionGroupName = name;
   m_bAllowUnkonw = true;
@@ -246,12 +246,12 @@ CalypOptions::~CalypOptions()
   }
 }
 
-OptionBase* CalypOptions::operator[]( const ClpString& optName )
+OptionBase* CalypOptions::operator[]( const std::string& optName )
 {
   return getOption( optName );
 }
 
-OptionBase* CalypOptions::getOption( const ClpString& optName )
+OptionBase* CalypOptions::getOption( const std::string& optName )
 {
   CalypOptions::OptionMap::iterator opt_it;
   opt_it = opt_short_map.find( optName );
@@ -275,7 +275,7 @@ OptionBase* CalypOptions::getOption( const ClpString& optName )
   return NULL;
 }
 
-bool CalypOptions::hasOpt( const ClpString& optName )
+bool CalypOptions::hasOpt( const std::string& optName )
 {
   OptionBase* opt = getOption( optName );
   return opt ? opt->count() > 0 ? true : false : false;
@@ -545,7 +545,7 @@ list<const char*> CalypOptions::scanArgv( unsigned int argc, char* argv[] )
   return non_option_arguments;
 }
 
-void CalypOptions::parse( std::vector<ClpString> args_array )
+void CalypOptions::parse( std::vector<std::string> args_array )
 {
   for( unsigned int i = 0; i < args_array.size(); i++ )
   {

@@ -27,6 +27,7 @@
 #include <cstdio>
 
 #include "MainWindow.h"
+#include "ModuleSubWindow.h"
 #include "ModulesHandleOptDialog.h"
 #include "SubWindowHandle.h"
 #include "SubWindowSelectorDialog.h"
@@ -184,18 +185,17 @@ void ModulesHandle::updateMenus()
 
   if( pcSubWindow )
   {
-    auto apcCurrentModule = pcSubWindow->getModuleArray();
-    m_arrayActions[DISABLE_ACT]->setEnabled( apcCurrentModule.size() > 0 );
+    m_arrayActions[DISABLE_ACT]->setEnabled( pcSubWindow->hasModules() );
     if( pcSubWindow->getDisplayModule() )
     {
       m_arrayActions[APPLY_ALL_ACT]->setEnabled( true );
       m_arrayActions[SWAP_FRAMES_ACT]->setEnabled( true );
     }
-    for( int i = 0; i < apcCurrentModule.size(); i++ )
-    {
-      currModuleAction = apcCurrentModule.at( i )->m_pcModuleAction;
-      currModuleAction->setChecked( true );
-    }
+    // for( int i = 0; i < apcCurrentModule.size(); i++ )
+    // {
+    //   currModuleAction = apcCurrentModule.at( i )->m_pcModuleAction;
+    //   currModuleAction->setChecked( true );
+    // }
   }
 }
 
@@ -219,16 +219,15 @@ void ModulesHandle::processOpt( int index )
     CalypAppModuleIf* pcCurrentModule = pcSubWindow->getDisplayModule();
     if( pcCurrentModule )
     {
-      CalypAppModuleIf* pcCurrModule = pcCurrentModule;
       switch( index )
       {
       case INVALID_OPT:
         break;
       case SWAP_FRAMES_ACT:
-        swapModulesWindowsIf( pcCurrModule );
+        swapModulesWindowsIf( pcCurrentModule );
         break;
       case APPLY_ALL_ACT:
-        applyAllModuleIf( pcCurrModule );
+        applyAllModuleIf( pcCurrentModule );
         break;
       default:
         Q_ASSERT( 0 );
@@ -376,14 +375,12 @@ void ModulesHandle::activateModule()
 
   QString windowName;
 
-  VideoSubWindow* pcModuleSubWindow = NULL;
   if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
   {
     if( ( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_NEW_WINDOW ) || bShowModulesNewWindow )
     {
-      pcModuleSubWindow = new VideoSubWindow( VideoSubWindow::MODULE_SUBWINDOW, pcCurrAppModuleIf.get() );
-      windowName.append( QStringLiteral( "Module " ) );
-      windowName.append( pcCurrAppModuleIf->m_pcModule->m_pchModuleLongName );
+      auto pcModuleSubWindow = new ModuleSubWindow( pcCurrAppModuleIf.get() );
+      pcModuleSubWindow->resetWindowName();
       pcCurrAppModuleIf->m_pcDisplaySubWindow = pcModuleSubWindow;
       //      connect( pcModuleSubWindow->getViewArea(), SIGNAL( selectionChanged( QRect ) ), m_appModuleVideo,
       //               SLOT( updateSelectionArea( QRect ) ) );
@@ -445,12 +442,11 @@ void ModulesHandle::activateModule()
 
   QCoreApplication::processEvents();
 
-  if( pcModuleSubWindow )
+  if( pcCurrAppModuleIf->m_pcDisplaySubWindow )
   {
-    pcModuleSubWindow->setWindowName( windowName );
-    m_pcMainWindowManager->addSubWindow( pcModuleSubWindow );
-    pcModuleSubWindow->show();
-    m_appModuleVideo->addSubWindow( pcModuleSubWindow );
+    m_pcMainWindowManager->addSubWindow( pcCurrAppModuleIf->m_pcDisplaySubWindow );
+    pcCurrAppModuleIf->m_pcDisplaySubWindow->show();
+    m_appModuleVideo->addSubWindow( pcCurrAppModuleIf->m_pcDisplaySubWindow );
   }
   else
   {
@@ -540,7 +536,7 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
       Height = pcCurrModuleIf->m_pcProcessedFrame->getHeight();
       InputFormat = pcCurrModuleIf->m_pcProcessedFrame->getPelFormat();
       BitsPixel = pcCurrModuleIf->m_pcProcessedFrame->getBitsPel();
-      FrameRate = pcCurrModuleIf->m_pcSubWindow[0]->getInputStream()->getFrameRate();
+      FrameRate = 30;
 
       pcCurrModuleIf->m_pcModuleStream = std::unique_ptr<CalypStream>();
       if( !pcCurrModuleIf->m_pcModuleStream->open( fileName.toStdString(), Width, Height, InputFormat, BitsPixel,
@@ -558,7 +554,7 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
     std::uint64_t numberOfFrames = -1;
     for( unsigned int i = 0; i < numberOfWindows; i++ )
     {
-      currFrames = pcCurrModuleIf->m_pcSubWindow[i]->getInputStream()->getFrameNum();
+      currFrames = pcCurrModuleIf->m_pcSubWindow[i]->getFrameNum();
       if( currFrames < numberOfFrames )
         numberOfFrames = currFrames;
       pcCurrModuleIf->m_pcSubWindow[i]->stop();
@@ -571,8 +567,7 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
       pcCurrModuleIf->m_pcModuleStream->writeFrame( *pcCurrModuleIf->m_pcProcessedFrame );
       for( unsigned int i = 0; i < numberOfWindows; i++ )
       {
-        pcCurrModuleIf->m_pcSubWindow[i]->play();
-        pcCurrModuleIf->m_pcSubWindow[i]->playEvent();
+        pcCurrModuleIf->m_pcSubWindow[i]->advanceOneFrame();
       }
     }
     for( unsigned int i = 0; i < numberOfWindows; i++ )

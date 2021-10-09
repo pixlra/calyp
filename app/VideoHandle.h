@@ -33,6 +33,7 @@
 #include <QWidget>
 
 #include "CommonDefs.h"
+#include "VideoSubWindow.h"
 #include "config.h"
 
 class QToolBar;
@@ -43,7 +44,7 @@ class QSlider;
 
 class SubWindowHandle;
 class SubWindowAbstract;
-class VideoSubWindow;
+class VideoStreamSubWindow;
 class FramePropertiesDock;
 class FrameNumberWidget;
 class QTimer;
@@ -116,8 +117,8 @@ private:
   QLabel* m_pcVideoFormatLabel;
   QLabel* m_pcResolutionLabel;
 
-  VideoSubWindow* m_pcCurrentVideoSubWindow;
-  QVector<VideoSubWindow*> m_acPlayingSubWindows;
+  QPointer<VideoSubWindow> m_pcCurrentVideoSubWindow;
+  QVector<VideoStreamSubWindow*> m_acPlayingSubWindows;
 
   QTimer* m_pcPlayingTimer;
   bool m_bIsPlaying;

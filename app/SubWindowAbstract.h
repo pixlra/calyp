@@ -107,7 +107,7 @@ public:
    * Size related functions
    */
   virtual QSize sizeHint() const;
-  virtual QSize sizeHint( const QSize& ) const;
+  virtual QSize sizeHint( const QSize& maxSize ) const;
 
   /**
    * Window name

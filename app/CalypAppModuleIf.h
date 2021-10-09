@@ -52,6 +52,7 @@ class CalypFrame;
 #define CLP_MODULE_MAX_NUM_FRAMES 5
 
 class VideoSubWindow;
+class ModuleSubWindow;
 
 class CalypAppModuleIf : std::enable_shared_from_this<CalypAppModuleIf>,
 #ifdef CALYP_THREADED_MODULES
@@ -88,7 +89,7 @@ public:
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool process();
-  void setPlaying( bool isPlaying );
+  // void setPlaying( bool isPlaying );
   bool isRunning();
   void show();
   void disable();
@@ -105,7 +106,7 @@ private:
   std::vector<VideoSubWindow*> m_pcSubWindow;
 
   // The module owns the related widgets
-  VideoSubWindow* m_pcDisplaySubWindow{ nullptr };
+  ModuleSubWindow* m_pcDisplaySubWindow{ nullptr };
   QDockWidget* m_pcDockWidget{ nullptr };
   ModuleHandleDock* m_pcModuleDock{ nullptr };
 
@@ -119,6 +120,7 @@ private:
 
 #ifdef CALYP_THREADED_MODULES
   QMutex m_Mutex;
+  std::atomic<bool> m_canceling{ false };
 #endif
 };
 

@@ -192,13 +192,13 @@ void MainWindow::loadFile( QString fileName, CalypFileInfo* pStreamInfo )
     printMessage( "File " + fileName + " do not exist!", CLP_LOG_ERROR );
     return;
   }
-  VideoSubWindow* videoSubWindow = MainWindow::findVideoStreamSubWindow( m_pcWindowHandle, fileName );
+  auto* videoSubWindow = MainWindow::findVideoStreamSubWindow( m_pcWindowHandle, fileName );
   if( videoSubWindow )
   {
     m_pcWindowHandle->setActiveSubWindow( videoSubWindow );
     return;
   }
-  videoSubWindow = new VideoSubWindow( VideoSubWindow::VIDEO_STREAM_SUBWINDOW );  // createSubWindow();
+  videoSubWindow = new VideoStreamSubWindow();  // createSubWindow();
   videoSubWindow->setResourceManaget( m_appResourceHandle.get() );
 
   if( !pStreamInfo )
@@ -380,9 +380,8 @@ void MainWindow::saveStream()
 
 void MainWindow::format()
 {
-  if( m_pcCurrentVideoSubWindow )
+  if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
   {
-    VideoSubWindow* pcVideoSubWindow = m_pcCurrentVideoSubWindow;
     try
     {
       if( pcVideoSubWindow->loadFile( pcVideoSubWindow->getCurrentFileName(), true ) )
@@ -436,10 +435,10 @@ void MainWindow::reloadAll()
 
 void MainWindow::loadAll()
 {
-  if( m_pcCurrentVideoSubWindow )
+  if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
   {
     printMessage( "Loading file into memory...", CLP_LOG_INFO );
-    m_pcCurrentVideoSubWindow->loadAll();
+    pcVideoSubWindow->loadAll();
     printMessage( "File loaded", CLP_LOG_INFO );
   }
 }
@@ -529,19 +528,18 @@ void MainWindow::dropEvent( QDropEvent* event )
 
 // -----------------------  Sub Window Functions  -----------------------
 
-VideoSubWindow* MainWindow::findVideoStreamSubWindow( const SubWindowHandle* windowManager,
-                                                      const QString& fileName )
+VideoStreamSubWindow* MainWindow::findVideoStreamSubWindow( const SubWindowHandle* windowManager,
+                                                            const QString& fileName )
 {
   QString canonicalFilePath = QFileInfo( fileName ).canonicalFilePath();
-  VideoSubWindow* pcSubWindow;
   QList<SubWindowAbstract*> subWindowList = windowManager->findSubWindow( SubWindowAbstract::VIDEO_STREAM_SUBWINDOW );
   for( int i = 0; i < subWindowList.size(); i++ )
   {
-    pcSubWindow = qobject_cast<VideoSubWindow*>( subWindowList.at( i ) );
+    auto* pcSubWindow = qobject_cast<VideoStreamSubWindow*>( subWindowList.at( i ) );
     if( pcSubWindow->getCurrentFileName() == canonicalFilePath )
-      return qobject_cast<VideoSubWindow*>( pcSubWindow );
+      return pcSubWindow;
   }
-  return 0;
+  return nullptr;
 }
 
 // -----------------------  Update Functions  -----------------------

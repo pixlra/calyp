@@ -41,7 +41,7 @@ class HistogramWorker : public QThread
 {
 private:
   QObject* m_parent;
-  std::shared_ptr<CalypFrame> m_pcFrame;
+  std::shared_ptr<CalypFrame> m_pcFrame{ nullptr };
 
 public:
   HistogramWorker( QObject* parent )
@@ -52,27 +52,28 @@ public:
   void setup( std::shared_ptr<CalypFrame> frame )
   {
     m_pcFrame = std::move( frame );
-    EventData* eventData = new EventData( m_pcFrame.get() );  // NOLINT
+    EventData* eventData = new EventData();  // NOLINT
     eventData->starting = true;
+    // QCoreApplication::postEvent( m_parent, eventData );
     start();
-    QCoreApplication::postEvent( m_parent, eventData );
   }
   void run() override
   {
-    if( m_pcFrame != nullptr && m_parent != nullptr )
+    EventData* eventData = new EventData();  // NOLINT
+    if( m_pcFrame != nullptr )
     {
-      EventData* eventData = new EventData( m_pcFrame.get() );  // NOLINT
       m_pcFrame->calcHistogram();
-      eventData->success = true;
-      QCoreApplication::postEvent( m_parent, eventData );
+      eventData->frame = m_pcFrame.get();
     }
+    eventData->success = true;
+    QCoreApplication::postEvent( m_parent, eventData );
   }
 
   class EventData : public QEvent
   {
   public:
-    EventData( CalypFrame* f )
-        : QEvent( QEvent::User ), frame{ f } {}
+    EventData()
+        : QEvent( QEvent::User ), frame{ nullptr } {}
     CalypFrame* frame{ nullptr };
     bool starting{ false };
     bool success{ false };

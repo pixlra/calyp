@@ -22,204 +22,161 @@
  * \brief    Video Frame handling
  */
 
+#include <algorithm>
+#include <cassert>
 #include <memory>
+#include <numeric>
 
 #include "CalypFrame.h"
 #include "PixelFormats.h"
 #include "config.h"
 
-#define MAX_NUMBER_COMPONENTS 4
-
-class CalypPixel::CalypPixelPrivate
-{
-public:
-  CalypPixelPrivate( const int& ColorSpace )
-  {
-    iColorSpace = ColorSpace == CLP_COLOR_GRAY ?
-                      CLP_COLOR_YUV :
-                      ColorSpace;
-    for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-    {
-      PelComp[i] = 0;
-    }
-  }
-
-  int iColorSpace;
-  ClpPel PelComp[MAX_NUMBER_COMPONENTS];
-};
+constexpr auto kMinPixelValue{ 0 };
+constexpr auto kMaxPixelValue{ 255 };
 
 static inline void yuvToRgb( const int& iY, const int& iU, const int& iV, int& iR, int& iG, int& iB )
 {
-  iR = iY + ( ( 1436 * ( iV - 128 ) ) >> 10 );
-  iG = iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 );
-  iB = iY + ( ( 1812 * ( iU - 128 ) ) >> 10 );
-  iR = iR < 0 ? 0 : iR > 255 ? 255 :
-                               iR;
-  iG = iG < 0 ? 0 : iG > 255 ? 255 :
-                               iG;
-  iB = iB < 0 ? 0 : iB > 255 ? 255 :
-                               iB;
+  iR = std::clamp( iY + ( ( 1436 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      //NOLINT
+  iG = std::clamp( iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );  //NOLINT
+  iB = std::clamp( iY + ( ( 1812 * ( iU - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      //NOLINT
 }
 
 static inline void rgbToYuv( const int& iR, const int& iG, const int& iB, int& iY, int& iU, int& iV )
 {
-  iY = ( 299 * iR + 587 * iG + 114 * iB + 500 ) / 1000;
-  iU = ( 1000 * ( iB - iY ) + 226816 ) / 1772;
-  iV = ( 1000 * ( iR - iY ) + 179456 ) / 1402;
+  iY = ( 299 * iR + 587 * iG + 114 * iB + 500 ) / 1000;  //NOLINT
+  iU = ( 1000 * ( iB - iY ) + 226816 ) / 1772;           //NOLINT
+  iV = ( 1000 * ( iR - iY ) + 179456 ) / 1402;           //NOLINT
 }
 
-int CalypPixel::getMaxNumberOfComponents()
+CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0 )
 {
-  return MAX_NUMBER_COMPONENTS;
+  m_colorSpace = ColorSpace;
+  m_pelComp[0] = c0;
 }
 
-CalypPixel::CalypPixel( const int& ColorSpace )
-    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
+CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2 )
 {
+  m_colorSpace = ColorSpace;
+  m_pelComp[0] = c0;
+  m_pelComp[1] = c1;
+  m_pelComp[2] = c2;
 }
 
-CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0 )
-    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
+CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2, const ClpPel c3 )
 {
-  d->PelComp[0] = c0;
+  m_colorSpace = ColorSpace;
+  m_pelComp[0] = c0;
+  m_pelComp[1] = c1;
+  m_pelComp[2] = c2;
+  m_pelComp[3] = c3;
 }
 
-CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2 )
-    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
+CalypPixel& CalypPixel::operator+=( const CalypPixel& in )
 {
-  d->PelComp[0] = c0;
-  d->PelComp[1] = c1;
-  d->PelComp[2] = c2;
-}
-
-CalypPixel::CalypPixel( const int& ColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2, const ClpPel& c3 )
-    : d{ std::make_unique<CalypPixelPrivate>( ColorSpace ) }
-{
-  d->PelComp[0] = c0;
-  d->PelComp[1] = c1;
-  d->PelComp[2] = c2;
-  d->PelComp[3] = c3;
-}
-
-CalypPixel::CalypPixel( const CalypPixel& other )
-    : d{ std::make_unique<CalypPixelPrivate>( other.colorSpace() ) }
-
-{
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    d->PelComp[i] = other[i];
-  }
-}
-
-CalypPixel::~CalypPixel() = default;
-
-int CalypPixel::colorSpace() const
-{
-  return d->iColorSpace;
-}
-
-ClpPel CalypPixel::operator[]( const int& channel ) const
-{
-  return d->PelComp[channel];
-}
-ClpPel& CalypPixel::operator[]( const int& channel )
-{
-  return d->PelComp[channel];
-}
-
-CalypPixel CalypPixel::operator=( const CalypPixel& other )
-{
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    d->PelComp[i] = other[i];
-  }
+  assert( in.colorSpace() == m_colorSpace );
+  const auto& other_comp = in.components();
+  std::transform( other_comp.begin(),
+                  other_comp.end(),
+                  m_pelComp.begin(),
+                  m_pelComp.begin(),
+                  []( auto& p1, auto& p2 ) { return p1 + p2; } );
   return *this;
 }
 
-CalypPixel CalypPixel::operator+( const CalypPixel& in )
+CalypPixel& CalypPixel::operator-=( const CalypPixel& in )
 {
-  CalypPixel result;
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    result[i] = d->PelComp[i] + in[i];
-  }
-  return result;
-}
-
-CalypPixel CalypPixel::operator+=( const CalypPixel& in )
-{
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    d->PelComp[i] += in[i];
-  }
+  assert( in.colorSpace() == m_colorSpace );
+  const auto& other_comp = in.components();
+  std::transform( other_comp.begin(),
+                  other_comp.end(),
+                  m_pelComp.begin(),
+                  m_pelComp.begin(),
+                  []( auto& p1, auto& p2 ) { return p1 - p2; } );
   return *this;
 }
 
-CalypPixel CalypPixel::operator-( const CalypPixel& in )
+CalypPixel& CalypPixel::operator*=( const double& op )
 {
-  CalypPixel result;
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    result[i] = d->PelComp[i] - in[i];
-  }
-  return result;
-}
-
-CalypPixel CalypPixel::operator-=( const CalypPixel& in )
-{
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    d->PelComp[i] -= in[i];
-  }
+  std::transform( m_pelComp.begin(),
+                  m_pelComp.end(),
+                  m_pelComp.begin(),
+                  [&op]( auto& p1 ) { return p1 * op; } );
   return *this;
 }
 
-CalypPixel CalypPixel::operator*( const double& op )
+CalypPixel CalypPixel::operator+( const CalypPixel& in ) const
 {
-  CalypPixel result;
-  for( int i = 0; i < MAX_NUMBER_COMPONENTS; i++ )
-  {
-    result[i] = d->PelComp[i] * op;
-  }
+  assert( in.colorSpace() == m_colorSpace );
+  const auto& other_comp = in.components();
+  CalypPixel result{ m_colorSpace };
+  std::transform( other_comp.begin(),
+                  other_comp.end(),
+                  m_pelComp.begin(),
+                  result.components().begin(),
+                  []( auto& p1, auto& p2 ) { return p1 + p2; } );
   return result;
 }
 
-CalypPixel CalypPixel::convertPixel( CalypColorSpace eOutputSpace )
+CalypPixel CalypPixel::operator-( const CalypPixel& in ) const
 {
-  if( d->iColorSpace == eOutputSpace )
+  assert( in.colorSpace() == m_colorSpace );
+  const auto& other_comp = in.components();
+  CalypPixel result{ m_colorSpace };
+  std::transform( other_comp.begin(),
+                  other_comp.end(),
+                  m_pelComp.begin(),
+                  result.components().begin(),
+                  []( auto& p1, auto& p2 ) { return p1 - p2; } );
+  return result;
+}
+
+CalypPixel CalypPixel::operator*( const double& op ) const
+{
+  CalypPixel result{ m_colorSpace };
+  auto& comp = result.components();
+  std::transform( comp.begin(),
+                  comp.end(),
+                  comp.begin(),
+                  [&op]( auto& p1 ) { return p1 * op; } );
+  return result;
+}
+
+CalypPixel CalypPixel::convertPixel( CalypColorSpace eOutputSpace ) const
+{
+  if( m_colorSpace == eOutputSpace )
     return *this;
 
   int outA = 0;
   int outB = 0;
   int outC = 0;
   int outD = 0;
-  if( d->iColorSpace == CLP_COLOR_YUV )
+  if( m_colorSpace == CLP_COLOR_YUV )
   {
     switch( eOutputSpace )
     {
     case CLP_COLOR_GRAY:
-      outA = d->PelComp[0];
+      outA = m_pelComp[0];
       break;
     case CLP_COLOR_RGBA:
-      outD = 255;
+      outD = kMaxPixelValue;
     case CLP_COLOR_RGB:
-      yuvToRgb( d->PelComp[0], d->PelComp[1], d->PelComp[2], outA, outB, outC );
+      yuvToRgb( m_pelComp[0], m_pelComp[1], m_pelComp[2], outA, outB, outC );
       break;
     default:
       break;
     }
   }
-  if( d->iColorSpace == CLP_COLOR_RGB )
+  if( m_colorSpace == CLP_COLOR_RGB )
   {
     switch( eOutputSpace )
     {
     case CLP_COLOR_GRAY:
-      rgbToYuv( d->PelComp[0], d->PelComp[1], d->PelComp[2], outA, outB, outC );
+      rgbToYuv( m_pelComp[0], m_pelComp[1], m_pelComp[2], outA, outB, outC );
     case CLP_COLOR_YUV:
-      rgbToYuv( d->PelComp[0], d->PelComp[1], d->PelComp[2], outA, outB, outC );
+      rgbToYuv( m_pelComp[0], m_pelComp[1], m_pelComp[2], outA, outB, outC );
       break;
     case CLP_COLOR_RGBA:
-      outD = 255;
+      outD = kMaxPixelValue;
       break;
     default:
       break;

@@ -106,27 +106,39 @@ enum CLP_Endianness
  */
 class CalypPixel
 {
+private:
+  static constexpr std::size_t kMaxNumberOfComponents{ 4 };
+  int m_colorSpace{ CLP_COLOR_INVALID };
+  std::array<ClpPel, kMaxNumberOfComponents> m_pelComp{ 0, 0, 0, 0 };
+
 public:
-  static int getMaxNumberOfComponents();
+  static std::size_t getMaxNumberOfComponents() { return kMaxNumberOfComponents; }
 
-  CalypPixel( const int& CalypColorSpace = CLP_COLOR_INVALID );
-  CalypPixel( const int& CalypColorSpace, const ClpPel& c0 );
-  CalypPixel( const int& CalypColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2 );
-  CalypPixel( const int& CalypColorSpace, const ClpPel& c0, const ClpPel& c1, const ClpPel& c2, const ClpPel& c3 );
-  CalypPixel( const CalypPixel& other );
-  ~CalypPixel();
+  CalypPixel() = default;
+  CalypPixel( const int CalypColorSpace, const ClpPel c0 = 0 );
+  CalypPixel( const int CalypColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2 );
+  CalypPixel( const int CalypColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2, const ClpPel c3 );
+  CalypPixel( const CalypPixel& other ) noexcept = default;
+  CalypPixel( CalypPixel&& other ) noexcept = default;
+  auto operator=( const CalypPixel& other ) -> CalypPixel& = default;
+  auto operator=( CalypPixel&& other ) noexcept -> CalypPixel& = default;
+  ~CalypPixel() = default;
 
-  int colorSpace() const;
+  int colorSpace() const { return m_colorSpace; };
 
-  ClpPel operator[]( const int& channel ) const;
-  ClpPel& operator[]( const int& channel );
+  auto components() const -> const std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
+  auto components() -> std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
 
-  CalypPixel operator=( const CalypPixel& );
-  CalypPixel operator+( const CalypPixel& );
-  CalypPixel operator+=( const CalypPixel& );
-  CalypPixel operator-( const CalypPixel& );
-  CalypPixel operator-=( const CalypPixel& );
-  CalypPixel operator*( const double& );
+  ClpPel operator[]( const int& channel ) const { return m_pelComp[channel]; }
+  ClpPel& operator[]( const int& channel ) { return m_pelComp[channel]; }
+
+  CalypPixel& operator+=( const CalypPixel& );
+  CalypPixel& operator-=( const CalypPixel& );
+  CalypPixel& operator*=( const double& );
+
+  CalypPixel operator+( const CalypPixel& ) const;
+  CalypPixel operator-( const CalypPixel& ) const;
+  CalypPixel operator*( const double& ) const;
 
   /**
 	 * Convert a Pixel to a new color space
@@ -134,11 +146,7 @@ public:
 	 * @param eOutputSpace output color space
 	 * @return converted pixel
 	 */
-  CalypPixel convertPixel( CalypColorSpace eOutputSpace );
-
-private:
-  class CalypPixelPrivate;
-  std::unique_ptr<CalypPixelPrivate> d;
+  CalypPixel convertPixel( CalypColorSpace eOutputSpace ) const;
 };
 
 /**
@@ -434,7 +442,7 @@ public:
 	 * @param eColorSpace desired color space
 	 * @return pixel value
 	 */
-  CalypPixel getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace );
+  CalypPixel getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace ) const;
 
   /**
 	 * Set pixel value at coordinates to a given value

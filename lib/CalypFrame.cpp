@@ -569,7 +569,7 @@ CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos ) const
   return PixelValue;
 }
 
-CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace )
+CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace ) const
 {
   return getPixel( xPos, yPos ).convertPixel( eColorSpace );
 }
@@ -1262,12 +1262,12 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
     cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
 
     unsigned char* cv_data = tmpMat.data;
-    CalypPixel currPel;
     for( unsigned y = 0; y < imgHeight; y++ )
     {
       for( unsigned x = 0; x < imgWidth; x++ )
       {
-        currPel = getPixel( x, y ) * scaleFactor;
+        CalypPixel currPel = getPixel( x, y );
+        currPel *= scaleFactor;
         for( unsigned int ch = 0; ch < numChannels; ch++ )
           for( unsigned b = 0; b < numBytes; b++ )
           {

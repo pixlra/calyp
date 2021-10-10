@@ -127,7 +127,7 @@ public:
   const char* m_pchModuleCategory{ "" };
   const char* m_pchModuleName{ "" };
   const char* m_pchModuleTooltip{ "" };
-  const char* m_pchModuleLongName{ "" };
+  const char* m_pchModuleLongName{ nullptr };
 
   //! Number of frames
   unsigned int m_uiNumberOfFrames{ 1 };
@@ -135,12 +135,15 @@ public:
   unsigned int m_uiModuleRequirements{ CLP_MODULE_REQUIRES_NOTHING };
 
   unsigned int m_iFrameBufferCount{ 0 };
-  //CalypFrame* m_pcOutputFrame;
 
   CalypOptions m_cModuleOptions;
 
   CalypModuleIf() = default;
-  virtual ~CalypModuleIf() {}
+  CalypModuleIf( const CalypModuleIf& other ) noexcept = delete;
+  CalypModuleIf( CalypModuleIf&& other ) noexcept = delete;
+  auto operator=( const CalypModuleIf& other ) -> CalypModuleIf& = delete;
+  auto operator=( CalypModuleIf&& other ) noexcept -> CalypModuleIf& = delete;
+  virtual ~CalypModuleIf() = default;
   virtual void destroy() = 0;
 
   const char* getModuleLongName()

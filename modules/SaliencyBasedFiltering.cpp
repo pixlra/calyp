@@ -36,6 +36,7 @@ SaliencyBasedFiltering::SaliencyBasedFiltering()
   m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
   m_pchModuleCategory = "Quality";
   m_pchModuleName = "SaliencyBasedFiltering";
+  m_pchModuleLongName = "Saliency Based Filtering";
   m_pchModuleTooltip = "Image filter based on a map";
   m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
   m_uiNumberOfFrames = 2;

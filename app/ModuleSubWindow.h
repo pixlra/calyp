@@ -54,7 +54,7 @@ public:
   bool isPlaying();
   void stop(){};
   void advanceOneFrame(){};
-  auto getFrameNum() -> int { return 1; };
+  auto getFrameNum() -> std::uint64_t { return 1; };
 
   void refreshSubWindow();
 

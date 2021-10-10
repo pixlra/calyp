@@ -449,7 +449,6 @@ void VideoStreamSubWindow::refreshFrame()
 
   if( m_pcDisplayModule )
   {
-    m_bWindowBusy = true;
     //bool disableThreads = !m_bIsPlaying && hasAssociatedModule();
     m_pcDisplayModule->apply( m_bIsPlaying, true );
     bSetFrame = false;
@@ -481,7 +480,8 @@ bool VideoStreamSubWindow::goToNextFrame( bool bThreaded )
 #endif
 #ifdef CALYP_MANAGED_RESOURCES
   while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() )
-    ;
+  {
+  }
 #endif
   bool bEndOfSeq = m_pCurrStream->setNextFrame();
 #ifdef CALYP_MANAGED_RESOURCES
@@ -519,26 +519,8 @@ bool VideoStreamSubWindow::saveStream( QString filename )
   return iRet;
 }
 
-void VideoStreamSubWindow::setPlaying( bool isPlaying )
-{
-  m_bIsPlaying = isPlaying;
-  // for( auto module : m_associatedModules )
-  // {
-  //   module->setPlaying( isPlaying );
-  // }
-}
-
 bool VideoStreamSubWindow::isPlaying()
 {
-  if( getCategory() & SubWindowCategory::MODULE_SUBWINDOW )
-  {
-    for( auto window : m_pcDisplayModule->getSubWindowList() )
-    {
-      if( window->isPlaying() )
-        return true;
-    }
-    return false;
-  }
   return m_bIsPlaying;
 }
 
@@ -549,7 +531,7 @@ bool VideoStreamSubWindow::play()
   {
     isPlaying = true;
   }
-  setPlaying( isPlaying );
+  m_bIsPlaying = isPlaying;
   return m_bIsPlaying;
 }
 
@@ -565,7 +547,7 @@ bool VideoStreamSubWindow::playEvent()
 
 void VideoStreamSubWindow::pause()
 {
-  setPlaying( false );
+  m_bIsPlaying = false;
   refreshFrame();
 }
 
@@ -607,7 +589,7 @@ void VideoStreamSubWindow::stop()
   m_cRefreshResult.waitForFinished();
   m_cReadResult.waitForFinished();
 #endif
-  setPlaying( false );
+  m_bIsPlaying = false;
   seekAbsoluteEvent( 0 );
   return;
 }

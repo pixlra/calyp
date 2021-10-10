@@ -29,6 +29,7 @@
 #include <QDockWidget>
 
 #include "ModuleHandleDock.h"
+#include "ModuleSubWindow.h"
 #include "VideoSubWindow.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypStream.h"
@@ -55,16 +56,19 @@ CalypAppModuleIf::~CalypAppModuleIf()
     auto* ptr = m_pcModuleDock;
     m_pcModuleDock = NULL;
     ptr->close();
+    delete ptr;
   }
   if( m_pcDisplaySubWindow )
   {
     auto* ptr = m_pcDisplaySubWindow;
     m_pcDisplaySubWindow = NULL;
     ptr->closeSubWindow();
+    delete ptr;
   }
   if( m_pcDockWidget )
   {
     m_pcDockWidget->close();
+    delete m_pcDockWidget;
   }
   if( m_pcModule )
   {
@@ -77,7 +81,7 @@ void CalypAppModuleIf::update( bool isPlaying )
 {
   if( m_pcDisplaySubWindow )
   {
-    m_pcDisplaySubWindow->refreshFrame();
+    m_pcDisplaySubWindow->refreshSubWindow();
   }
   else
   {
@@ -85,13 +89,13 @@ void CalypAppModuleIf::update( bool isPlaying )
   }
 }
 
-void CalypAppModuleIf::setPlaying( bool isPlaying )
-{
-  if( m_pcDisplaySubWindow )
-  {
-    m_pcDisplaySubWindow->setPlaying( isPlaying );
-  }
-}
+// void CalypAppModuleIf::setPlaying( bool isPlaying )
+// {
+//   if( m_pcDisplaySubWindow )
+//   {
+//     m_pcDisplaySubWindow->setPlaying( isPlaying );
+//   }
+// }
 
 bool CalypAppModuleIf::isRunning()
 {
@@ -154,7 +158,6 @@ bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
       show();
     }
   }
-
   return moduleExecuted;
 }
 
@@ -210,10 +213,12 @@ bool CalypAppModuleIf::process()
 
 void CalypAppModuleIf::show()
 {
+  if( m_canceling )
+    return;
   switch( m_pcModule->m_iModuleType )
   {
   case CLP_FRAME_PROCESSING_MODULE: {
-    auto displayWindow = m_pcDisplaySubWindow;
+    auto displayWindow = qobject_cast<VideoSubWindow*>( m_pcDisplaySubWindow );
     if( displayWindow == nullptr )
       displayWindow = m_pcSubWindow[0];
 #ifdef CALYP_THREADED_MODULES
@@ -239,6 +244,7 @@ void CalypAppModuleIf::disable()
 {
   QApplication::setOverrideCursor( Qt::WaitCursor );
 #ifdef CALYP_THREADED_MODULES
+  m_canceling = true;
   m_Mutex.lock();
   m_Mutex.unlock();
 #endif

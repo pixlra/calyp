@@ -107,8 +107,8 @@ void ModuleSubWindow::refreshSubWindow()
 {
   if( auto module_ptr = m_pcDisplayModule )
   {
-    m_bWindowBusy = true;
+    setFillWindow( true );
     updateVideoWindowInfo();
-    module_ptr->apply( m_bIsPlaying, false );
+    module_ptr->apply( isPlaying(), false );
   }
 }

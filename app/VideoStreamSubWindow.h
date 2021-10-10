@@ -30,6 +30,7 @@
 #include <QRect>
 #include <QString>
 #include <QVector>
+#include <cstdint>
 
 #include "CommonDefs.h"
 #include "VideoSubWindow.h"
@@ -68,9 +69,13 @@ public:
   VideoStreamSubWindow( QWidget* parent = 0 );
   ~VideoStreamSubWindow();
 
-  void resetWindowName();
+  void resetWindowName() override;
+  void updateVideoWindowInfo() override;
 
-  void updateVideoWindowInfo();
+  bool isPlaying() override;
+  void stop() override;
+  void advanceOneFrame() override { goToNextFrame( true ); }
+  auto getFrameNum() -> std::uint64_t override { return m_pCurrStream->getFrameNum(); }
 
   void setResourceManaget( ResourceHandle* resourceManager ) { m_pcResourceManager = resourceManager; }
 
@@ -82,11 +87,6 @@ public:
   bool play();
   void pause();
   bool playEvent();
-  void stop();
-  void advanceOneFrame() { goToNextFrame( true ); };
-
-  void setPlaying( bool isPlaying );
-  bool isPlaying();
   void seekAbsoluteEvent( unsigned int new_frame_num );
   void seekRelativeEvent( bool bIsFoward );
 
@@ -97,11 +97,9 @@ public:
 
   QString getCurrentFileName() { return m_cFilename; }
 
-  void refreshSubWindow();
+  void refreshSubWindow() override;
   void refreshFrame();
   void refreshFrame( bool bThreaded );
-
-  int getFrameNum() { return m_pCurrStream->getFrameNum(); };
 
 private:
   bool goToNextFrame( bool bThreaded );

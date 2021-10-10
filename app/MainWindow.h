@@ -41,6 +41,7 @@
 #include <QVector>
 
 #include "CommonDefs.h"
+#include "VideoStreamSubWindow.h"
 #include "VideoSubWindow.h"
 #include "config.h"
 #ifdef USE_QTDBUS
@@ -59,6 +60,7 @@ class QSignalMapper;
 class CalypOptions;
 class CalypStream;
 class SubWindowHandle;
+class VideoStreamSubWindow;
 class VideoHandle;
 class QualityHandle;
 class ModulesHandle;
@@ -130,8 +132,8 @@ private:
   QString m_cLastOpenPath;
   QStringList showFileDialog( bool bRead );
 
-  static VideoSubWindow* findVideoStreamSubWindow( const SubWindowHandle* windowManager,
-                                                   const QString& fileName );
+  static VideoStreamSubWindow* findVideoStreamSubWindow( const SubWindowHandle* windowManager,
+                                                         const QString& fileName );
 
   void updateMenus();
 

@@ -56,6 +56,8 @@ SET(Calyp_App_SRCS
     ResourceHandle.cpp
     VideoHandle.cpp
     VideoSubWindow.cpp
+    VideoStreamSubWindow.cpp
+    ModuleSubWindow.cpp
     ViewArea.cpp
     GridManager.cpp
     # Module Quality

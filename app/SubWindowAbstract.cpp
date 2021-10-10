@@ -26,8 +26,10 @@
 
 #include <QCloseEvent>
 #include <QFocusEvent>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QScreen>
 #include <QScrollBar>
 
 #include "MdiSubWindow.h"
@@ -87,10 +89,20 @@ bool SubWindowAbstract::mayClose()
 
 QSize SubWindowAbstract::sizeHint() const
 {
-  return QSize();
+  QSize maxSize;
+  QWidget* p = parentWidget();
+  if( p )
+  {
+    maxSize = p->size();
+  }
+  else
+  {
+    maxSize = QGuiApplication::screens()[0]->availableGeometry().size();
+  }
+  return sizeHint( maxSize );
 }
 
-QSize SubWindowAbstract::sizeHint( const QSize& ) const
+QSize SubWindowAbstract::sizeHint( const QSize& maxSize ) const
 {
   return QSize();
 }

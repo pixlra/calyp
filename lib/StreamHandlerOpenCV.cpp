@@ -60,12 +60,12 @@ std::vector<CalypStreamFormat> StreamHandlerOpenCV::supportedWriteFormats()
 StreamHandlerOpenCV::StreamHandlerOpenCV()
 {
   m_pchHandlerName = "OpenCV";
-  pcVideoCapture = NULL;
+  m_pcVideoCapture = NULL;
 }
 
 bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
 {
-  m_cFilename = strFilename;
+  m_cFilename = std::move( strFilename );
   if( bInput )
   {
 #if( CV_VERSION_MAJOR >= 3 )
@@ -82,10 +82,10 @@ bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
 
       m_strFormatName = "DEV";
       m_strCodecName = "Raw Video";
-      pcVideoCapture = new VideoCapture( iDeviceId );
+      m_pcVideoCapture = new VideoCapture( iDeviceId );
 #if CV_MAJOR_VERSION >= 4
-      m_uiWidth = pcVideoCapture->get( cv::CAP_PROP_FRAME_WIDTH );
-      m_uiHeight = pcVideoCapture->get( cv::CAP_PROP_FRAME_HEIGHT );
+      m_uiWidth = m_pcVideoCapture->get( cv::CAP_PROP_FRAME_WIDTH );
+      m_uiHeight = m_pcVideoCapture->get( cv::CAP_PROP_FRAME_HEIGHT );
 #else
       m_uiWidth = pcVideoCapture->get( CV_CAP_PROP_FRAME_WIDTH );
       m_uiHeight = pcVideoCapture->get( CV_CAP_PROP_FRAME_HEIGHT );
@@ -106,7 +106,7 @@ bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
     m_iPixelFormat = CalypFrame::findPixelFormat( "BGR" );
 
     m_uiTotalNumberFrames = 1;
-    if( pcVideoCapture )
+    if( m_pcVideoCapture )
     {
       m_uiTotalNumberFrames = 2;
     }
@@ -117,11 +117,11 @@ bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
 
 void StreamHandlerOpenCV::closeHandler()
 {
-  if( pcVideoCapture )
+  if( m_pcVideoCapture )
   {
-    pcVideoCapture->release();
-    delete pcVideoCapture;
-    pcVideoCapture = NULL;
+    m_pcVideoCapture->release();
+    delete m_pcVideoCapture;
+    m_pcVideoCapture = NULL;
   }
 }
 
@@ -139,10 +139,10 @@ bool StreamHandlerOpenCV::seek( std::uint64_t iFrameNum )
 bool StreamHandlerOpenCV::read( CalypFrame& pcFrame )
 {
   bool bRet = false;
-  if( pcVideoCapture )
+  if( m_pcVideoCapture )
   {
     Mat cvMat;
-    bRet = pcVideoCapture->read( cvMat );
+    bRet = m_pcVideoCapture->read( cvMat );
     if( bRet )
       bRet = pcFrame.fromMat( cvMat );
   }

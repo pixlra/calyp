@@ -200,13 +200,18 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
     }
     try
     {
-      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, true );
+      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, true, iPass == 1 );
     }
     catch( CalypFailure& e )
     {
-      if( iPass == 1 )
+      if( iPass > 0 )
         throw( e );
     }
+  }
+
+  if( !bRet )
+  {
+    return false;
   }
 
   m_sStreamInfo.m_cFilename = cFilename;

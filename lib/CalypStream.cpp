@@ -48,7 +48,7 @@
 constexpr auto kDefaultBitsPerPixel = 8;
 constexpr auto kDefaultFrameRate = 30;
 
-auto find_stream_handler( std::string strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn;
+auto find_stream_handler( const std::string& strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn;
 
 std::vector<CalypStreamFormat> CalypStream::supportedReadFormats()
 {
@@ -192,12 +192,114 @@ public:
     isInit = false;
     bLoadAll = false;
     iCurrFrameNum = -1;
-    cFilename = "";
   }
 
   ~CalypStreamPrivate()
   {
     close();
+  }
+
+  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
+             unsigned int frame_rate, bool bInput, bool forceRaw )
+  {
+    if( isInit )
+    {
+      close();
+    }
+    isInit = false;
+    isInput = bInput;
+
+    if( forceRaw )
+    {
+      handler = StreamHandlerRaw::Create();
+    }
+    else
+    {
+      auto createHandlerFct = find_stream_handler( filename, isInput );
+      if( !createHandlerFct )
+      {
+        throw CalypFailure( "CalypStream", "Invalid handler" );
+      }
+
+      handler = createHandlerFct();
+    }
+
+    if( !handler )
+    {
+      throw CalypFailure( "CalypStream", "Cannot create handler" );
+    }
+
+    cFilename = std::move( filename );
+
+    handler->m_uiWidth = width;
+    handler->m_uiHeight = height;
+    handler->m_iPixelFormat = input_format;
+    handler->m_uiBitsPerPixel = bitsPel;
+    handler->m_iEndianness = endianness;
+    handler->m_dFrameRate = frame_rate;
+
+    if( !handler->openHandler( cFilename, isInput ) )
+    {
+      close();
+      throw CalypFailure( "CalypStream", "Cannot create the stream handler" );
+      return isInit;
+    }
+
+    if( handler->m_uiWidth <= 0 || handler->m_uiHeight <= 0 || handler->m_iPixelFormat < 0 )
+    {
+      close();
+      throw CalypFailure( "CalypStream", "Incorrect configuration: width, height or pixel format" );
+      return isInit;
+    }
+
+    frameFifo.clear();
+
+    // Keep past, current and future frames
+    std::size_t bufferSize = isInput ? 6 : 1;
+    try
+    {
+      frameBuffer = std::make_shared<CalypStreamFrameBuffer>( bufferSize,
+                                                              handler->m_uiWidth,
+                                                              handler->m_uiHeight,
+                                                              handler->m_iPixelFormat,
+                                                              handler->m_uiBitsPerPixel,
+                                                              hasNegative );
+    }
+    catch( CalypFailure& e )
+    {
+      close();
+      throw CalypFailure( "CalypStream", "Cannot allocated frame buffer" );
+      return isInit;
+    }
+
+    const CalypFrame* refFrame = frameBuffer->ref();
+
+    handler->m_uiNBytesPerFrame = refFrame->getBytesPerFrame();
+
+    // Some handlers need to know how long is a frame to get frame number
+    handler->calculateFrameNumber();
+
+    if( isInput && handler->m_uiTotalNumberFrames == 0 )
+    {
+      close();
+      throw CalypFailure( "CalypStream", "Incorrect configuration: less than one frame" );
+      return isInit;
+    }
+
+    if( !handler->configureBuffer( *refFrame ) )
+    {
+      close();
+      throw CalypFailure( "CalypStream", "Cannot allocated buffers" );
+      return isInit;
+    }
+
+    iCurrFrameNum = -1;
+    isInit = true;
+
+    seekInput( 0 );
+
+    isInit = true;
+    return isInit;
   }
 
   void close()
@@ -209,6 +311,30 @@ public:
 
     bLoadAll = false;
     isInit = false;
+  }
+
+  bool seekInput( unsigned long new_frame_num )
+  {
+    const std::lock_guard<std::recursive_mutex> lock( stream_mutex );
+
+    if( !isInit || new_frame_num >= handler->m_uiTotalNumberFrames || long( new_frame_num ) == iCurrFrameNum )
+      return false;
+
+    iCurrFrameNum = new_frame_num;
+
+    if( bLoadAll )
+      return true;
+
+    frameFifo.clear();
+    if( !handler->seek( iCurrFrameNum ) )
+    {
+      throw CalypFailure( "CalypStream", "Cannot seek file into desired position" );
+    }
+
+    readNextFrame();
+    if( handler->m_uiTotalNumberFrames > 1 )
+      readNextFrame();
+    return true;
   }
 
   bool readNextFrame( bool fillRgbBuffer = false )
@@ -291,109 +417,25 @@ bool CalypStream::open( std::string filename, std::string resolution, std::strin
       break;
     }
   }
-  return open( filename, width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput, false );
 }
 
 bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
                         unsigned int frame_rate, bool bInput )
 {
-  return open( filename, width, height, input_format, bitsPel, endianness, false, frame_rate, bInput );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, bInput, false );
 }
 
 bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, bool bInput )
 {
-  if( d->isInit )
-  {
-    d->close();
-  }
-  d->isInit = false;
-  d->isInput = bInput;
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput, false );
+}
 
-  auto createHandlerFct = find_stream_handler( filename, d->isInput );
-  if( !createHandlerFct )
-  {
-    throw CalypFailure( "CalypStream", "Invalid handler" );
-  }
-
-  d->handler = createHandlerFct();
-
-  if( !d->handler )
-  {
-    throw CalypFailure( "CalypStream", "Cannot create handler" );
-  }
-
-  d->cFilename = filename;
-
-  d->handler->m_cFilename = filename;
-  d->handler->m_uiWidth = width;
-  d->handler->m_uiHeight = height;
-  d->handler->m_iPixelFormat = input_format;
-  d->handler->m_uiBitsPerPixel = bitsPel;
-  d->handler->m_iEndianness = endianness;
-  d->handler->m_dFrameRate = frame_rate;
-
-  if( !d->handler->openHandler( d->cFilename, d->isInput ) )
-  {
-    d->close();
-    return d->isInit;
-  }
-
-  if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat < 0 )
-  {
-    d->close();
-    //throw CalypFailure( "CalypStream", "Incorrect configuration: width, height or pixel format" );
-    return d->isInit;
-  }
-
-  d->frameFifo.clear();
-
-  // Keep past, current and future frames
-  std::size_t bufferSize = d->isInput ? 6 : 1;
-  try
-  {
-    d->frameBuffer = std::make_shared<CalypStreamFrameBuffer>( bufferSize,
-                                                               d->handler->m_uiWidth,
-                                                               d->handler->m_uiHeight,
-                                                               d->handler->m_iPixelFormat,
-                                                               d->handler->m_uiBitsPerPixel,
-                                                               hasNegative );
-  }
-  catch( CalypFailure& e )
-  {
-    d->close();
-    throw CalypFailure( "CalypStream", "Cannot allocated frame buffer" );
-    return d->isInit;
-  }
-
-  const CalypFrame* refFrame = d->frameBuffer->ref();
-
-  d->handler->m_uiNBytesPerFrame = refFrame->getBytesPerFrame();
-
-  // Some handlers need to know how long is a frame to get frame number
-  d->handler->calculateFrameNumber();
-
-  if( d->isInput && d->handler->m_uiTotalNumberFrames == 0 )
-  {
-    d->close();
-    throw CalypFailure( "CalypStream", "Incorrect configuration: less than one frame" );
-    return d->isInit;
-  }
-
-  if( !d->handler->configureBuffer( *refFrame ) )
-  {
-    d->close();
-    throw CalypFailure( "CalypStream", "Cannot allocated buffers" );
-    return d->isInit;
-  }
-
-  d->iCurrFrameNum = -1;
-  d->isInit = true;
-
-  seekInput( 0 );
-
-  d->isInit = true;
-  return d->isInit;
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
+                        unsigned int frame_rate, bool bInput, bool forceRaw )
+{
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, bInput, forceRaw );
 }
 
 bool CalypStream::supportsFormatConfiguration()
@@ -643,29 +685,10 @@ bool CalypStream::seekInputRelative( bool bIsFoward )
 
 bool CalypStream::seekInput( unsigned long new_frame_num )
 {
-  const std::lock_guard<std::recursive_mutex> lock( d->stream_mutex );
-
-  if( !d->isInit || new_frame_num >= d->handler->m_uiTotalNumberFrames || long( new_frame_num ) == d->iCurrFrameNum )
-    return false;
-
-  d->iCurrFrameNum = new_frame_num;
-
-  if( d->bLoadAll )
-    return true;
-
-  d->frameFifo.clear();
-  if( !d->handler->seek( d->iCurrFrameNum ) )
-  {
-    throw CalypFailure( "CalypStream", "Cannot seek file into desired position" );
-  }
-
-  d->readNextFrame();
-  if( d->handler->m_uiTotalNumberFrames > 1 )
-    d->readNextFrame();
-  return true;
+  return d->seekInput( new_frame_num );
 }
 
-auto find_stream_handler( std::string strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn
+auto find_stream_handler( const std::string& strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn
 {
   std::string currExt = strFilename.substr( strFilename.find_last_of( "." ) + 1 );
   currExt = clpLowercase( currExt );

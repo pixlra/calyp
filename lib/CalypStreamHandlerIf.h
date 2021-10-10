@@ -103,7 +103,6 @@ protected:
   std::string m_strCodecName;
   bool m_bIsInput{ true };
   bool m_bNative{ true };
-  std::string m_cFilename;
   unsigned int m_uiWidth{ 0 };
   unsigned int m_uiHeight{ 0 };
   int m_iPixelFormat{ -1 };

@@ -82,12 +82,40 @@ public:
   std::string getFormatName() const;
   std::string getCodecName() const;
 
-  bool open( std::string filename, std::string resolution, std::string input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
+  bool open( std::string filename,
+             std::string resolution,
+             std::string input_format,
+             unsigned int bitsPel,
+             int endianness,
+             bool hasNegative,
+             unsigned int frame_rate,
              bool bInput );
-  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, unsigned int frame_rate,
+  bool open( std::string filename,
+             unsigned int width,
+             unsigned int height,
+             int input_format,
+             unsigned int bitsPel,
+             int endianness,
+             unsigned int frame_rate,
              bool bInput );
-  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
+  bool open( std::string filename,
+             unsigned int width,
+             unsigned int height,
+             int input_format,
+             unsigned int bitsPel,
+             int endianness,
+             bool hasNegative,
+             unsigned int frame_rate,
              bool bInput );
+  bool open( std::string filename,
+             unsigned int width,
+             unsigned int height,
+             int input_format,
+             unsigned int bitsPel,
+             int endianness,
+             unsigned int frame_rate,
+             bool bInput,
+             bool forceRaw );
 
   bool supportsFormatConfiguration();
   bool reload();

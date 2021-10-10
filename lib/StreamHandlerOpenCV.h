@@ -48,7 +48,8 @@ public:
   bool write( const CalypFrame& pcFrame );
 
 private:
-  cv::VideoCapture* pcVideoCapture;
+  std::string m_cFilename;
+  cv::VideoCapture* m_pcVideoCapture;
 };
 
 #endif  // __STREAMHANDLEROPENCV_H__

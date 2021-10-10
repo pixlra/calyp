@@ -598,10 +598,17 @@ void MainWindow::updateMenus()
 {
   bool hasSubWindow = ( m_pcWindowHandle->activeSubWindow() != 0 );
 
-  bool hasVideoStreamSubWindow = false;
-  if( m_pcCurrentSubWindow )
-    if( m_pcCurrentSubWindow->getCategory() & SubWindowAbstract::VIDEO_STREAM_SUBWINDOW )
-      hasVideoStreamSubWindow = true;
+  bool hasVideoStreamSubWindow{ false };
+  bool supportsFormat{ false };
+  if( m_pcCurrentSubWindow && m_pcCurrentSubWindow->getCategory() & SubWindowAbstract::VIDEO_STREAM_SUBWINDOW )
+  {
+    hasVideoStreamSubWindow = true;
+
+    if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
+    {
+      supportsFormat = pcVideoSubWindow->supportsFormatConfiguration();
+    }
+  }
 
   m_arrayMenu[RECENT_MENU]->setEnabled( m_aRecentFileStreamInfo.size() > 0 ? true : false );
 
@@ -611,7 +618,7 @@ void MainWindow::updateMenus()
   m_arrayActions[RELOAD_ACT]->setEnabled( hasSubWindow );
   m_arrayActions[RELOAD_ALL_ACT]->setEnabled( hasSubWindow );
 
-  m_arrayActions[FORMAT_ACT]->setEnabled( hasVideoStreamSubWindow );
+  m_arrayActions[FORMAT_ACT]->setEnabled( supportsFormat );
   m_arrayActions[LOAD_ALL_ACT]->setEnabled( hasVideoStreamSubWindow );
 
   m_arrayActions[ZOOM_IN_ACT]->setEnabled( hasSubWindow );

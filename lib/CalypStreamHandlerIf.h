@@ -27,6 +27,7 @@
 
 #include <vector>
 
+#include "CalypDefs.h"
 #include "CalypStream.h"
 
 #define INI_REGIST_CALYP_SUPPORTED_FMT        \

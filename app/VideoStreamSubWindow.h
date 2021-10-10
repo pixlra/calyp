@@ -79,6 +79,8 @@ public:
 
   void setResourceManaget( ResourceHandle* resourceManager ) { m_pcResourceManager = resourceManager; }
 
+  bool supportsFormatConfiguration() const { return m_pCurrStream->supportsFormatConfiguration(); };
+
   bool loadFile( QString cFilename, bool bForceDialog = false );
   bool loadFile( CalypFileInfo* streamInfo );
   void loadAll();

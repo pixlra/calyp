@@ -396,9 +396,9 @@ bool CalypStream::open( std::string filename, unsigned int width, unsigned int h
   return d->isInit;
 }
 
-bool CalypStream::supportsFormating()
+bool CalypStream::supportsFormatConfiguration()
 {
-  if( d->handler != nullptr )
+  if( d->handler == nullptr )
     return false;
   return d->handler->m_bSupportsFormat;
 }

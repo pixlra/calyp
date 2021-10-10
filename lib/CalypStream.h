@@ -29,7 +29,6 @@
 #include <memory>
 #include <vector>
 
-#include "CalypDefs.h"
 #include "CalypFrame.h"
 
 class CalypStreamHandlerIf;
@@ -90,7 +89,7 @@ public:
   bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
 
-  bool supportsFormating();
+  bool supportsFormatConfiguration();
   bool reload();
 
   bool isNative() const;

@@ -93,6 +93,7 @@ enum CLP_RGB_Components
 
 enum CLP_Endianness
 {
+  CLP_INVALID_ENDIANESS = -1,
   CLP_BIG_ENDIAN = 0,
   CLP_LITTLE_ENDIAN = 1,
 };

@@ -51,12 +51,11 @@
     formatsList.insert( formatsList.end(), new_fmts.begin(), new_fmts.end() );       \
   }
 
-#define REGISTER_CALYP_STREAM_HANDLER( X )                       \
-public:                                                          \
-  static CalypStreamHandlerIf* Create() { return new X(); }      \
-  void Delete() { delete this; }                                 \
-  static std::vector<CalypStreamFormat> supportedReadFormats();  \
-  static std::vector<CalypStreamFormat> supportedWriteFormats(); \
+#define REGISTER_CALYP_STREAM_HANDLER( X )                                                \
+public:                                                                                   \
+  static std::unique_ptr<CalypStreamHandlerIf> Create() { return std::make_unique<X>(); } \
+  static std::vector<CalypStreamFormat> supportedReadFormats();                           \
+  static std::vector<CalypStreamFormat> supportedWriteFormats();                          \
   // static int checkforSupportedFile( String, bool );
 
 /**
@@ -69,23 +68,7 @@ class CalypStreamHandlerIf
   friend class CalypStream;
 
 public:
-  CalypStreamHandlerIf()
-      : m_bIsInput( true )
-      , m_bNative( true )
-      , m_uiWidth( 0 )
-      , m_uiHeight( 0 )
-      , m_iPixelFormat( -1 )
-      , m_uiBitsPerPixel( 8 )
-      , m_iEndianness( -1 )
-      , m_dFrameRate( 30 )
-      , m_uiCurrFrameFileIdx( 0 )
-      , m_uiTotalNumberFrames( 0 )
-      , m_uiNBytesPerFrame( 0 )
-      , m_isEOF( false )
-  {
-  }
   virtual ~CalypStreamHandlerIf() {}
-  virtual void Delete() = 0;
 
   virtual bool openHandler( std::string strFilename, bool bInput ) = 0;
   virtual void closeHandler() = 0;
@@ -96,28 +79,41 @@ public:
 
   virtual void calculateFrameNumber(){};
 
-  std::string getFormatName() { return m_strFormatName; }
-  std::string getCodecName() { return m_strCodecName; }
+  std::string getFormatName()
+  {
+    return m_strFormatName;
+  }
+  std::string getCodecName()
+  {
+    return m_strCodecName;
+  }
 
 protected:
-  const char* m_pchHandlerName;
+  CalypStreamHandlerIf() = default;
+  CalypStreamHandlerIf( bool supportsFormats )
+      : m_bSupportsFormat{ supportsFormats }
+  {
+  }
+
+  const char* m_pchHandlerName{ "" };
+  const bool m_bSupportsFormat{ false };
 
   std::string m_strFormatName;
   std::string m_strCodecName;
-  bool m_bIsInput;
-  bool m_bNative;
+  bool m_bIsInput{ true };
+  bool m_bNative{ true };
   std::string m_cFilename;
-  unsigned int m_uiWidth;
-  unsigned int m_uiHeight;
-  int m_iPixelFormat;
-  unsigned int m_uiBitsPerPixel;
-  int m_iEndianness;
-  double m_dFrameRate;
-  std::uint64_t m_uiCurrFrameFileIdx;
-  std::uint64_t m_uiTotalNumberFrames;
+  unsigned int m_uiWidth{ 0 };
+  unsigned int m_uiHeight{ 0 };
+  int m_iPixelFormat{ -1 };
+  unsigned int m_uiBitsPerPixel{ 8 };
+  int m_iEndianness{ CLP_INVALID_ENDIANESS };
+  double m_dFrameRate{ 30 };
+  std::uint64_t m_uiCurrFrameFileIdx{ 0 };
+  std::uint64_t m_uiTotalNumberFrames{ 0 };
   std::vector<ClpByte> m_pStreamBuffer;
-  std::uint64_t m_uiNBytesPerFrame;
-  bool m_isEOF;
+  std::uint64_t m_uiNBytesPerFrame{ 0 };
+  bool m_isEOF{ false };
 };
 
 #endif  // __CALYPSTREAMHANDLERIF_H__

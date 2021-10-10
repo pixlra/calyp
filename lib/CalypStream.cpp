@@ -48,6 +48,8 @@
 constexpr auto kDefaultBitsPerPixel = 8;
 constexpr auto kDefaultFrameRate = 30;
 
+auto find_stream_handler( std::string strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn;
+
 std::vector<CalypStreamFormat> CalypStream::supportedReadFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
@@ -166,8 +168,7 @@ public:
   bool isInit;
   bool isInput;
 
-  CalypStreamHandlerIf* handler;
-  CreateStreamHandlerFn pfctCreateHandler;
+  std::unique_ptr<CalypStreamHandlerIf> handler;
 
   std::shared_ptr<CalypStreamFrameBuffer> frameBuffer;
   std::deque<std::shared_ptr<CalypFrame>> frameFifo;
@@ -187,7 +188,6 @@ public:
   CalypStreamPrivate()
   {
     handler = nullptr;
-    pfctCreateHandler = nullptr;
     isInput = true;
     isInit = false;
     bLoadAll = false;
@@ -205,7 +205,6 @@ public:
     if( handler )
     {
       handler->closeHandler();
-      handler->Delete();
     }
 
     bLoadAll = false;
@@ -251,43 +250,6 @@ std::vector<std::string> CalypStreamFormat::getExts()
   }
   arrayExt.push_back( formatExt.substr( prev_pos, pos - prev_pos ) );  // Last word
   return arrayExt;
-}
-
-CreateStreamHandlerFn CalypStream::findStreamHandler( std::string strFilename, bool bRead )
-{
-  std::string currExt = strFilename.substr( strFilename.find_last_of( "." ) + 1 );
-  currExt = clpLowercase( currExt );
-
-  std::vector<CalypStreamFormat> supportedFmts;
-  if( bRead )
-  {
-    supportedFmts = CalypStream::supportedReadFormats();
-  }
-  else
-  {
-    supportedFmts = CalypStream::supportedWriteFormats();
-  }
-  for( unsigned int i = 0; i < supportedFmts.size(); i++ )
-  {
-    std::vector<std::string> arrayExt = supportedFmts[i].getExts();
-    for( std::vector<std::string>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
-    {
-      if( currExt != "" && currExt == *e )
-      {
-        return supportedFmts[i].formatFct;
-      }
-      else if( strFilename.find( *e ) != std::string::npos )
-      {
-        return supportedFmts[i].formatFct;
-      }
-    }
-  }
-
-#ifdef USE_FFMPEG
-  return &StreamHandlerLibav::Create;
-#else
-  return &StreamHandlerRaw::Create;
-#endif
 }
 
 CalypStream::CalypStream()
@@ -348,13 +310,13 @@ bool CalypStream::open( std::string filename, unsigned int width, unsigned int h
   d->isInit = false;
   d->isInput = bInput;
 
-  d->pfctCreateHandler = CalypStream::findStreamHandler( filename, d->isInput );
-  if( !d->pfctCreateHandler )
+  auto createHandlerFct = find_stream_handler( filename, d->isInput );
+  if( !createHandlerFct )
   {
     throw CalypFailure( "CalypStream", "Invalid handler" );
   }
 
-  d->handler = d->pfctCreateHandler();
+  d->handler = createHandlerFct();
 
   if( !d->handler )
   {
@@ -432,6 +394,13 @@ bool CalypStream::open( std::string filename, unsigned int width, unsigned int h
 
   d->isInit = true;
   return d->isInit;
+}
+
+bool CalypStream::supportsFormating()
+{
+  if( d->handler != nullptr )
+    return false;
+  return d->handler->m_bSupportsFormat;
 }
 
 bool CalypStream::reload()
@@ -694,4 +663,41 @@ bool CalypStream::seekInput( unsigned long new_frame_num )
   if( d->handler->m_uiTotalNumberFrames > 1 )
     d->readNextFrame();
   return true;
+}
+
+auto find_stream_handler( std::string strFilename, bool bRead ) -> CalypStreamFormat::CreateStreamHandlerFn
+{
+  std::string currExt = strFilename.substr( strFilename.find_last_of( "." ) + 1 );
+  currExt = clpLowercase( currExt );
+
+  std::vector<CalypStreamFormat> supportedFmts;
+  if( bRead )
+  {
+    supportedFmts = CalypStream::supportedReadFormats();
+  }
+  else
+  {
+    supportedFmts = CalypStream::supportedWriteFormats();
+  }
+  for( unsigned int i = 0; i < supportedFmts.size(); i++ )
+  {
+    std::vector<std::string> arrayExt = supportedFmts[i].getExts();
+    for( std::vector<std::string>::iterator e = arrayExt.begin(); e != arrayExt.end(); ++e )
+    {
+      if( currExt != "" && currExt == *e )
+      {
+        return supportedFmts[i].formatFct;
+      }
+      else if( strFilename.find( *e ) != std::string::npos )
+      {
+        return supportedFmts[i].formatFct;
+      }
+    }
+  }
+
+#ifdef USE_FFMPEG
+  return &StreamHandlerLibav::Create;
+#else
+  return &StreamHandlerRaw::Create;
+#endif
 }

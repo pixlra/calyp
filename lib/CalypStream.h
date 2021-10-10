@@ -34,22 +34,31 @@
 
 class CalypStreamHandlerIf;
 
-typedef CalypStreamHandlerIf* ( *CreateStreamHandlerFn )( void );
-
-struct CalypStreamFormat
-{
-  std::string formatName;
-  std::string formatExt;
-  std::vector<std::string> getExts();
-  std::string formatPattern;
-  CreateStreamHandlerFn formatFct;
-};
-
 struct CalypStandardResolution
 {
   std::string shortName;
   unsigned int uiWidth;
   unsigned int uiHeight;
+};
+
+/**
+ * \class CalypStreamFormat
+ * \ingroup CalypLibGrp CalypStreamGrp
+ * \brief  Stream format handling class
+ */
+
+class CalypStreamFormat
+{
+public:
+  using CreateStreamHandlerFn = auto ( * )( void ) -> std::unique_ptr<CalypStreamHandlerIf>;
+
+  CalypStreamFormat() = default;
+  std::vector<std::string> getExts();
+
+  std::string formatName;
+  std::string formatExt;
+  std::string formatPattern;
+  CreateStreamHandlerFn formatFct;
 };
 
 /**
@@ -62,9 +71,6 @@ class CalypStream
 public:
   static std::vector<CalypStreamFormat> supportedReadFormats();
   static std::vector<CalypStreamFormat> supportedWriteFormats();
-
-  static CreateStreamHandlerFn findStreamHandler( std::string strFilename, bool bRead );
-
   static std::vector<CalypStandardResolution> stdResolutionSizes();
 
   CalypStream();
@@ -84,6 +90,7 @@ public:
   bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate,
              bool bInput );
 
+  bool supportsFormating();
   bool reload();
 
   bool isNative() const;

@@ -44,6 +44,12 @@ std::vector<CalypStreamFormat> StreamHandlerRaw::supportedWriteFormats()
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 
+StreamHandlerRaw::StreamHandlerRaw()
+    : CalypStreamHandlerIf{ true }
+{
+  m_pchHandlerName = "RawVideo";
+}
+
 bool StreamHandlerRaw::openHandler( std::string strFilename, bool bInput )
 {
   m_bIsInput = bInput;

@@ -40,7 +40,7 @@ private:
   FILE* m_pFile; /**< The input file pointer >*/
 
 public:
-  StreamHandlerRaw() { m_pchHandlerName = "RawVideo"; }
+  StreamHandlerRaw();
   ~StreamHandlerRaw() {}
   bool openHandler( std::string strFilename, bool bInput );
   void closeHandler();

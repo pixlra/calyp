@@ -34,6 +34,7 @@ std::vector<CalypStreamFormat> StreamHandlerRaw::supportedReadFormats()
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerRaw::Create, "Raw YUV Video", "yuv" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerRaw::Create, "Raw Gray Video", "gray" );
   REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerRaw::Create, "Raw RGB Video", "rgb" );
+  REGIST_CALYP_SUPPORTED_FMT( &StreamHandlerRaw::Create, "Raw Video", "raw" );
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 

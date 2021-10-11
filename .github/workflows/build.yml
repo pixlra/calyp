@@ -46,6 +46,7 @@ jobs:
 
     - name: Check out tests data
       uses: actions/checkout@master
+      repository: 'pixlra/calyp-testdata'
       with:
         path: tests_data
 

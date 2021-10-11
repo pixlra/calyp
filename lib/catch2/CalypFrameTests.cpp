@@ -22,7 +22,6 @@
  * \brief    CalypFrame general tests
  */
 
-#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
 #include "CalypFrame.h"
@@ -32,10 +31,10 @@ TEST_CASE( "create a 256x128 frame with 8 bits in YUV420 format", "CalypFrame" )
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
   CalypFrame testFrame( 256, 128, CLP_YUV420P, 8 );
 
-  REQUIRE( testFrame.getWidth() == 256 );
-  REQUIRE( testFrame.getHeight() == 128 );
-  REQUIRE( testFrame.getPelFormat() == CLP_YUV420P );
-  REQUIRE( testFrame.getBitsPel() == 8 );
+  CHECK( testFrame.getWidth() == 256 );
+  CHECK( testFrame.getHeight() == 128 );
+  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getBitsPel() == 8 );
 }
 
 TEST_CASE( "create a 256x128 frame with 10 bits in YUV420 format", "CalypFrame" )
@@ -43,10 +42,10 @@ TEST_CASE( "create a 256x128 frame with 10 bits in YUV420 format", "CalypFrame" 
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
   CalypFrame testFrame( 256, 128, CLP_YUV420P, 10 );
 
-  REQUIRE( testFrame.getWidth() == 256 );
-  REQUIRE( testFrame.getHeight() == 128 );
-  REQUIRE( testFrame.getPelFormat() == CLP_YUV420P );
-  REQUIRE( testFrame.getBitsPel() == 10 );
+  CHECK( testFrame.getWidth() == 256 );
+  CHECK( testFrame.getHeight() == 128 );
+  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getBitsPel() == 10 );
 }
 
 TEST_CASE( "create a 256x128 frame with 16 bits in YUV420 format", "CalypFrame" )
@@ -54,8 +53,8 @@ TEST_CASE( "create a 256x128 frame with 16 bits in YUV420 format", "CalypFrame" 
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
   CalypFrame testFrame( 256, 128, CLP_YUV420P, 16 );
 
-  REQUIRE( testFrame.getWidth() == 256 );
-  REQUIRE( testFrame.getHeight() == 128 );
-  REQUIRE( testFrame.getPelFormat() == CLP_YUV420P );
-  REQUIRE( testFrame.getBitsPel() == 16 );
+  CHECK( testFrame.getWidth() == 256 );
+  CHECK( testFrame.getHeight() == 128 );
+  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getBitsPel() == 16 );
 }

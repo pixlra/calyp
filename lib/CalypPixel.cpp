@@ -141,6 +141,25 @@ CalypPixel CalypPixel::operator*( const double& op ) const
   return result;
 }
 
+auto CalypPixel::operator==( const CalypPixel& other ) const -> bool
+{
+  return colorSpace() == other.colorSpace() &&
+         std::equal( m_pelComp.begin(), m_pelComp.end(), other.components().begin() );
+}
+
+std::ostream& operator<<( std::ostream& os, const CalypPixel& p )
+{
+  if( p.colorSpace() == CLP_COLOR_RGB || p.colorSpace() == CLP_COLOR_YUV )
+  {
+    os << "(" << p[0] << ", " << p[1] << ", " << p[2] << ")";
+  }
+  else
+  {
+    os << "(" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << ")";
+  }
+  return os;
+}
+
 CalypPixel CalypPixel::convertPixel( CalypColorSpace eOutputSpace ) const
 {
   if( m_colorSpace == eOutputSpace )

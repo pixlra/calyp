@@ -85,15 +85,15 @@ ADD_MODULE_USE_OPENCV(
   imgproc
   photo
 )
-ADD_MODULE_USE_OPENCV(
-  ThreeSixtyDynamicDownsampling
-  "ThreeSixtyDynamicDownsampling"
-  VERSION
-  3.1.0
-  MODULES
-  core
-  imgproc
-)
+# ADD_MODULE_USE_OPENCV(
+#   ThreeSixtyDynamicDownsampling
+#   "ThreeSixtyDynamicDownsampling"
+#   VERSION
+#   3.1.0
+#   MODULES
+#   core
+#   imgproc
+# )
 ADD_MODULE_USE_OPENCV(
   ThreeSixtyNxN
   "ThreeSixtyNxN"

@@ -53,10 +53,6 @@ bool SaliencyBasedFiltering::create( std::vector<CalypFrame*> apcFrameList )
     if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_RESOLUTION ) )
       return false;
   }
-  if( apcFrameList[1]->getNumberChannels() != 1 )
-  {
-    return false;
-  }
 
   m_pcProcessedFrame = std::make_unique<CalypFrame>( apcFrameList[0]->getWidth(),
                                                      apcFrameList[0]->getHeight(),

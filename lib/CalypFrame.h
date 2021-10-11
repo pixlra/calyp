@@ -141,6 +141,10 @@ public:
   CalypPixel operator-( const CalypPixel& ) const;
   CalypPixel operator*( const double& ) const;
 
+  auto operator==( const CalypPixel& other ) const -> bool;
+
+  friend std::ostream& operator<<( std::ostream& os, const CalypPixel& p );
+
   /**
 	 * Convert a Pixel to a new color space
 	 * @param inputPixel input pixel (CalypPixel)
@@ -149,6 +153,8 @@ public:
 	 */
   CalypPixel convertPixel( CalypColorSpace eOutputSpace ) const;
 };
+
+std::ostream& operator<<( std::ostream& os, const CalypPixel& p );
 
 /**
  * \class    CalypPlane

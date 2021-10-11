@@ -35,3 +35,28 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+  run-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: sudo apt-get update &&  sudo apt-get install gcc-10 g++-10 cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
+
+    - uses: actions/checkout@v2
+
+    - name: Check out tests data
+      uses: actions/checkout@master
+      with:
+        path: tests_data
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -D CMAKE_C_COMPILER=gcc-10 -D CMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_WERROR=ON -DBUILD_TESTS=ON -DCALYP_TEST_DATA_DIR=${{github.workspace}}/tests_data
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -t test
+
+    - name: CalypLib tests
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -t test

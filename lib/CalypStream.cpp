@@ -235,7 +235,7 @@ public:
     handler->m_uiHeight = height;
     handler->m_iPixelFormat = input_format;
     handler->m_uiBitsPerPixel = bitsPel;
-    handler->m_iEndianness = endianness;
+    handler->m_iEndianness = bitsPel > 8 ? endianness : CLP_BIG_ENDIAN;
     handler->m_dFrameRate = frame_rate;
 
     if( !handler->openHandler( cFilename, isInput ) )

@@ -23,6 +23,7 @@
  */
 
 #include <catch2/catch.hpp>
+#include <filesystem>
 #include <variant>
 
 #include "CalypFrame.h"
@@ -44,8 +45,12 @@ TEST_CASE( "Can open a YUV 420p file", "CalypStream" )
   constexpr int kBitsPel{ 8 };
   constexpr auto KEndianness{ CLP_INVALID_ENDIANESS };
 
+  const auto kFilename = getFileTestFilename( "Foreman.yuv" );
+
+  REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
+
   CalypStream test_stream;
-  auto result = test_stream.open( getFileTestFilename( "Foreman.yuv" ), kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+  auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
 
   REQUIRE( result );
 
@@ -70,6 +75,10 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
   constexpr int kBitsPel{ 8 };
   constexpr auto KEndianness{ CLP_INVALID_ENDIANESS };
 
+  const auto kFilename = getFileTestFilename( "Foreman.yuv" );
+
+  REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
+
   bool force_raw{ false };
 
   SECTION( "Without forcing raw video" )
@@ -78,7 +87,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
     bool result{ false };
     try
     {
-      result = test_stream.open( getFileTestFilename( "Foreman.batatas" ), kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
+      result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
     }
     catch( ... )
     {
@@ -93,7 +102,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
     force_raw = true;
 
     CalypStream test_stream;
-    auto result = test_stream.open( getFileTestFilename( "Foreman.batatas" ), kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
 
     REQUIRE( result );
 

@@ -75,7 +75,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
   constexpr int kBitsPel{ 8 };
   constexpr auto KEndianness{ CLP_INVALID_ENDIANESS };
 
-  const auto kFilename = getFileTestFilename( "Foreman.yuv" );
+  const auto kFilename = getFileTestFilename( "Foreman.batatas" );
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 

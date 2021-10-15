@@ -322,7 +322,7 @@ public:
 	 * Get pixel format information
 	 * @return pixel format name
 	 */
-  std::string getPelFmtName();
+  std::string getPelFmtName() const;
 
   /**
 	 * Get color space information
@@ -512,18 +512,18 @@ public:
   };
   void calcHistogram();
 
-  unsigned int getMinimumPelValue( unsigned channel );
-  unsigned int getMaximumPelValue( unsigned channel );
+  unsigned int getMinimumPelValue( unsigned channel ) const;
+  unsigned int getMaximumPelValue( unsigned channel ) const;
 
-  unsigned int getMaximum( unsigned channel );
-  unsigned int getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end );
-  double getMean( unsigned channel, unsigned int start, unsigned int end );
-  int getMedian( unsigned channel, unsigned int start, unsigned int end );
-  double getStdDev( unsigned channel, unsigned int start, unsigned int end );
-  double getHistogramValue( unsigned channel, unsigned int bin );
-  unsigned int getNEBins( unsigned channel );
-  int getNumHistogramSegment();
-  double getEntropy( unsigned channel, unsigned int start, unsigned int end );
+  unsigned int getMaximum( unsigned channel ) const;
+  unsigned int getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end ) const;
+  double getMean( unsigned channel, unsigned int start, unsigned int end ) const;
+  int getMedian( unsigned channel, unsigned int start, unsigned int end ) const;
+  double getStdDev( unsigned channel, unsigned int start, unsigned int end ) const;
+  double getHistogramValue( unsigned channel, unsigned int bin ) const;
+  unsigned int getNEBins( unsigned channel ) const;
+  int getNumHistogramSegment() const;
+  double getEntropy( unsigned channel, unsigned int start, unsigned int end ) const;
 
   /**
 	 * interface with OpenCV lib

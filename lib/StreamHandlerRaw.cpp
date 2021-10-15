@@ -25,6 +25,7 @@
 #include "StreamHandlerRaw.h"
 
 #include <cstdio>
+#include <filesystem>
 
 #include "CalypFrame.h"
 
@@ -61,7 +62,9 @@ bool StreamHandlerRaw::openHandler( std::string strFilename, bool bInput )
     return false;
   }
   calculateFrameNumber();
-  m_strFormatName = "YUV";
+  std::string fileExtension = std::filesystem::path{ strFilename }.extension();
+  fileExtension.erase( fileExtension.begin() );
+  m_strFormatName = clpUppercase( fileExtension );
   m_strCodecName = "Raw Video";
   return true;
 }

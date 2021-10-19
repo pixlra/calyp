@@ -238,6 +238,8 @@ void CalypAppModuleIf::show()
   case ClpModuleType::FrameMeasurement:
     m_pcModuleDock->setModuleReturnValue( m_dMeasurementResult );
     break;
+  default:
+    assert( false );
   }
 }
 

@@ -81,16 +81,16 @@ public:
   CalypAppModuleIf( QObject* parent, QAction* action, CalypModulePtr&& module );
   ~CalypAppModuleIf();
 
-  auto getSubWindowList() -> const std::vector<VideoSubWindow*>& { return m_pcSubWindow; }
+  auto getSubWindowList() const -> const std::vector<VideoSubWindow*>& { return m_pcSubWindow; }
 
   CalypModuleIf* getModule() { return m_pcModule.get(); }
-  unsigned int getModuleRequirements() { return m_pcModule->m_uiModuleRequirements; }
-  std::string moduleInfo() { return m_pcModule->moduleInfo(); }
+  auto getModuleRequirements() const -> ClpModuleFeatures { return m_pcModule->m_uiModuleRequirements; }
+  std::string moduleInfo() const { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool process();
   // void setPlaying( bool isPlaying );
-  bool isRunning();
+  bool isRunning() const;
   void show();
   void disable();
 

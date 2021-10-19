@@ -97,7 +97,7 @@ void CalypAppModuleIf::update( bool isPlaying )
 //   }
 // }
 
-bool CalypAppModuleIf::isRunning()
+bool CalypAppModuleIf::isRunning() const
 {
 #ifdef CALYP_THREADED_MODULES
   return QThread::isRunning();

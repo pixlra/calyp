@@ -36,15 +36,11 @@ SaliencyDetectionModule::SaliencyDetectionModule()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Saliency";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW;
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow;
   m_bConvertToGray = true;
-}
-
-void SaliencyDetectionModule::destroy_using_opencv()
-{
 }
 
 SaliencyDetectionSpectral::SaliencyDetectionSpectral()
@@ -54,7 +50,7 @@ SaliencyDetectionSpectral::SaliencyDetectionSpectral()
   m_pchModuleLongName = "Spectral residual";
   m_pchModuleTooltip = "Measure saliency using spectral residual method";
 
-  m_uiModuleRequirements = m_uiModuleRequirements | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = m_uiModuleRequirements | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions() /**/
       ( "Binary map", m_bBinaryMap, "Measure a binary saliency map [false]" );

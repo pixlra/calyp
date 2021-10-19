@@ -30,16 +30,16 @@ HEVCIntraPrediction::HEVCIntraPrediction()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "HEVC";
   m_pchModuleLongName = "Intra Prediction";
   m_pchModuleName = "HEVCIntraPrediction";
   m_pchModuleTooltip = "Apply intra-frame prediction";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW |
-                           CLP_MODULE_USES_KEYS |
-                           CLP_MODULES_HAS_INFO |
-                           CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow |
+                           ClpModuleFeature::KeysShortcuts |
+                           ClpModuleFeature::HasInfo |
+                           ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                      /**/
       ( "mode", m_uiMode, "Intra mode (26-34) [26]" )                /**/

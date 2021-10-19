@@ -28,13 +28,13 @@ ThreeSixtySpatialtoTemporal::ThreeSixtySpatialtoTemporal()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_3;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleLongName = "Spatial to Temporal";
   m_pchModuleName = "ThreeSixtySpatialtoTemporal";
   m_pchModuleTooltip = "Convert 360 video from Cube Map Projection to temporal frames";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                                    /**/
       ( "spa2temp", m_uiSpatial2Temporal, "Convert from spatial to temporal [1]" ) /**/

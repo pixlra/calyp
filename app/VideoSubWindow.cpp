@@ -158,7 +158,7 @@ void VideoSubWindow::keyPressEvent( QKeyEvent* event )
 {
   if( m_pcDisplayModule )
   {
-    if( m_pcDisplayModule->getModuleRequirements() & CLP_MODULE_USES_KEYS )
+    if( m_pcDisplayModule->getModuleRequirements().is_set( ClpModuleFeature::KeysShortcuts ) )
     {
       bool bRet = false;
       switch( event->key() )

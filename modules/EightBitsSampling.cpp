@@ -28,13 +28,13 @@ EightBitsSampling::EightBitsSampling()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Conversions";
   m_pchModuleName = "BitsResampling";
   m_pchModuleLongName = "Re-sampling frame (bpp)";
   m_pchModuleTooltip = "Re-sampling frame to a different value of bits per pixel";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions() /**/
       ( "num_bits", m_iNumberOfBits, "Number of bits/pixel (8-16) [8]" );

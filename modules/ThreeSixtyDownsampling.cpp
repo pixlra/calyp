@@ -39,16 +39,16 @@ ThreeSixtyDownsampling::ThreeSixtyDownsampling()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleName = "ThreeSixtyDownsampling";
   m_pchModuleLongName = "Adaptive Latitude Downsampling";
   m_pchModuleTooltip = "Adaptive Latitude Downsampling";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY |
-                           CLP_MODULE_REQUIRES_OPTIONS |
-                           CLP_MODULES_HAS_INFO |
-                           CLP_MODULE_USES_KEYS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying |
+                           ClpModuleFeature::Options |
+                           ClpModuleFeature::HasInfo |
+                           ClpModuleFeature::KeysShortcuts;
 
   m_cModuleOptions.addOptions()                                                                     /**/
       ( "Downsampling", m_uiDownsampling, "ERP to NxN (0 for up, 1 for down and 2 for recon) [1]" ) /**/

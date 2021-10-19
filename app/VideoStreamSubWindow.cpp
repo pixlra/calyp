@@ -120,7 +120,7 @@ void VideoStreamSubWindow::updateVideoWindowInfo()
         }
       }
     }
-    if( m_pcDisplayModule->getModuleRequirements() & CLP_MODULES_HAS_INFO )
+    if( m_pcDisplayModule->getModuleRequirements() & ClpModuleFeature::HasInfo )
     {
       QStringList list = QString::fromStdString( m_pcDisplayModule->moduleInfo() ).split( '\n' );
       windowInfoList.append( list );

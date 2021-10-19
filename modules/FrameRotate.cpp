@@ -28,13 +28,13 @@ FrameRotate::FrameRotate()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleLongName = "Rotation";
   m_pchModuleName = "FrameRotate";
   m_pchModuleTooltip = "Rotates frame";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions() /**/
       ( "Angle", m_iAngle, "Angle to rotate (0, 90, 180, 270)" );

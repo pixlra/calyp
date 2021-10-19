@@ -39,10 +39,10 @@ OpticalFlowModule::OpticalFlowModule()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "OpticalFlow";
   m_uiNumberOfFrames = 2;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULE_REQUIRES_NEW_WINDOW | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::NewWindow | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions() /**/
       ( "Show reconstruction", m_bShowReconstruction, "Show reconstructed frame instead of MVs [false]" );

@@ -119,7 +119,7 @@ void CalypAppModuleIf::run()
 bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
 {
   bool moduleExecuted = false;
-  if( m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+  if( m_pcModule->m_iModuleType == ClpModuleType::FrameProcessing )
   {
     if( m_pcDisplaySubWindow )
     {
@@ -130,7 +130,8 @@ bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
       m_pcSubWindow[0]->setFillWindow( true );
     }
   }
-  if( !( isPlaying && ( m_pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY ) ) )
+
+  if( !( isPlaying && m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::SkipWhilePlaying ) ) )
   {
     m_frameList.clear();
     for( unsigned int i = 0; i < m_pcModule->m_uiNumberOfFrames; i++ )
@@ -178,7 +179,7 @@ bool CalypAppModuleIf::process()
     m_frameListPtr.push_back( frame.get() );
   }
 
-  if( m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+  if( m_pcModule->m_iModuleType == ClpModuleType::FrameProcessing )
   {
     CalypFrame* framePtr{ nullptr };
     if( m_pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
@@ -192,7 +193,7 @@ bool CalypAppModuleIf::process()
     assert( framePtr != nullptr );
     m_pcProcessedFrame = std::shared_ptr<CalypFrame>{ framePtr, []( CalypFrame* ptr ) {} };
   }
-  else if( m_pcModule->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
+  else if( m_pcModule->m_iModuleType == ClpModuleType::FrameMeasurement )
   {
     if( m_pcModule->m_iModuleAPI >= CLP_MODULE_API_2 )
     {
@@ -217,7 +218,7 @@ void CalypAppModuleIf::show()
     return;
   switch( m_pcModule->m_iModuleType )
   {
-  case CLP_FRAME_PROCESSING_MODULE: {
+  case ClpModuleType::FrameProcessing: {
     auto displayWindow = qobject_cast<VideoSubWindow*>( m_pcDisplaySubWindow );
     if( displayWindow == nullptr )
       displayWindow = m_pcSubWindow[0];
@@ -234,7 +235,7 @@ void CalypAppModuleIf::show()
 #endif
     break;
   }
-  case CLP_FRAME_MEASUREMENT_MODULE:
+  case ClpModuleType::FrameMeasurement:
     m_pcModuleDock->setModuleReturnValue( m_dMeasurementResult );
     break;
   }

@@ -28,19 +28,16 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class AbsoluteFrameDifference : public CalypModuleIf
+class AbsoluteFrameDifference : public CalypModuleIf,
+                                public CalypModuleInstace<AbsoluteFrameDifference>
 {
-  REGISTER_CLASS_FACTORY( AbsoluteFrameDifference )
-
 private:
-  CalypFrame* m_pcFrameDifference;
+  std::unique_ptr<CalypFrame> m_pcFrameDifference;
 
 public:
   AbsoluteFrameDifference();
-  virtual ~AbsoluteFrameDifference() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
-  void destroy();
 };
 
 #endif  // __FRAMEDIFFERENCE_H__

@@ -32,18 +32,18 @@ OptimiseDisplay::OptimiseDisplay()
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;  // Use API version 2 (recommended).
   // See this example for details on the functions prototype
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;          // Apply module to the frames or to
+  m_iModuleType = ClpModuleType::FrameProcessing;       // Apply module to the frames or to
                                                         // the whole sequence.
   m_pchModuleCategory = "Conversions";                  // Category (sub-menu)
   m_pchModuleName = "OptimiseDisplay";                  // Name (no spaces)
   m_pchModuleLongName = "Optimise Display";             // Long Name
   m_pchModuleTooltip = "Scales the display of images "  // Description
                        "for better visualization of small differences";
-  m_uiNumberOfFrames = 1;                                // Number of frames required
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;  // Module requirements
-                                                         // (check
-                                                         // CalypModulesIf.h).
-                                                         // Several requirements should be "or" between each others.
+  m_uiNumberOfFrames = 1;                           // Number of frames required
+  m_uiModuleRequirements = ClpModuleFeature::None;  // Module requirements
+                                                    // (check
+                                                    // CalypModulesIf.h).
+                                                    // Several requirements should be "or" between each others.
   m_pcOptimisedFrame = nullptr;
 }
 

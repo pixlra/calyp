@@ -37,15 +37,15 @@ ThreeSixtyFaceConcatenation::ThreeSixtyFaceConcatenation()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleLongName = "Face Concatenation";
   m_pchModuleName = "ThreeSixtyFaceConcatenation";
   m_pchModuleTooltip = "Concatenate 360 video faces";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY |
-                           CLP_MODULE_REQUIRES_OPTIONS |
-                           CLP_MODULES_VARIABLE_NUM_FRAMES;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying |
+                           ClpModuleFeature::Options |
+                           ClpModuleFeature::VariableNumOfFrames;
 
   m_cModuleOptions.addOptions()                                                            /**/
       ( "projection", m_uiProjectionType, "Projection [1] \n 1: Cubemap (6 faces)" )       /**/

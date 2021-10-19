@@ -37,13 +37,13 @@ ThreeSixtyFaceExtraction::ThreeSixtyFaceExtraction()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleLongName = "Face Extration";
   m_pchModuleName = "ThreeSixtyFaceExtration";
   m_pchModuleTooltip = "Extract a 360 video face";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying;
 
   m_cModuleOptions.addOptions()                                                            /**/
       ( "faceNum", m_uiFaceNum, "360 proejction face to be outputed [0]" )                 /**/

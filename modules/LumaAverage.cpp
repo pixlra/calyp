@@ -27,7 +27,7 @@
 LumaAverage::LumaAverage()
 {
   /* Module Definition */
-  m_iModuleType = CLP_FRAME_MEASUREMENT_MODULE;                  // Apply module to the frames or to
+  m_iModuleType = ClpModuleType::FrameMeasurement;               // Apply module to the frames or to
                                                                  // the whole sequence.
                                                                  // Currently only support for frame
   m_pchModuleCategory = "Measurements";                          // Category (sub-menu)
@@ -37,7 +37,7 @@ LumaAverage::LumaAverage()
   m_uiNumberOfFrames = 1;                                        // Number of Frames required
                                                                  // (ONE_FRAME, TWO_FRAMES,
                                                                  // THREE_FRAMES)
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;          // Module requirements
+  m_uiModuleRequirements = ClpModuleFeature::None;               // Module requirements
                                                                  // (check
                                                                  // CalypModulesIf.h).
   // Several requirements should be "or" between each others.

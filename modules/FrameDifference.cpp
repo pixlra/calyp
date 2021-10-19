@@ -28,13 +28,13 @@ FrameDifference::FrameDifference()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Measurements";
   m_pchModuleName = "FrameDifference";
   m_pchModuleLongName = "Difference";
   m_pchModuleTooltip = "Measure the difference between two images (Y plane),  "
                        "Y1 - Y2, with max absolute diff of 128";
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow | ClpModuleFeature::Options;
   m_uiNumberOfFrames = 2;
 
   m_cModuleOptions.addOptions()                                                           /**/

@@ -29,19 +29,19 @@ AbsoluteFrameDifference::AbsoluteFrameDifference()
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;  // Use API version 2 (recommended).
   // See this example for details on the functions prototype
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;             // Apply module to the frames or to
+  m_iModuleType = ClpModuleType::FrameProcessing;          // Apply module to the frames or to
                                                            // the whole sequence.
   m_pchModuleCategory = "Measurements";                    // Category (sub-menu)
   m_pchModuleName = "AbsoluteFrameDifference";             // Name (no spaces)
   m_pchModuleLongName = "Absolute Difference";             // Long Name
   m_pchModuleTooltip = "Measure the absolute difference "  // Description
                        "between two images (Y plane), e. g., abs( Y1 - Y2 )";
-  m_uiNumberOfFrames = 2;                                   // Number of frames required
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW;  // Module requirements
-                                                            // (check
-                                                            // CalypModulesIf.h).
+  m_uiNumberOfFrames = 2;                                // Number of frames required
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow;  // Module requirements
+                                                         // (check
+                                                         // CalypModulesIf.h).
   // Several requirements should be "or" between each others.
-  m_pcFrameDifference = NULL;
+  m_pcFrameDifference = nullptr;
 }
 
 bool AbsoluteFrameDifference::create( std::vector<CalypFrame*> apcFrameList )
@@ -52,7 +52,7 @@ bool AbsoluteFrameDifference::create( std::vector<CalypFrame*> apcFrameList )
     if( !apcFrameList[i]->haveSameFmt( apcFrameList[0], CalypFrame::MATCH_COLOR_SPACE_IGNORE_GRAY | CalypFrame::MATCH_COLOR_SPACE | CalypFrame::MATCH_RESOLUTION | CalypFrame::MATCH_BITS ) )
       return false;
 
-  m_pcFrameDifference = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY, apcFrameList[0]->getBitsPel() );
+  m_pcFrameDifference = std::make_unique<CalypFrame>( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY, apcFrameList[0]->getBitsPel() );
   return true;
 }
 
@@ -77,12 +77,5 @@ CalypFrame* AbsoluteFrameDifference::process( std::vector<CalypFrame*> apcFrameL
       }
     }
   }
-  return m_pcFrameDifference;
-}
-
-void AbsoluteFrameDifference::destroy()
-{
-  if( m_pcFrameDifference )
-    delete m_pcFrameDifference;
-  m_pcFrameDifference = NULL;
+  return m_pcFrameDifference.get();
 }

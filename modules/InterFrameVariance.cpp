@@ -29,15 +29,15 @@ InterFrameVariance::InterFrameVariance()
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;  // Use API version 2 (recommended).
   // See this example for details on the functions prototype
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;  // Apply module to the frames or to
-                                                // the whole sequence.
-  m_pchModuleCategory = "Measurements";         // Category (sub-menu)
-  m_pchModuleName = "InterFrameVariance";       // Name
+  m_iModuleType = ClpModuleType::FrameProcessing;  // Apply module to the frames or to
+                                                   // the whole sequence.
+  m_pchModuleCategory = "Measurements";            // Category (sub-menu)
+  m_pchModuleName = "InterFrameVariance";          // Name
   m_pchModuleLongName = "Variance across frames";
   m_pchModuleTooltip = "Measure the variance across several frames";
   m_uiNumberOfFrames = 2;  // Number of Frames required (This module
                            // allows a variable number of inputs)
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW | CLP_MODULES_VARIABLE_NUM_FRAMES;
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow | ClpModuleFeature::VariableNumOfFrames;
   // Several requirements should be "or" between each others.
   m_pcFrameVariance = NULL;
 }

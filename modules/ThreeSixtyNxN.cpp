@@ -37,14 +37,14 @@ ThreeSixtyNxN::ThreeSixtyNxN()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleName = "ThreeSixtyNxN";
   m_pchModuleLongName = "ERP to NxN";
   m_pchModuleTooltip = "Downsampling ERP to NxN";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY |
-                           CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying |
+                           ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                                                     /**/
       ( "Downsampling", m_uiDownsampling, "ERP to NxN (0 for up, 1 for down and 2 for recon) [1]" ) /**/

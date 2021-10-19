@@ -28,13 +28,13 @@ FrameConcatenation::FrameConcatenation()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleLongName = "Frame Concatenation";
   m_pchModuleName = "FrameConc";
   m_pchModuleTooltip = "Concatenate frames side-by-side";
   m_uiNumberOfFrames = 2;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS | CLP_MODULE_REQUIRES_NEW_WINDOW;
+  m_uiModuleRequirements = ClpModuleFeature::Options | ClpModuleFeature::NewWindow;
 
   m_cModuleOptions.addOptions() /**/
       ( "ShiftHorizontal", m_iShiftHor, "Amount of pixels to shift in horizontal direction" );

@@ -35,6 +35,7 @@
  */
 
 #include <memory>
+#include <type_safe/flag_set.hpp>
 #include <vector>
 
 #include "CalypFrame.h"
@@ -71,8 +72,9 @@ public:                                               \
  */
 enum Module_API_Version
 {
-  CLP_MODULE_API_1,
-  CLP_MODULE_API_2,
+  CLP_MODULE_API_INVALID = -1,
+  CLP_MODULE_API_1 = 0,
+  CLP_MODULE_API_2 = 1,
   CLP_MODULE_API_3,
 };
 
@@ -81,12 +83,11 @@ enum Module_API_Version
  * Type of module
  * @see m_iModuleType
  */
-enum Module_Type
+enum class ClpModuleType : std::uint8_t
 {
-  CLP_INVALID_MODULE = -1,
-  CLP_FRAME_PROCESSING_MODULE = 0,
-  CLP_FRAME_MEASUREMENT_MODULE = 1,
-  CLP_MODULE_TYPE_MAX = 255,
+  Invalid,
+  FrameProcessing,
+  FrameMeasurement,
 };
 
 /** Module_Features Enum
@@ -94,17 +95,19 @@ enum Module_Type
  * Features/Requirements of a module
  * @see m_uiModuleRequirements
  */
-enum Module_Features
+enum class ClpModuleFeature
 {
-  CLP_MODULE_REQUIRES_NOTHING = 0,
-  CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY = 1,
-  CLP_MODULE_REQUIRES_OPTIONS = 2,
-  CLP_MODULE_REQUIRES_NEW_WINDOW = 4,
-  CLP_MODULE_USES_KEYS = 8,
-  CLP_MODULES_VARIABLE_NUM_FRAMES = 16,
-  CLP_MODULES_HAS_INFO = 32,
-  CLP_MODULE_REQURES_MAX = 1024,
+  None,
+  SkipWhilePlaying,
+  Options,
+  NewWindow,
+  KeysShortcuts,
+  VariableNumOfFrames,
+  HasInfo,
+  _flag_set_size
 };
+
+using ClpModuleFeatures = type_safe::flag_set<ClpModuleFeature>;
 
 enum Module_Key_Supported
 {
@@ -122,29 +125,14 @@ enum Module_Key_Supported
 class CalypModuleIf
 {
 public:
-  int m_iModuleAPI{ CLP_MODULE_API_1 };
-  int m_iModuleType{ CLP_INVALID_MODULE };
-  const char* m_pchModuleCategory{ "" };
-  const char* m_pchModuleName{ "" };
-  const char* m_pchModuleTooltip{ "" };
-  const char* m_pchModuleLongName{ nullptr };
-
-  //! Number of frames
-  unsigned int m_uiNumberOfFrames{ 1 };
-  //! Features/Requirements
-  unsigned int m_uiModuleRequirements{ CLP_MODULE_REQUIRES_NOTHING };
-
-  unsigned int m_iFrameBufferCount{ 0 };
-
-  CalypOptions m_cModuleOptions;
-
   CalypModuleIf() = default;
-  CalypModuleIf( const CalypModuleIf& other ) noexcept = delete;
-  CalypModuleIf( CalypModuleIf&& other ) noexcept = delete;
-  auto operator=( const CalypModuleIf& other ) -> CalypModuleIf& = delete;
-  auto operator=( CalypModuleIf&& other ) noexcept -> CalypModuleIf& = delete;
+  CalypModuleIf( const CalypModuleIf& buffer ) noexcept = delete;
+  CalypModuleIf( CalypModuleIf&& buffer ) noexcept = delete;
+  auto operator=( const CalypModuleIf& buffer ) -> CalypModuleIf& = delete;
+  auto operator=( CalypModuleIf&& buffer ) noexcept -> CalypModuleIf& = delete;
+
   virtual ~CalypModuleIf() = default;
-  virtual void destroy() = 0;
+  virtual void destroy(){};
 
   const char* getModuleLongName()
   {
@@ -175,6 +163,23 @@ public:
     m_iFrameBufferCount = 0;
     return true;
   };
+
+public:
+  int m_iModuleAPI{ CLP_MODULE_API_1 };
+  ClpModuleType m_iModuleType{ ClpModuleType::Invalid };
+  const char* m_pchModuleCategory{ "" };
+  const char* m_pchModuleName{ "" };
+  const char* m_pchModuleTooltip{ "" };
+  const char* m_pchModuleLongName{ nullptr };
+
+  //! Number of frames
+  unsigned int m_uiNumberOfFrames{ 1 };
+  //! Features/Requirements
+  ClpModuleFeatures m_uiModuleRequirements{ ClpModuleFeature::None };
+
+  unsigned int m_iFrameBufferCount{ 0 };
+
+  CalypOptions m_cModuleOptions;
 };
 
 namespace cv
@@ -191,16 +196,8 @@ class CalypOpenCVModuleIf : public CalypModuleIf
 {
   using Mat = cv::Mat;
 
-protected:
-  //const char* m_pchPythonFunctionName;
-  std::unique_ptr<CalypFrame> m_pcOutputFrame;
-  bool m_bConvertToGray;
-
 public:
-  CalypOpenCVModuleIf()
-  {
-    m_bConvertToGray = false;
-  };
+  CalypOpenCVModuleIf() { m_bConvertToGray = false; };
   virtual ~CalypOpenCVModuleIf() {}
 
   // Common API
@@ -209,11 +206,26 @@ public:
   void destroy();
 
   // API using OpenCV
-  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList ) { return nullptr; };
+  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList )
+  {
+    return nullptr;
+  };
   virtual Mat* process_using_opencv( const std::vector<Mat>& apcFrameList ) = 0;
   virtual void destroy_using_opencv(){};
+
+protected:
+  // const char* m_pchPythonFunctionName;
+  std::unique_ptr<CalypFrame> m_pcOutputFrame;
+  bool m_bConvertToGray;
 };
 
 using CalypModulePtr = std::unique_ptr<CalypModuleIf>;
+
+template <typename T>
+class CalypModuleInstace
+{
+public:
+  static CalypModulePtr Create() { return std::make_unique<T>(); }
+};
 
 #endif  // __CALYPMODULESIF_H__

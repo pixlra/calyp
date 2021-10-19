@@ -29,14 +29,14 @@ DisparityStereoSGBM::DisparityStereoSGBM()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Stereo";
   m_pchModuleName = "Disparity-SGBM";
   m_pchModuleLongName = "SGBM based disparity";
   m_pchModuleTooltip = "Measure the disparity between two images using the "
                        "Stereo SGBM method (OpenCV)";
   m_uiNumberOfFrames = 2;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULE_REQUIRES_NEW_WINDOW | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::NewWindow | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions() /**/
       ( "block_size", m_uiBlockSize, "Block Size (positive odd number) [3]" )( "HHAlgorithm", m_bUseHH,

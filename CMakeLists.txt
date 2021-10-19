@@ -102,7 +102,10 @@ SET(UPDATE_CHANNEL
 # ####################################################################################################################################################
 # Dependencies
 # ####################################################################################################################################################
+INCLUDE(FetchContent)
 
+# ####################################################################################################################################################
+# Doxygen
 IF(BUILD_DOC)
   FIND_PACKAGE(Doxygen)
   SET(BUILD_DOC ${Doxygen_FOUND})
@@ -114,8 +117,9 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
+# ####################################################################################################################################################
+# Catch2 and Google Tests
 IF(BUILD_TESTS)
-  INCLUDE(FetchContent)
   FETCHCONTENT_DECLARE(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
   # For Windows: Prevent overriding the parent project's compiler/linker settings
   SET(gtest_force_shared_crt
@@ -152,6 +156,24 @@ IF(BUILD_TESTS)
   )
 ENDIF()
 
+# ####################################################################################################################################################
+# Type safe
+FETCHCONTENT_DECLARE(
+  type_safe
+  GIT_REPOSITORY https://github.com/foonathan/type_safe
+  GIT_TAG v0.2.2
+)
+FETCHCONTENT_MAKEAVAILABLE(type_safe)
+SET_PACKAGE_PROPERTIES(
+  type_safe PROPERTIES
+  URL "https://github.com/foonathan/type_safe"
+  DESCRIPTION "Zero overhead abstractions that use the C++ type system to prevent bugs."
+  TYPE REQUIRED
+)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/_deps/type_safe-src/include/ ${CMAKE_CURRENT_BINARY_DIR}/_deps/type_safe-src/external/debug_assert/)
+
+# ####################################################################################################################################################
+# OpenCV
 OPTION(USE_OPENCV "Add OpenCV support" ON)
 IF(USE_OPENCV)
 
@@ -177,6 +199,8 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
+# ####################################################################################################################################################
+# FFmpeg
 OPTION(USE_FFMPEG "Add FFMPEG support" ON)
 IF(USE_FFMPEG)
   FIND_PACKAGE(FFmpeg COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)

@@ -27,13 +27,13 @@
 SetChromaHalfScale::SetChromaHalfScale()
 {
   /* Module Definition */
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Conversions";
   m_pchModuleName = "SetChromaHalfScale";
   m_pchModuleLongName = "Half scale chroma";
   m_pchModuleTooltip = "Copy frame only keeping luma component";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
+  m_uiModuleRequirements = ClpModuleFeature::None;
 
   m_pcProcessedFrame = NULL;
 }

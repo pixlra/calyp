@@ -37,13 +37,13 @@ FrameResampling::FrameResampling()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleName = "FrameResampling";
   m_pchModuleLongName = "Frame Resampling (Spatial)";
   m_pchModuleTooltip = "Resampling frame to an abritary resolution";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                 /**/
       ( "width", m_iWidth, "Width of the crop region [-1]" )    /**/

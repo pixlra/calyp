@@ -30,9 +30,9 @@ FilterComponentModule::FilterComponentModule()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NOTHING;
+  m_uiModuleRequirements = ClpModuleFeature::None;
   m_pchModuleCategory = "Filtering";
 
   m_pcFilteredFrame = NULL;

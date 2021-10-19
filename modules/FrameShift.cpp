@@ -30,13 +30,13 @@ FrameShift::FrameShift()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleLongName = "Pixel Shift";
   m_pchModuleName = "FrameShift";
   m_pchModuleTooltip = "Shift frame horizontal and vertical";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS | CLP_MODULE_USES_KEYS;
+  m_uiModuleRequirements = ClpModuleFeature::Options | ClpModuleFeature::KeysShortcuts;
 
   m_cModuleOptions.addOptions()                                                               /**/
       ( "ShiftHorizontal", m_iShiftHor, "Amount of pixels to shift in horizontal direction" ) /**/

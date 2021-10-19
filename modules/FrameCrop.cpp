@@ -27,13 +27,13 @@
 FrameCrop::FrameCrop()
 {
   /* Module Definition */
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleLongName = "Crop";
   m_pchModuleName = "FrameCrop";
   m_pchModuleTooltip = "Crop a region of a frame";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                                                   /**/
       ( "xPosition", m_uiXPosition, "X cordinate of the left-top corner of the crop region [0]" ) /**/

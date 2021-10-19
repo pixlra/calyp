@@ -24,6 +24,7 @@
 
 #include "CalypToolsCmdParser.h"
 
+#include <cassert>
 #include <cstdarg>
 #include <cstring>
 #include <iostream>
@@ -166,10 +167,13 @@ void CalypToolsCmdParser::listModules()
       printf( "   %-43s", ModuleNameString.c_str() );
       switch( pcCurrModuleIf->m_iModuleType )
       {
-      case CLP_FRAME_PROCESSING_MODULE:
+      case ClpModuleType::Invalid:
+        assert( false );
+        break;
+      case ClpModuleType::FrameProcessing:
         printf( "   Processing    " );
         break;
-      case CLP_FRAME_MEASUREMENT_MODULE:
+      case ClpModuleType::FrameMeasurement:
         printf( "   Measurement   " );
         break;
       }

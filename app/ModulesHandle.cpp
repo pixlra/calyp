@@ -287,7 +287,7 @@ void ModulesHandle::activateModule()
   {
     int minNumFrames = numberOfFrames;
     int maxNumFrames = numberOfFrames;
-    if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements & CLP_MODULES_VARIABLE_NUM_FRAMES )
+    if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::VariableNumOfFrames ) )
     {
       minNumFrames = numberOfFrames;
       maxNumFrames = 255;
@@ -360,7 +360,7 @@ void ModulesHandle::activateModule()
     pcCurrAppModuleIf->m_pcSubWindow[i] = videoSubWindowList.at( i );
   }
 
-  if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_OPTIONS )
+  if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::Options ) )
   {
     ModulesHandleOptDialog moduleOptDialog( m_pcParent, pcCurrAppModuleIf.get() );
     if( moduleOptDialog.runConfiguration() == QDialog::Rejected )
@@ -375,9 +375,9 @@ void ModulesHandle::activateModule()
 
   QString windowName;
 
-  if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+  if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == ClpModuleType::FrameProcessing )
   {
-    if( ( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_NEW_WINDOW ) || bShowModulesNewWindow )
+    if( bShowModulesNewWindow || pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::NewWindow ) )
     {
       auto pcModuleSubWindow = new ModuleSubWindow( pcCurrAppModuleIf.get() );
       pcModuleSubWindow->resetWindowName();
@@ -394,7 +394,7 @@ void ModulesHandle::activateModule()
       pcCurrAppModuleIf->m_pcSubWindow[0]->setDisplayModule( pcCurrAppModuleIf.get() );
     }
   }
-  else if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
+  else if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == ClpModuleType::FrameMeasurement )
   {
     pcCurrAppModuleIf->m_pcDisplaySubWindow = NULL;
     pcCurrAppModuleIf->m_pcModuleDock = new ModuleHandleDock( m_pcParent, pcCurrAppModuleIf.get() );

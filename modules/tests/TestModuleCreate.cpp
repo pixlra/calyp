@@ -89,7 +89,7 @@ TEST_F( TestModuleCreate, FIND_MODULE )
 TEST_F( TestModuleCreate, CREATE_OK )
 {
   bool moduleRequireOptions = false;
-  if( pcModule->m_uiModuleRequirements & CLP_MODULE_REQUIRES_OPTIONS )
+  if( pcModule->m_uiModuleRequirements & ClpModuleFeature::Options )
   {
     moduleRequireOptions = true;
   }

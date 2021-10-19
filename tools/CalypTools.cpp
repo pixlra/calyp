@@ -319,7 +319,7 @@ int CalypTools::Open( int argc, char* argv[] )
       return -1;
     }
 
-    if( m_pcCurrModuleIf->m_uiModuleRequirements & CLP_MODULES_VARIABLE_NUM_FRAMES )
+    if( m_pcCurrModuleIf->m_uiModuleRequirements & ClpModuleFeature::VariableNumOfFrames )
     {
       m_pcCurrModuleIf->m_uiNumberOfFrames = m_apcInputStreams.size();
     }
@@ -356,7 +356,7 @@ int CalypTools::Open( int argc, char* argv[] )
       return -1;
     }
 
-    if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+    if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
     {
       // Check outputs
       std::vector<std::string> outputFileNames;
@@ -573,7 +573,7 @@ int CalypTools::QualityOperation()
 //CalypFrame* CalypTools::applyFrameModule()
 //{
 //  CalypFrame* pcProcessedFrame = NULL;
-//  if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+//  if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
 //  {
 
 //  }
@@ -621,7 +621,7 @@ int CalypTools::ModuleOperation()
   {
     log( CLP_LOG_INFO, "  Processing frame %3d\n", frame );
     bool bReadFrame = true;
-    if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+    if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
     {
       if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
@@ -633,7 +633,7 @@ int CalypTools::ModuleOperation()
         m_apcOutputStreams[0]->writeFrame( *pcProcessedFrame );
       }
     }
-    else if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
+    else if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameMeasurement )
     {
       if( m_pcCurrModuleIf->m_iModuleAPI >= CLP_MODULE_API_2 )
         dMeasurementResult = m_pcCurrModuleIf->measure( apcFrameList );
@@ -660,7 +660,7 @@ int CalypTools::ModuleOperation()
   {
     while( true )
     {
-      if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_PROCESSING_MODULE )
+      if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
       {
         pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
         if( !pcProcessedFrame )
@@ -670,7 +670,7 @@ int CalypTools::ModuleOperation()
     }
   }
 
-  if( m_pcCurrModuleIf->m_iModuleType == CLP_FRAME_MEASUREMENT_MODULE )
+  if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameMeasurement )
   {
     log( CLP_LOG_INFO, "\n  Mean Value: \n        %8.3f\n", dAveragedMeasurementResult );
   }

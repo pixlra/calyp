@@ -30,12 +30,12 @@ WeightedPSNR::WeightedPSNR()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_MEASUREMENT_MODULE;
+  m_iModuleType = ClpModuleType::FrameMeasurement;
   m_pchModuleCategory = "Quality";
   m_pchModuleName = "WeightedPSNR";
   m_pchModuleLongName = "Weighted PSNR";
   m_pchModuleTooltip = "Measure the weighted PSNR between two images";
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::Options;
   m_uiNumberOfFrames = 3;
 
   m_cModuleOptions.addOptions() /**/

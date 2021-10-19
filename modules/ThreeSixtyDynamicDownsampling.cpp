@@ -37,13 +37,13 @@ ThreeSixtyDynamicDownsampling::ThreeSixtyDynamicDownsampling()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "360Video";
   m_pchModuleLongName = "Dynamic Downsampling";
   m_pchModuleName = "ThreeSixtyDynamicDownsampling";
   m_pchModuleTooltip = "Dynamic downsampling of 360 videos";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_SKIP_WHILE_PLAY | CLP_MODULE_REQUIRES_OPTIONS;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                                       /**/
       ( "CodingFaceWidth", m_uiFaceWidth, "Coding Face Width [same as input]" )       /**/

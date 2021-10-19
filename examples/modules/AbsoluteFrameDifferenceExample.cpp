@@ -33,15 +33,15 @@ AbsoluteFrameDifferenceExample::AbsoluteFrameDifferenceExample()
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;                         // Use API version 2 (recommended).
                                                            // See this example for details on the functions prototype
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;             // Apply module to the frames or to the whole sequence.
+  m_iModuleType = ClpModuleType::FrameProcessing;          // Apply module to the frames or to the whole sequence.
   m_pchModuleCategory = "Measurements";                    // Category (sub-menu)
   m_pchModuleName = "AbsoluteDifferenceExample";           // Name
   m_pchModuleLongName = "Absolute Difference Example";     // Name
   m_pchModuleTooltip = "Measure the absolute difference "  // Description
                        "between two images (Y plane), e. g., abs( Y1 - Y2 )";
-  m_uiNumberOfFrames = 2;                                   // Number of Frames required (ONE_FRAME, TWO_FRAMES, THREE_FRAMES)
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW;  // Module requirements (check CalypModulesIf.h).
-                                                            // Several requirements should be "or" between each others.
+  m_uiNumberOfFrames = 2;                                // Number of Frames required (ONE_FRAME, TWO_FRAMES, THREE_FRAMES)
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow;  // Module requirements (check CalypModulesIf.h).
+                                                         // Several requirements should be "or" between each others.
   m_pcFrameDifference = NULL;
 }
 

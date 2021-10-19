@@ -28,13 +28,13 @@ FrameMask::FrameMask()
 {
   /* Module Definition */
   m_iModuleAPI = CLP_MODULE_API_2;
-  m_iModuleType = CLP_FRAME_PROCESSING_MODULE;
+  m_iModuleType = ClpModuleType::FrameProcessing;
   m_pchModuleCategory = "Utilities";
   m_pchModuleLongName = "Apply mask";
   m_pchModuleName = "FrameMask";
   m_pchModuleTooltip = "Applies a mask to the selected image (first image)";
   m_uiNumberOfFrames = 2;
-  m_uiModuleRequirements = CLP_MODULE_REQUIRES_NEW_WINDOW | CLP_MODULE_REQUIRES_OPTIONS | CLP_MODULE_USES_KEYS;
+  m_uiModuleRequirements = ClpModuleFeature::NewWindow | ClpModuleFeature::Options | ClpModuleFeature::KeysShortcuts;
 
   m_cModuleOptions.addOptions() /**/
       ( "MaskWeigth", m_iWeight, "Influence of the mask [60%]" );

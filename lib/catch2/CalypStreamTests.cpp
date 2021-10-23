@@ -31,7 +31,7 @@
 #include "CalypStream.h"
 
 constexpr int kFrameRate{ 30 };
-constexpr bool kIsInput{ true };
+constexpr auto kStreamType = CalypStream::Type::Input;
 
 auto getFileTestFilename( const char* test_sequence ) -> std::string
 {
@@ -51,7 +51,7 @@ TEST_CASE( "Can open a YUV 420p file", "CalypStream" )
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
   CalypStream test_stream;
-  auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+  auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
 
   REQUIRE( result );
 
@@ -90,7 +90,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -106,7 +106,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -122,7 +122,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -138,7 +138,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -170,7 +170,7 @@ TEST_CASE( "Can open a RGB file", "CalypStream" )
     const auto kFilename = getFileTestFilename( "Foreman_352x288_rgb24.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -187,7 +187,7 @@ TEST_CASE( "Can open a RGB file", "CalypStream" )
     const auto kFilename = getFileTestFilename( "Foreman_352x288_bgr24.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
     REQUIRE( result );
     CHECK( common_checks( test_stream ) );
     const auto* frame = test_stream.getCurrFrame();
@@ -216,7 +216,7 @@ TEST_CASE( "Can open a GRAY file", "CalypStream" )
   const auto kFilename = getFileTestFilename( "Foreman_352x288_gray.yuv" );
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
   CalypStream test_stream;
-  auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, true );
+  auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kStreamType );
   REQUIRE( result );
   CHECK( common_checks( test_stream ) );
   const auto* frame = test_stream.getCurrFrame();
@@ -245,7 +245,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
     bool result{ false };
     try
     {
-      result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
+      result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, force_raw, kStreamType );
     }
     catch( ... )
     {
@@ -260,7 +260,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
     force_raw = true;
 
     CalypStream test_stream;
-    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, kIsInput, force_raw );
+    auto result = test_stream.open( kFilename, kWidth, kHeight, kInputFormat, kBitsPel, KEndianness, kFrameRate, force_raw, kStreamType );
 
     REQUIRE( result );
 

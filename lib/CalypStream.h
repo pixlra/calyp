@@ -68,6 +68,12 @@ public:
 class CalypStream
 {
 public:
+  enum class Type
+  {
+    Input,
+    Output
+  };
+
   static std::vector<CalypStreamFormat> supportedReadFormats();
   static std::vector<CalypStreamFormat> supportedWriteFormats();
   static std::vector<CalypStandardResolution> stdResolutionSizes();
@@ -89,7 +95,7 @@ public:
              int endianness,
              bool hasNegative,
              unsigned int frame_rate,
-             bool bInput );
+             Type type );
   bool open( std::string filename,
              unsigned int width,
              unsigned int height,
@@ -97,7 +103,7 @@ public:
              unsigned int bitsPel,
              int endianness,
              unsigned int frame_rate,
-             bool bInput );
+             Type type );
   bool open( std::string filename,
              unsigned int width,
              unsigned int height,
@@ -106,7 +112,7 @@ public:
              int endianness,
              bool hasNegative,
              unsigned int frame_rate,
-             bool bInput );
+             Type type );
   bool open( std::string filename,
              unsigned int width,
              unsigned int height,
@@ -114,8 +120,8 @@ public:
              unsigned int bitsPel,
              int endianness,
              unsigned int frame_rate,
-             bool bInput,
-             bool forceRaw );
+             bool forceRaw,
+             Type type );
 
   bool supportsFormatConfiguration();
   bool reload();

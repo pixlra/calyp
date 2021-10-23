@@ -165,8 +165,8 @@ class CalypStream::CalypStreamPrivate
 {
 public:
   std::recursive_mutex stream_mutex;
+  CalypStream::Type streamType;
   bool isInit;
-  bool isInput;
 
   std::unique_ptr<CalypStreamHandlerIf> handler;
 
@@ -188,7 +188,7 @@ public:
   CalypStreamPrivate()
   {
     handler = nullptr;
-    isInput = true;
+    streamType = CalypStream::Type::Input;
     isInit = false;
     bLoadAll = false;
     iCurrFrameNum = -1;
@@ -200,14 +200,15 @@ public:
   }
 
   bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
-             unsigned int frame_rate, bool bInput, bool forceRaw )
+             unsigned int frame_rate, bool forceRaw, CalypStream::Type type )
   {
     if( isInit )
     {
       close();
     }
     isInit = false;
-    isInput = bInput;
+    streamType = type;
+    bool isInput = streamType == CalypStream::Type::Input;
 
     if( forceRaw )
     {
@@ -341,7 +342,7 @@ public:
   {
     const std::lock_guard<std::recursive_mutex> lock( stream_mutex );
 
-    if( !isInit || !isInput || handler->m_uiCurrFrameFileIdx >= handler->m_uiTotalNumberFrames )
+    if( !isInit || streamType != CalypStream::Type::Input || handler->m_uiCurrFrameFileIdx >= handler->m_uiTotalNumberFrames )
       return false;
 
     if( bLoadAll )
@@ -395,7 +396,7 @@ std::string CalypStream::getCodecName() const
 }
 
 bool CalypStream::open( std::string filename, std::string resolution, std::string input_format_name, unsigned int bitsPel, int endianness, bool hasNegative,
-                        unsigned int frame_rate, bool bInput )
+                        unsigned int frame_rate, CalypStream::Type type )
 {
   unsigned int width = 0;
   unsigned int height = 0;
@@ -417,25 +418,25 @@ bool CalypStream::open( std::string filename, std::string resolution, std::strin
       break;
     }
   }
-  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput, false );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, false, type );
 }
 
 bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
-                        unsigned int frame_rate, bool bInput )
+                        unsigned int frame_rate, CalypStream::Type type )
 {
-  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, bInput, false );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, false, type );
 }
 
 bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
-                        unsigned int frame_rate, bool bInput )
+                        unsigned int frame_rate, CalypStream::Type type )
 {
-  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, bInput, false );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, false, type );
 }
 
 bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
-                        unsigned int frame_rate, bool bInput, bool forceRaw )
+                        unsigned int frame_rate, bool forceRaw, CalypStream::Type type )
 {
-  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, bInput, forceRaw );
+  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, forceRaw, type );
 }
 
 bool CalypStream::supportsFormatConfiguration()
@@ -449,7 +450,7 @@ bool CalypStream::reload()
 {
   d->frameFifo.clear();
   d->handler->closeHandler();
-  if( !d->handler->openHandler( d->cFilename, d->isInput ) )
+  if( !d->handler->openHandler( d->cFilename, d->streamType == CalypStream::Type::Input ) )
   {
     throw CalypFailure( "CalypStream", "Cannot open stream " + d->cFilename + " with the " +
                                            std::string( d->handler->m_pchHandlerName ) + " handler" );
@@ -554,7 +555,7 @@ auto CalypStream::hasWritingSlot() -> bool
 void CalypStream::loadAll()
 {
   const std::lock_guard<std::recursive_mutex> lock( d->stream_mutex );
-  if( d->bLoadAll || !d->isInput )
+  if( d->bLoadAll || d->streamType != CalypStream::Type::Input )
     return;
 
   try
@@ -653,7 +654,7 @@ bool CalypStream::saveFrame( const std::string& filename, const CalypFrame& save
 {
   CalypStream auxSaveStream;
   if( !auxSaveStream.open( filename, saveFrame.getWidth(), saveFrame.getHeight(), saveFrame.getPelFormat(),
-                           saveFrame.getBitsPel(), CLP_LITTLE_ENDIAN, 1, false ) )
+                           saveFrame.getBitsPel(), CLP_LITTLE_ENDIAN, 1, Type::Output ) )
   {
     return false;
   }
@@ -666,7 +667,7 @@ bool CalypStream::saveFrame( const std::string& filename, const CalypFrame& save
  */
 bool CalypStream::seekInputRelative( bool bIsFoward )
 {
-  if( !d->isInit || !d->isInput )
+  if( !d->isInit || d->streamType != Type::Input )
     return false;
 
   bool bRet = false;

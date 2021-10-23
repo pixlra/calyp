@@ -146,11 +146,11 @@ public:
   friend std::ostream& operator<<( std::ostream& os, const CalypPixel& p );
 
   /**
-	 * Convert a Pixel to a new color space
-	 * @param inputPixel input pixel (CalypPixel)
-	 * @param eOutputSpace output color space
-	 * @return converted pixel
-	 */
+   * Convert a Pixel to a new color space
+   * @param inputPixel input pixel (CalypPixel)
+   * @param eOutputSpace output color space
+   * @return converted pixel
+   */
   CalypPixel convertPixel( CalypColorSpace eOutputSpace ) const;
 };
 
@@ -207,17 +207,17 @@ class CalypFrame
 {
 public:
   /**
-	 * Function that handles the supported color space
-	 * of CalypFrame
-	 * @return vector of strings with pixel formats names
-	 */
+   * Function that handles the supported color space
+   * of CalypFrame
+   * @return vector of strings with pixel formats names
+   */
   static std::vector<std::string> supportedColorSpacesListNames();
 
   /**
-	 * Function that handles the supported pixel formats
-	 * of CalypFrame
-	 * @return vector of strings with pixel formats names
-	 */
+   * Function that handles the supported pixel formats
+   * of CalypFrame
+   * @return vector of strings with pixel formats names
+   */
   static std::vector<std::string> supportedPixelFormatListNames();
   static std::vector<std::string> supportedPixelFormatListNames( int colorSpace );
   static int numberOfFormats();
@@ -225,14 +225,14 @@ public:
   static int pelformatColorSpace( const int idx );
 
   /**
-	 * Creates a new frame using the following configuration
-	 *
-	 * @param width width of the frame
-	 * @param height height of the frame
-	 * @param pel_format pixel format index (always use PixelFormats enum)
-	 *
-	 * @note this function might misbehave if the pixel format enum is not correct
-	 */
+   * Creates a new frame using the following configuration
+   *
+   * @param width width of the frame
+   * @param height height of the frame
+   * @param pel_format pixel format index (always use PixelFormats enum)
+   *
+   * @note this function might misbehave if the pixel format enum is not correct
+   */
   CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
 
   /**
@@ -261,10 +261,10 @@ public:
   CalypFrame& operator=( CalypFrame&& other ) noexcept;
 
   /**
-	 * Copy contructor
-	 *
-	 * @param other existing frame to copy from
-	 */
+   * Copy contructor
+   *
+   * @param other existing frame to copy from
+   */
   CalypFrame( const CalypFrame& other );
 
   /**
@@ -275,23 +275,23 @@ public:
   CalypFrame& operator=( const CalypFrame& other );
 
   /**
-	 * Creates and new frame with the configuration of an existing one and copy
-	 * its contents. This function only copies a specific region from the existing
-	 * frame
-	 *
-	 * @param other existing frame to copy from
-	 * @param posX position X to crop from
-	 * @param posY position Y to crop from
-	 * @param areaWidth crop width
-	 * @param areaHeight crop height
-	 */
+   * Creates and new frame with the configuration of an existing one and copy
+   * its contents. This function only copies a specific region from the existing
+   * frame
+   *
+   * @param other existing frame to copy from
+   * @param posX position X to crop from
+   * @param posY position Y to crop from
+   * @param areaWidth crop width
+   * @param areaHeight crop height
+   */
   CalypFrame( const CalypFrame& other, unsigned int x, unsigned int y, unsigned int width, unsigned int height );
   CalypFrame( const CalypFrame* other, unsigned int x, unsigned int y, unsigned int width, unsigned int height );
 
   ~CalypFrame();
 
   /** Format match opts
-	 */
+   */
   enum FormatMatching
   {
     MATCH_COLOR_SPACE = 1,
@@ -304,50 +304,50 @@ public:
   };
 
   /**
-	 * Check if two CalypFrames have the same fmt
-	 * @param other frame to compare with
-	 * @param match matching conditions (use enum FormatMatching)
-	 * @return true if format matches
-	 */
+   * Check if two CalypFrames have the same fmt
+   * @param other frame to compare with
+   * @param match matching conditions (use enum FormatMatching)
+   * @return true if format matches
+   */
   bool haveSameFmt( const CalypFrame& other, unsigned int match = MATCH_ALL ) const;
   bool haveSameFmt( const CalypFrame* other, unsigned int match = MATCH_ALL ) const;
 
   /**
-	 * Get pixel format information
-	 * @return pixel format index
-	 */
+   * Get pixel format information
+   * @return pixel format index
+   */
   int getPelFormat() const;
 
   /**
-	 * Get pixel format information
-	 * @return pixel format name
-	 */
+   * Get pixel format information
+   * @return pixel format name
+   */
   std::string getPelFmtName() const;
 
   /**
-	 * Get color space information
-	 * @return get color space index
-	 */
+   * Get color space information
+   * @return get color space index
+   */
   int getColorSpace() const;
 
   /**
-	 * Get the number of channels
-	 * @return number of channels
-	 */
+   * Get the number of channels
+   * @return number of channels
+   */
   unsigned getNumberChannels() const;
 
   /**
-	 * Get width of the frame
-	 * @param channel/component
-	 * @return number of pixels
-	 */
+   * Get width of the frame
+   * @param channel/component
+   * @return number of pixels
+   */
   unsigned int getWidth( unsigned channel = 0 ) const;
 
   /**
-	 * Get height of the frame
-	 * @param channel/component
-	 * @return number of pixels
-	 */
+   * Get height of the frame
+   * @param channel/component
+   * @return number of pixels
+   */
   unsigned int getHeight( unsigned channel = 0 ) const;
 
   /**
@@ -357,10 +357,10 @@ public:
   bool getHasNegativeValues() const;
 
   /**
-	 * Get number of pixels of the frame
-	 * @param channel/component
-	 * @return number of pixels
-	 */
+   * Get number of pixels of the frame
+   * @param channel/component
+   * @return number of pixels
+   */
   std::uint64_t getPixels( unsigned channel = 0 ) const;
 
   /**
@@ -370,44 +370,44 @@ public:
   std::uint64_t getTotalNumberOfPixels() const;
 
   /**
-	 * Get chroma width ratio
-	 * @return ratio multiple of 2
-	 */
+   * Get chroma width ratio
+   * @return ratio multiple of 2
+   */
   unsigned getChromaWidthRatio() const;
 
   /**
-	 * Get chroma height ratio
-	 * @return ratio multiple of 2
-	 */
+   * Get chroma height ratio
+   * @return ratio multiple of 2
+   */
   unsigned getChromaHeightRatio() const;
 
   /**
-	 * Get number of pixels in each chroma channel
-	 * @return number of pixels
-	 */
+   * Get number of pixels in each chroma channel
+   * @return number of pixels
+   */
   std::uint64_t getChromaLength() const;
 
   /**
-	 * Get number of bits per pixel
-	 * @return number of bits
-	 */
+   * Get number of bits per pixel
+   * @return number of bits
+   */
   unsigned int getBitsPel() const;
 
   /**
-	 * Get number of bytes per frame of an existing frame
-	 * @return number of bytes per frame
-	 */
+   * Get number of bytes per frame of an existing frame
+   * @return number of bytes per frame
+   */
   std::uint64_t getBytesPerFrame() const;
 
   /**
-	 * Get number of bytes per frame of a specific pixel format
-	 * @return number of bytes per frame
-	 */
+   * Get number of bytes per frame of a specific pixel format
+   * @return number of bytes per frame
+   */
   static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
 
   /**
-	 * Reset frame pixels to zero
-	 */
+   * Reset frame pixels to zero
+   */
   void reset();
 
   ClpPel*** getPelBufferYUV() const;
@@ -417,71 +417,71 @@ public:
 
   /**
    * Get pixel value at coordinates
-	 * @param ch frame channel
-	 * @param xPos position in X axis
-	 * @param yPos position in Y axis
+   * @param ch frame channel
+   * @param xPos position in X axis
+   * @param yPos position in Y axis
    * @param absolute whether it should return positive/negative values
-	 * @return pixel value
-	 */
+   * @return pixel value
+   */
   ClpPel operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute = true ) const;
 
   /**
-	 * Get pixel value at coordinates
-	 * @param xPos position in X axis
-	 * @param yPos position in Y axis
-	 * @return pixel value
-	 */
+   * Get pixel value at coordinates
+   * @param xPos position in X axis
+   * @param yPos position in Y axis
+   * @return pixel value
+   */
   CalypPixel operator()( unsigned int xPos, unsigned int yPos ) const;
 
   /**
-	 * Get pixel value at coordinates
-	 * @param xPos position in X axis
-	 * @param yPos position in Y axis
-	 * @return pixel value
-	 */
+   * Get pixel value at coordinates
+   * @param xPos position in X axis
+   * @param yPos position in Y axis
+   * @return pixel value
+   */
   CalypPixel getPixel( unsigned int xPos, unsigned int yPos ) const;
 
   /**
-	 * Get pixel value at coordinates
-	 * in the desired color space
-	 * @param xPos position in X axis
-	 * @param yPos position in Y axis
-	 * @param eColorSpace desired color space
-	 * @return pixel value
-	 */
+   * Get pixel value at coordinates
+   * in the desired color space
+   * @param xPos position in X axis
+   * @param yPos position in Y axis
+   * @param eColorSpace desired color space
+   * @return pixel value
+   */
   CalypPixel getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace ) const;
 
   /**
-	 * Set pixel value at coordinates to a given value
-	 * @param xPos position in X axis
-	 * @param yPos position in Y axis
-	 */
+   * Set pixel value at coordinates to a given value
+   * @param xPos position in X axis
+   * @param yPos position in Y axis
+   */
   void setPixel( unsigned int xPos, unsigned int yPos, CalypPixel pixel );
 
   /**
-     * Copy a frame into the current buffer
-     * @param other frame to be copied
-     */
+   * Copy a frame into the current buffer
+   * @param other frame to be copied
+   */
   void copyFrom( const CalypFrame& other );
   void copyFrom( const CalypFrame* other );
 
   /**
-     * Copy a region from a reference corresponding to the size
-     * of the size of the current frame
-     * @param other frame to be copied
-     * @param x x position on the reference frame
-     * @param y y position on the reference frame
-     */
+   * Copy a region from a reference corresponding to the size
+   * of the size of the current frame
+   * @param other frame to be copied
+   * @param x x position on the reference frame
+   * @param y y position on the reference frame
+   */
   void copyFrom( const CalypFrame& other, unsigned x, unsigned y );
   void copyFrom( const CalypFrame* other, unsigned x, unsigned y );
 
   /**
-     * Copy a reference frame to a specific location on the current frame
-     * The whole reference frame is copied
-     * @param other frame to be copied
-     * @param x x position on the current frame
-     * @param y y position on the current frame
-     */
+   * Copy a reference frame to a specific location on the current frame
+   * The whole reference frame is copied
+   * @param other frame to be copied
+   * @param x x position on the current frame
+   * @param y y position on the current frame
+   */
   void copyTo( const CalypFrame& other, unsigned x, unsigned y ) const;
   void copyTo( const CalypFrame* other, unsigned x, unsigned y ) const;
 
@@ -492,8 +492,8 @@ public:
   void fillRGBBuffer() const;
 
   /**
-	 * Histogram
-	 */
+   * Histogram
+   */
   enum HistogramChannels
   {
     HIST_CHAN_ONE = 0,
@@ -526,18 +526,18 @@ public:
   double getEntropy( unsigned channel, unsigned int start, unsigned int end ) const;
 
   /**
-	 * interface with OpenCV lib
-	 */
+   * interface with OpenCV lib
+   */
   bool toMat( cv::Mat& cvMat, bool convertToGray = false, bool scale = true, unsigned channel = 0 ) const;
   bool fromMat( cv::Mat& cvMat, int iChannel = -1 );
 
   /**
-	 * \ingroup	 CalypFrameGrp
-	 * @defgroup CalypFrameQualityMetricsGrp Calyp Frame Quality Metrics interface
-	 * @{
-	 * Quality metrics interface
-	 *
-	 */
+   * \ingroup	 CalypFrameGrp
+   * @defgroup CalypFrameQualityMetricsGrp Calyp Frame Quality Metrics interface
+   * @{
+   * Quality metrics interface
+   *
+   */
 
   enum QualityMetrics
   {

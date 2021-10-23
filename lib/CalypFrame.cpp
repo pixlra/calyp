@@ -217,43 +217,39 @@ public:
 
   int getRealHistogramChannel( int channel )
   {
-    int realChannel = -1;
-    if( channel == CalypFrame::HIST_ALL_CHANNELS )
+    if( channel < 0 )
     {
-      realChannel = channel;
+      assert( false );
+      return 0;
     }
-    else if( channel >= 0 && channel < 4 )
+    if( channel < HistogramChannels::HIST_LUMA || channel == HistogramChannels::HIST_ALL_CHANNELS )
     {
-      realChannel = channel;
+      return channel;
     }
-    else if( m_pcPelFormat->colorSpace == CLP_COLOR_GRAY )
+
+    if( m_pcPelFormat->colorSpace == CLP_COLOR_GRAY && channel == HistogramChannels::HIST_LUMA )
     {
-      if( channel >= 10 && channel < 11 )
+      return channel - HistogramChannels::HIST_LUMA;
+    }
+
+    if( m_pcPelFormat->colorSpace == CLP_COLOR_YUV && channel >= HistogramChannels::HIST_LUMA && channel < HistogramChannels::HIST_CHROMA_V )
+    {
+      return channel - HistogramChannels::HIST_LUMA;
+    }
+
+    if( m_pcPelFormat->colorSpace == CLP_COLOR_RGB || m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
+    {
+      if( channel == HistogramChannels::HIST_LUMA )
       {
-        realChannel = channel - 10;
+        return m_uiHistoChannels - 1;
+      }
+      if( channel >= HistogramChannels::HIST_COLOR_R && channel <= HistogramChannels::HIST_COLOR_A )
+      {
+        return channel - CLP_COLOR_R;
       }
     }
-    else if( m_pcPelFormat->colorSpace == CLP_COLOR_YUV )
-    {
-      if( channel >= 10 && channel < 13 )
-      {
-        realChannel = channel - 10;
-      }
-    }
-    else if( m_pcPelFormat->colorSpace == CLP_COLOR_RGB || m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
-    {
-      if( channel == CalypFrame::HIST_LUMA )
-      {
-        realChannel = m_uiHistoChannels - 1;
-      }
-      if( channel >= 20 && channel < 24 )
-      {
-        realChannel = channel - 20;
-      }
-    }
-    if( realChannel > (int)m_uiHistoChannels )
-      realChannel = -1;
-    return realChannel;
+    assert( false );
+    return 0;
   }
 
   ~CalypFramePrivate()

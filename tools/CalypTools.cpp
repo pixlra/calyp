@@ -68,7 +68,7 @@ int CalypTools::openInputs()
     std::string resolutionString( "" );
     std::string fmtString( "yuv420p" );
     unsigned int uiBitsPerPixel = 8;
-    unsigned int uiEndianness = 0;
+    int uiEndianness = 0;
     bool hasNegativeValues = false;
 
     CalypStream* pcStream;
@@ -104,7 +104,7 @@ int CalypTools::openInputs()
       pcStream = new CalypStream;
       try
       {
-        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, hasNegativeValues, 1, true ) )
+        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, hasNegativeValues, 1, CalypStream::Type::Input ) )
         {
           log( CLP_LOG_ERROR, "Cannot open input stream %s! ", inputFileNames[i].c_str() );
           return -1;
@@ -242,7 +242,7 @@ int CalypTools::Open( int argc, char* argv[] )
     {
       pcOutputStream->open( m_pcOutputFileNames[0], pcInputFrame->getWidth(), pcInputFrame->getHeight(),
                             pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel(), m_uiOutEndianness, 1,
-                            false );
+                            CalypStream::Type::Output );
       log( CLP_LOG_INFO, "Output stream from rate-reduction!\n" );
       reportStreamInfo( pcOutputStream, "Output " );
     }
@@ -383,7 +383,7 @@ int CalypTools::Open( int argc, char* argv[] )
         try
         {
           pcModStream->open( outputFileNames[0], pcModFrame->getWidth(), pcModFrame->getHeight(),
-                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1, false );
+                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1, CalypStream::Type::Output );
           log( CLP_LOG_INFO, "Output stream from module!\n" );
           reportStreamInfo( pcModStream, "Module Output " );
         }
@@ -570,11 +570,11 @@ int CalypTools::QualityOperation()
   return 0;
 }
 
-//CalypFrame* CalypTools::applyFrameModule()
+// CalypFrame* CalypTools::applyFrameModule()
 //{
-//  CalypFrame* pcProcessedFrame = NULL;
-//  if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
-//  {
+//   CalypFrame* pcProcessedFrame = NULL;
+//   if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
+//   {
 
 //  }
 //  return pcProcessedFrame;

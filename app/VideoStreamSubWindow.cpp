@@ -49,7 +49,7 @@ QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& array )
   {
     d = array.at( i );
     out << d.m_cFilename << d.m_uiWidth << d.m_uiHeight << d.m_iPelFormat << d.m_uiBitsPelPixel << d.m_iEndianness
-        << d.m_uiFrameRate << d.m_uiFileSize;
+        << d.m_uiFrameRate << d.m_uiFileSize << d.m_bForceRaw;
   }
   return out;
 }
@@ -69,6 +69,7 @@ QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
     in >> d.m_iEndianness;
     in >> d.m_uiFrameRate;
     in >> d.m_uiFileSize;
+    in >> d.m_bForceRaw;
     array.append( d );
   }
   return in;
@@ -200,7 +201,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
     }
     try
     {
-      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, true, iPass == 1 );
+      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, iPass == 1, CalypStream::Type::Input );
     }
     catch( CalypFailure& e )
     {
@@ -256,7 +257,7 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo* streamInfo )
 
   if( !m_pCurrStream->open( streamInfo->m_cFilename.toStdString(), streamInfo->m_uiWidth, streamInfo->m_uiHeight,
                             streamInfo->m_iPelFormat, streamInfo->m_uiBitsPelPixel, streamInfo->m_iEndianness,
-                            streamInfo->m_uiFrameRate, true ) )
+                            streamInfo->m_uiFrameRate, streamInfo->m_bForceRaw, CalypStream::Type::Input ) )
   {
     return false;
   }
@@ -323,7 +324,7 @@ bool VideoStreamSubWindow::guessFormat( QString filename, unsigned int& rWidth, 
       }
 
       // Guess resolution - match %dx%d
-      //QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
+      // QRegularExpressionMatch resolutionMatch = QRegularExpression( "_\\d*x\\d*" ).match( FilenameShort );
       QRegularExpressionMatch resolutionMatch = QRegularExpression( "_[0-9]+x[0-9]+" ).match( FilenameShort );
       if( resolutionMatch.hasMatch() )
       {
@@ -454,7 +455,7 @@ void VideoStreamSubWindow::refreshFrame()
 
   if( m_pcDisplayModule )
   {
-    //bool disableThreads = !m_bIsPlaying && hasAssociatedModule();
+    // bool disableThreads = !m_bIsPlaying && hasAssociatedModule();
     m_pcDisplayModule->apply( m_bIsPlaying, true );
     bSetFrame = false;
   }

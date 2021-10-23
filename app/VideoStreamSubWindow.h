@@ -54,6 +54,7 @@ typedef struct
   unsigned int m_iEndianness;
   unsigned int m_uiFrameRate;
   unsigned long long int m_uiFileSize;
+  bool m_bForceRaw{ false };
 } CalypFileInfo;
 typedef QVector<CalypFileInfo> CalypFileInfoVector;
 

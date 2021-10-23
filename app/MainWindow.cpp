@@ -211,10 +211,19 @@ void MainWindow::loadFile( QString fileName, CalypFileInfo* pStreamInfo )
   {
     bool opened = false;
 
-    if( !pStreamInfo )
+    if( pStreamInfo != nullptr )
+    {
+      try
+      {
+        opened = videoSubWindow->loadFile( pStreamInfo );
+      }
+      catch( CalypFailure& e )
+      {
+      }
+    }
+
+    if( !opened )
       opened = videoSubWindow->loadFile( fileName );
-    else
-      opened = videoSubWindow->loadFile( pStreamInfo );
 
     if( opened )
     {

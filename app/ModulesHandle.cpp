@@ -497,9 +497,6 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
   {
     if( !pcCurrModuleIf->m_pcModuleStream )
     {
-      unsigned int Width = 0, Height = 0, FrameRate = 30;
-      int BitsPixel, InputFormat = -1;
-
       QString supported = tr( "Supported Files (" );
       QStringList formatsList;
       std::vector<CalypStreamFormat> supportedFmts = CalypStream::supportedWriteFormats();
@@ -532,15 +529,15 @@ void ModulesHandle::applyAllModuleIf( CalypAppModuleIf* pcCurrModuleIf )
       {
         return;
       }
-      Width = pcCurrModuleIf->m_pcProcessedFrame->getWidth();
-      Height = pcCurrModuleIf->m_pcProcessedFrame->getHeight();
-      InputFormat = pcCurrModuleIf->m_pcProcessedFrame->getPelFormat();
-      BitsPixel = pcCurrModuleIf->m_pcProcessedFrame->getBitsPel();
-      FrameRate = 30;
+      auto Width = pcCurrModuleIf->m_pcProcessedFrame->getWidth();
+      auto Height = pcCurrModuleIf->m_pcProcessedFrame->getHeight();
+      auto InputFormat = pcCurrModuleIf->m_pcProcessedFrame->getPelFormat();
+      auto BitsPixel = pcCurrModuleIf->m_pcProcessedFrame->getBitsPel();
+      auto FrameRate = 30;
 
       pcCurrModuleIf->m_pcModuleStream = std::unique_ptr<CalypStream>();
       if( !pcCurrModuleIf->m_pcModuleStream->open( fileName.toStdString(), Width, Height, InputFormat, BitsPixel,
-                                                   CLP_LITTLE_ENDIAN, FrameRate, false ) )
+                                                   CLP_LITTLE_ENDIAN, FrameRate, CalypStream::Type::Output ) )
       {
         pcCurrModuleIf->m_pcModuleStream = nullptr;
         return;

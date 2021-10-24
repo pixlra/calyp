@@ -53,7 +53,7 @@ protected:
 
     pcStream = std::make_unique<CalypStream>();
     pcStream->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
-                    CLP_BIG_ENDIAN, 1, true );
+                    CLP_BIG_ENDIAN, 1, CalypStream::Type::Input );
 
     CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
     CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();

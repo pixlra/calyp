@@ -34,7 +34,7 @@
 #include "VideoSubWindow.h"
 
 QualityHandle::QualityHandle( QWidget* parent, SubWindowHandle* windowManager )
-    : m_pcParet( parent ), m_pcMainWindowManager( windowManager )
+    : m_pcParent( parent ), m_pcMainWindowManager( windowManager )
 {
 }
 
@@ -70,7 +70,7 @@ void QualityHandle::createActions()
 
 QMenu* QualityHandle::createMenu()
 {
-  m_pcMenuQuality = new QMenu( "Quality", this );
+  m_pcMenuQuality = new QMenu( "Quality", m_pcParent );
   m_pcSubMenuQualityMetrics = m_pcMenuQuality->addMenu( "Quality Metrics" );
   m_pcSubMenuQualityMetrics->addActions( m_actionGroupQualityMetric->actions() );
   m_pcMenuQuality->addAction( m_arrayActions[SELECT_CURR_REF_ACT] );
@@ -82,8 +82,8 @@ QMenu* QualityHandle::createMenu()
 
 QDockWidget* QualityHandle::createDock()
 {
-  m_pcQualityHandleSideBar = new QualityMeasurementSidebar( m_pcParet, m_pcMainWindowManager );
-  m_pcQualityHandleDock = new QDockWidget( tr( "Quality Measurement" ), this );
+  m_pcQualityHandleSideBar = new QualityMeasurementSidebar( m_pcParent, m_pcMainWindowManager );
+  m_pcQualityHandleDock = new QDockWidget( tr( "Quality Measurement" ), m_pcParent );
   m_pcQualityHandleDock->setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
   m_pcQualityHandleDock->setWidget( m_pcQualityHandleSideBar );
 
@@ -98,7 +98,7 @@ QDockWidget* QualityHandle::createDock()
 
 void QualityHandle::updateMenus()
 {
-  VideoSubWindow* pcCurrentVideoSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcCurrentVideoSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   bool hasSubWindow = pcCurrentVideoSubWindow ? true : false;
   bool hasReference = false;
   bool isReference = false;
@@ -179,7 +179,7 @@ void QualityHandle::measureQuality( QVector<VideoSubWindow*> apcWindowList )
   }
   pcReferenceWindow->stop();
 
-  ProgressBar* pcProgressBar = new ProgressBar( m_pcParet, numberOfFrames );
+  ProgressBar* pcProgressBar = new ProgressBar( m_pcParent, numberOfFrames );
 
   QVector<double>* padQualityValues = new QVector<double>[numberOfWindows + 1];
   double* padAverageQuality = new double[numberOfWindows + 1];
@@ -247,7 +247,7 @@ void QualityHandle::slotQualityMetricChanged( int idx )
 
 void QualityHandle::slotSelectCurrentAsReference()
 {
-  VideoSubWindow* pcRefSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcRefSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( pcRefSubWindow )
   {
     VideoSubWindow* pcVideoSubWindow;
@@ -267,7 +267,7 @@ void QualityHandle::slotSelectCurrentAsReference()
 
 void QualityHandle::slotPlotQualitySingle()
 {
-  VideoSubWindow* pcSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( pcSubWindow )
   {
     if( pcSubWindow->getRefSubWindow() )
@@ -291,7 +291,7 @@ void QualityHandle::slotPlotQualitySingle()
 
 void QualityHandle::slotPlotQualitySeveral()
 {
-  VideoSubWindow* pcSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( pcSubWindow )
   {
     QVector<VideoSubWindow*> apcWindowList;

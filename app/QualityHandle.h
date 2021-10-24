@@ -36,7 +36,7 @@
 class SubWindowHandle;
 class VideoSubWindow;
 
-class QualityHandle : public QWidget
+class QualityHandle : public QObject
 {
   Q_OBJECT
 public:
@@ -54,7 +54,7 @@ public:
   void update( VideoSubWindow* currSubWindow );
 
 private:
-  QWidget* m_pcParet;
+  QWidget* m_pcParent;
   SubWindowHandle* m_pcMainWindowManager;
 
   enum

@@ -85,7 +85,7 @@ private:
 };
 
 SubWindowHandle::SubWindowHandle( QWidget* parent )
-    : QWidget( parent )
+    : m_pcApp( qobject_cast<MainWindow*>( parent ) )
 {
   m_iWindowMode = -1;
   m_pcWindowManagerLayout = NULL;
@@ -94,7 +94,7 @@ SubWindowHandle::SubWindowHandle( QWidget* parent )
   m_apcSubWindowList.clear();
   m_apcMdiSubWindowList.clear();
 
-  m_pcApp = qobject_cast<MainWindow*>( parentWidget() );
+  m_pcCentralWidget = new QWidget;
   // setWindowMode( DETACHEDSUBWINDOWMODE );
   setWindowMode( MDISUBWINDOWMODE );
 }
@@ -152,8 +152,8 @@ void SubWindowHandle::setWindowMode( int iWindowMode )
       m_apcSubWindowList.at( i )->resize( m_apcSubWindowList.at( i )->sizeHint() );
       m_apcSubWindowList.at( i )->show();
     }
-    setVisible( false );
-    parentWidget()->update();
+    m_pcCentralWidget->setVisible( false );
+    m_pcApp->update();
     m_pcApp->showNormal();
     qApp->processEvents();
     QSize screenSize = QGuiApplication::screens()[0]->availableGeometry().size();
@@ -164,13 +164,13 @@ void SubWindowHandle::setWindowMode( int iWindowMode )
 
   if( iWindowMode == MDISUBWINDOWMODE )
   {
-    setVisible( true );
+    m_pcCentralWidget->setVisible( true );
     m_pcMdiArea = new MdiArea;
     m_pcMdiArea->setActivationOrder( QMdiArea::ActivationHistoryOrder );
     connect( m_pcMdiArea, SIGNAL( subWindowActivated( QMdiSubWindow* ) ), this, SLOT( updateActiveSubWindow() ) );
-    m_pcWindowManagerLayout = new QHBoxLayout( this );
+    m_pcWindowManagerLayout = new QHBoxLayout( m_pcCentralWidget );
     m_pcWindowManagerLayout->addWidget( m_pcMdiArea );
-    setLayout( m_pcWindowManagerLayout );
+    m_pcCentralWidget->setLayout( m_pcWindowManagerLayout );
     for( int i = 0; i < m_apcSubWindowList.size(); i++ )
     {
       addMdiSubWindow( m_apcSubWindowList.at( i ) );
@@ -318,11 +318,6 @@ void SubWindowHandle::removeAllSubWindow()
 void SubWindowHandle::removeActiveSubWindow()
 {
   removeSubWindow( m_pcActiveWindow );
-}
-
-SubWindowAbstract* SubWindowHandle::activeSubWindow() const
-{
-  return m_pcActiveWindow;
 }
 
 QList<SubWindowAbstract*> SubWindowHandle::findSubWindow( const unsigned int uiCategory ) const
@@ -491,12 +486,12 @@ void SubWindowHandle::createActions()
   m_actionGroupWindowMode->actions().at( m_iWindowMode )->setChecked( true );
 
   m_arrayActions[CLOSE_ACT] = new QAction( tr( "&Close" ), this );
-  m_arrayActions[CLOSE_ACT]->setIcon( style()->standardIcon( QStyle::SP_DialogCloseButton ) );
+  m_arrayActions[CLOSE_ACT]->setIcon( m_pcApp->style()->standardIcon( QStyle::SP_DialogCloseButton ) );
   m_arrayActions[CLOSE_ACT]->setStatusTip( tr( "Close the active window" ) );
   connect( m_arrayActions[CLOSE_ACT], SIGNAL( triggered() ), this, SLOT( removeActiveSubWindow() ) );
 
   m_arrayActions[CLOSE_ACT] = new QAction( tr( "&Close" ), this );
-  m_arrayActions[CLOSE_ACT]->setIcon( style()->standardIcon( QStyle::SP_DialogCloseButton ) );
+  m_arrayActions[CLOSE_ACT]->setIcon( m_pcApp->style()->standardIcon( QStyle::SP_DialogCloseButton ) );
   m_arrayActions[CLOSE_ACT]->setStatusTip( tr( "Close the active window" ) );
   connect( m_arrayActions[CLOSE_ACT], SIGNAL( triggered() ), this, SLOT( removeActiveSubWindow() ) );
 
@@ -519,14 +514,14 @@ void SubWindowHandle::createActions()
 
   m_arrayActions[NEXT_WINDOWS_ACT] = new QAction( tr( "Ne&xt" ), this );
   m_arrayActions[NEXT_WINDOWS_ACT]->setShortcuts( QKeySequence::NextChild );
-  m_arrayActions[NEXT_WINDOWS_ACT]->setIcon( QIcon( style()->standardIcon( QStyle::SP_ArrowRight ) ) );
+  m_arrayActions[NEXT_WINDOWS_ACT]->setIcon( QIcon( m_pcApp->style()->standardIcon( QStyle::SP_ArrowRight ) ) );
   m_arrayActions[NEXT_WINDOWS_ACT]->setStatusTip( tr( "Move the focus to the next window" ) );
   //  connect( m_arrayActions[NEXT_WINDOWS_ACT], SIGNAL( triggered() ), this,
   //  SLOT( activateNextSubWindow() ) );
 
   m_arrayActions[PREVIOUS_WINDOWS_ACT] = new QAction( tr( "Pre&vious" ), this );
   m_arrayActions[PREVIOUS_WINDOWS_ACT]->setShortcuts( QKeySequence::PreviousChild );
-  m_arrayActions[PREVIOUS_WINDOWS_ACT]->setIcon( QIcon( style()->standardIcon( QStyle::SP_ArrowLeft ) ) );
+  m_arrayActions[PREVIOUS_WINDOWS_ACT]->setIcon( QIcon( m_pcApp->style()->standardIcon( QStyle::SP_ArrowLeft ) ) );
   m_arrayActions[PREVIOUS_WINDOWS_ACT]->setStatusTip( tr( "Move the focus to the previous window" ) );
   //  connect( m_arrayActions[PREVIOUS_WINDOWS_ACT], SIGNAL( triggered() ),
   //  this, SLOT( activatePreviousSubWindow() ) );
@@ -537,10 +532,15 @@ void SubWindowHandle::createActions()
 
 QMenu* SubWindowHandle::createMenu()
 {
-  m_pcMenuWindow = new QMenu( "&Window", this );
+  m_pcMenuWindow = new QMenu( "&Window", m_pcApp );
   updateMenu();
   connect( m_pcMenuWindow, SIGNAL( aboutToShow() ), this, SLOT( updateMenu() ) );
   return m_pcMenuWindow;
+}
+
+auto SubWindowHandle::getWidget() -> QWidget*
+{
+  return m_pcCentralWidget;
 }
 
 void SubWindowHandle::updateMenu()

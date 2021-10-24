@@ -44,23 +44,23 @@ class VideoStreamSubWindow;
 class ResourceHandle;
 class CalypAppModuleIf;
 
-typedef struct
+struct CalypFileInfo
 {
   QString m_cFilename;
   unsigned int m_uiWidth;
   unsigned int m_uiHeight;
   int m_iPelFormat;
   unsigned int m_uiBitsPelPixel;
-  unsigned int m_iEndianness;
+  int m_iEndianness;
   unsigned int m_uiFrameRate;
   unsigned long long int m_uiFileSize;
   bool m_bForceRaw{ false };
-} CalypFileInfo;
-typedef QVector<CalypFileInfo> CalypFileInfoVector;
+};
+using CalypFileInfoVector = QVector<CalypFileInfo>;
 
 QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& d );
 QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& d );
-int findCalypStreamInfo( CalypFileInfoVector array, QString filename );
+auto findCalypStreamInfo( const CalypFileInfoVector& array, const QString& filename ) -> int;
 
 class VideoStreamSubWindow : public VideoSubWindow
 {
@@ -83,9 +83,9 @@ public:
   bool supportsFormatConfiguration() const { return m_pCurrStream->supportsFormatConfiguration(); };
 
   bool loadFile( QString cFilename, bool bForceDialog = false );
-  bool loadFile( CalypFileInfo* streamInfo );
+  bool loadFile( CalypFileInfo streamInfo );
   void loadAll();
-  bool saveStream( QString filename );
+  bool saveStream( const QString& filename );
 
   bool play();
   void pause();
@@ -107,7 +107,7 @@ public:
 private:
   bool goToNextFrame( bool bThreaded );
 
-  static bool guessFormat( QString filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
+  static bool guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
                            int& rEndianness, unsigned int& rFrameRate );
 
 private:  // NO_LINT

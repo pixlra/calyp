@@ -42,7 +42,7 @@ class SubWindowAbstract;
 class MdiArea;
 class MdiSubWindow;
 
-class SubWindowHandle : public QWidget
+class SubWindowHandle : public QObject
 {
   Q_OBJECT
 
@@ -53,7 +53,12 @@ public:
 
   void addSubWindow( SubWindowAbstract* widget );
 
-  SubWindowAbstract* activeSubWindow() const;
+  template <class T = SubWindowAbstract>
+  T* activeSubWindow() const
+  {
+    static_assert( std::is_base_of<SubWindowAbstract, T>::value, "T must inherit from SubWindowAbstract" );
+    return qobject_cast<T*>( m_pcActiveWindow );
+  }
 
   QList<SubWindowAbstract*> findSubWindow( const unsigned int uiCategory = 0 ) const;
   QList<SubWindowAbstract*> findSubWindow( const QString& aName, const unsigned int uiCategory = 0 ) const;
@@ -61,6 +66,8 @@ public:
 
   void createActions();
   QMenu* createMenu();
+
+  auto getWidget() -> QWidget*;
 
   void readSettings();
   void writeSettings();
@@ -76,6 +83,7 @@ private:
   int m_iWindowMode;
   QList<SubWindowAbstract*> m_apcSubWindowList;
 
+  QWidget* m_pcCentralWidget;
   QHBoxLayout* m_pcWindowManagerLayout;
   MdiArea* m_pcMdiArea;
   QList<MdiSubWindow*> m_apcMdiSubWindowList;

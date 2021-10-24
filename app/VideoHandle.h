@@ -72,7 +72,7 @@ public:
   void addSubWindow( VideoSubWindow* subWindow );
 
 private:
-  QWidget* m_pcParet;
+  QWidget* m_pcParent;
   SubWindowHandle* m_pcMainWindowManager;
   enum
   {

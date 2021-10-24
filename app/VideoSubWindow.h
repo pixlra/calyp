@@ -58,7 +58,7 @@ public:
   void setBusyWindow( bool bFlag );
 
 protected:
-  void paintEvent( QPaintEvent* event );
+  void paintEvent( QPaintEvent* event ) override;
 
 private:
   QTimer* m_pcRefreshTimer;
@@ -90,7 +90,7 @@ public:
   virtual auto getFrameNum() -> std::uint64_t { return 1; };
 
   QString getVideoInformation() { return m_cStreamInformation; }
-  bool save( QString filename );
+  bool save( const QString& filename );
 
   void setCurrFrame( std::shared_ptr<CalypFrame> pcCurrFrame );
 
@@ -167,12 +167,12 @@ protected:
   VideoInformation* m_pcVideoInfo;
   QString m_cStreamInformation;
   std::shared_ptr<CalypFrame> m_pcCurrFrameAsset;
-  //bool m_bWindowBusy;
-  //bool m_bIsPlaying;
+  // bool m_bWindowBusy;
+  // bool m_bIsPlaying;
 
   std::vector<std::shared_ptr<CalypAppModuleIf>> m_associatedModules;
   CalypAppModuleIf* m_pcDisplayModule{ nullptr };
-  //bool m_hasAssociatedModules;
+  // bool m_hasAssociatedModules;
 
 private:
   QScrollArea* m_pcScrollArea;

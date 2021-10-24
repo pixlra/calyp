@@ -47,7 +47,7 @@ OPTION(BUILD_APP "Build GUI Application" ON)
 OPTION(BUILD_TOOLS "Build Command Line Application" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" OFF)
 OPTION(BUILD_DOC "Build Documentation" OFF)
-OPTION(BUILD_TESTS "Build Google Tests" OFF)
+OPTION(BUILD_TESTS "Build Tests" OFF)
 OPTION(BUILD_WITH_SANITIZERS "Build with sanitizers" OFF)
 OPTION(BUILD_WITH_THREAD_SANITIZER "Build with thread sanitizer" OFF)
 

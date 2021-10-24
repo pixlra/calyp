@@ -34,13 +34,12 @@
 #include "SubWindowAbstract.h"
 
 VideoInformation::VideoInformation( QWidget* parent )
-    : QWidget( parent ), m_bBusyWindow( false )
+    : QWidget( parent ), m_pcRefreshTimer{ new QTimer }, m_bBusyWindow( false )
 {
   setPalette( Qt::transparent );
   setAttribute( Qt::WA_TransparentForMouseEvents );
   m_cTopLeftTextFont.setPointSize( 8 );
   m_cCenterTextFont.setPointSize( 12 );
-  m_pcRefreshTimer = new QTimer;
   m_pcRefreshTimer->setSingleShot( true );
 }
 
@@ -83,18 +82,21 @@ void VideoInformation::paintEvent( QPaintEvent* event )
 
 VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent )
     : SubWindowAbstract( parent, SubWindowAbstract::VIDEO_SUBWINDOW | category )
-    , m_pcReferenceSubWindow( NULL )
-    , m_pcUpdateTimer( NULL )
+    , m_pcVideoInfo{ new VideoInformation{ this } }
+    , m_pcScrollArea{ new QScrollArea }
+    , m_cViewArea{ new ViewArea }
+    , m_pcReferenceSubWindow{ nullptr }
+    , m_pcUpdateTimer{ new QTimer{ this } }
 {
   // Create a new scroll area inside the sub-window
-  m_pcScrollArea = new QScrollArea;
+
   connect( m_pcScrollArea->horizontalScrollBar(), SIGNAL( actionTriggered( int ) ), this,
            SLOT( updateScrollValues() ) );
   connect( m_pcScrollArea->verticalScrollBar(), SIGNAL( actionTriggered( int ) ), this,
            SLOT( updateScrollValues() ) );
 
   // Create a new interface to show images
-  m_cViewArea = new ViewArea;
+
   connect( m_cViewArea, SIGNAL( zoomFactorChanged_byWheel( double, QPoint ) ), this,
            SLOT( adjustScrollBarByScale( double, QPoint ) ) );
 
@@ -102,7 +104,7 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
            SIGNAL( zoomFactorChanged( double, QPoint ) ) );
 
   connect( m_cViewArea, SIGNAL( scrollBarMoved( QPoint ) ), this, SLOT( adjustScrollBarByOffset( QPoint ) ) );
-  //connect( m_cViewArea, SIGNAL( scrollBarMoved( QPoint ) ), this, SIGNAL( scrollBarMoved( QPoint ) ) );
+  // connect( m_cViewArea, SIGNAL( scrollBarMoved( QPoint ) ), this, SIGNAL( scrollBarMoved( QPoint ) ) );
 
   connect( m_cViewArea, SIGNAL( selectionChanged( QRect ) ), this, SLOT( updateSelectedArea( QRect ) ) );
   connect( m_cViewArea, SIGNAL( positionChanged( const QPoint& ) ), this,
@@ -118,12 +120,8 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
 
   m_associatedModules.clear();
 
-  m_pcUpdateTimer = new QTimer();
   m_pcUpdateTimer->setInterval( 800 );
   connect( m_pcUpdateTimer, SIGNAL( timeout() ), this, SLOT( updateWindowOnTimeout() ) );
-
-  //! Add video information
-  m_pcVideoInfo = new VideoInformation( this );
 }
 
 VideoSubWindow::~VideoSubWindow()
@@ -371,7 +369,7 @@ void VideoSubWindow::refreshFrame()
   }
 }
 
-bool VideoSubWindow::save( QString filename )
+bool VideoSubWindow::save( const QString& filename )
 {
   bool iRet = false;
   QApplication::setOverrideCursor( Qt::WaitCursor );
@@ -439,15 +437,11 @@ void VideoSubWindow::adjustScrollBarByScale( double scale, QPoint center )
   }
   else
   {
-    int value;
-
     int x = center.x() - cLastScroll.x();
-    value = int( scale * cLastScroll.x() + ( ( scale - 1 ) * x ) );
-    m_cCurrScroll.setX( value );
+    m_cCurrScroll.setX( int( scale * cLastScroll.x() + ( ( scale - 1 ) * x ) ) );
 
     int y = center.y() - cLastScroll.y();
-    value = int( scale * cLastScroll.y() + ( ( scale - 1 ) * y ) );
-    m_cCurrScroll.setY( value );
+    m_cCurrScroll.setY( int( scale * cLastScroll.y() + ( ( scale - 1 ) * y ) ) );
   }
 
   // Update window scroll
@@ -464,15 +458,15 @@ void VideoSubWindow::updateScrollValues()
   double xPos = m_pcScrollArea->horizontalScrollBar()->value();
   double yPos = m_pcScrollArea->verticalScrollBar()->value();
 
-  m_cCurrScroll.setX( xPos );
-  m_cCurrScroll.setY( yPos );
+  m_cCurrScroll.setX( xPos != 0 );
+  m_cCurrScroll.setY( yPos != 0 );
 
   m_dHorScroll = m_dVerScroll = 0;
 
-  if( xPos )
+  if( xPos != 0 )
     m_dHorScroll = xPos / double( m_pcScrollArea->horizontalScrollBar()->maximum() );
 
-  if( yPos )
+  if( yPos != 0 )
     m_dVerScroll = yPos / double( m_pcScrollArea->verticalScrollBar()->maximum() );
 }
 
@@ -496,12 +490,10 @@ void VideoSubWindow::zoomToFit()
 
 void VideoSubWindow::zoomToFactor( double factor, QPoint center )
 {
-  double curFactor;
-  curFactor = getScaleFactor();
+  double curFactor = getScaleFactor();
   if( factor != curFactor )
   {
-    double usedScale;
-    usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, center, QSize() );
+    double usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, center, QSize() );
     adjustScrollBarByScale( usedScale, center );
   }
 }
@@ -511,8 +503,7 @@ void VideoSubWindow::scaleView( double scale, QPoint center )
   Q_ASSERT( !m_cViewArea->image().isNull() );
   if( scale != 1.0 )
   {
-    double usedScale;
-    usedScale = m_cViewArea->scaleZoomFactor( scale, center, getScrollSize() );
+    double usedScale = m_cViewArea->scaleZoomFactor( scale, center, getScrollSize() );
     adjustScrollBarByScale( usedScale, center );
   }
 }
@@ -522,18 +513,15 @@ void VideoSubWindow::scaleView( const QSize& size, QPoint center )
   QSize imgViewSize;
   if( m_pcCurrFrameAsset )
     imgViewSize = QSize( m_pcCurrFrameAsset->getWidth(), m_pcCurrFrameAsset->getHeight() );
-  //else
-  //  imgViewSize = QSize( m_pCurrStream->getWidth(), m_pCurrStream->getHeight() );
+  // else
+  //   imgViewSize = QSize( m_pCurrStream->getWidth(), m_pCurrStream->getHeight() );
   QSize newSize = imgViewSize;
   newSize.scale( size, Qt::KeepAspectRatio );
 
   // Calc the zoom factor
-  double wfactor = 1;
-  double hfactor = 1;
-  double factor;
-
-  wfactor = (double)newSize.width() / imgViewSize.width();
-  hfactor = (double)newSize.height() / imgViewSize.height();
+  double wfactor = (double)newSize.width() / imgViewSize.width();
+  double hfactor = (double)newSize.height() / imgViewSize.height();
+  double factor{ wfactor };
 
   if( wfactor < hfactor )
     factor = wfactor;
@@ -543,8 +531,7 @@ void VideoSubWindow::scaleView( const QSize& size, QPoint center )
   double curFactor = getScaleFactor();
   if( factor != curFactor )
   {
-    double usedScale;
-    usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, center, getScrollSize() );
+    double usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, center, getScrollSize() );
     adjustScrollBarByScale( usedScale, center );
   }
 }
@@ -553,17 +540,15 @@ void VideoSubWindow::updatePixelValueStatusBar( const QPoint& pos )
 {
   if( m_pcCurrFrameAsset )
   {
-    int iWidth, iHeight;
     int posX = pos.x();
     int posY = pos.y();
-    QString strStatus;
 
-    iWidth = m_pcCurrFrameAsset->getWidth();
-    iHeight = m_pcCurrFrameAsset->getHeight();
+    int iWidth = m_pcCurrFrameAsset->getWidth();
+    int iHeight = m_pcCurrFrameAsset->getHeight();
 
     if( ( posX < iWidth ) && ( posX >= 0 ) && ( posY < iHeight ) && ( posY >= 0 ) )
     {
-      strStatus = QString( "(%1,%2)   " ).arg( posX ).arg( posY );
+      QString strStatus = QString( "(%1,%2)   " ).arg( posX ).arg( posY );
 
       int colorSpace = m_pcCurrFrameAsset->getColorSpace();
       CalypPixel pixelValue = m_pcCurrFrameAsset->getPixel( pos.x(), pos.y() );

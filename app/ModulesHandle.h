@@ -39,7 +39,7 @@ class SubWindowHandle;
 class CalypAppModuleIf;
 class SubWindowHandle;
 
-class ModulesHandle : public QWidget
+class ModulesHandle : public QObject
 {
   Q_OBJECT
 public:

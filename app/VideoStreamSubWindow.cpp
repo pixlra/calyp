@@ -75,7 +75,7 @@ QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
   return in;
 }
 
-int findCalypStreamInfo( CalypFileInfoVector array, QString filename )
+auto findCalypStreamInfo( const CalypFileInfoVector& array, const QString& filename ) -> int
 {
   for( int i = 0; i < array.size(); i++ )
     if( array.at( i ).m_cFilename == filename )
@@ -188,7 +188,8 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
       BitsPel = appSettings.value( "VideoStreamSubWindow/LastBitsPerPixel" ).value<unsigned int>();
     }
   }
-  bool bRet = false;
+  bool bRet{ false };
+  bool forceRaw{ false };
   for( int iPass = 0; iPass < 2 && !bRet; iPass++ )
   {
     if( iPass || bConfig )
@@ -202,6 +203,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
     try
     {
       bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, iPass == 1, CalypStream::Type::Input );
+      forceRaw = iPass > 0;
     }
     catch( CalypFailure& e )
     {
@@ -223,6 +225,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   m_sStreamInfo.m_iEndianness = Endianness;
   m_sStreamInfo.m_uiFrameRate = FrameRate;
   m_sStreamInfo.m_uiFileSize = QFileInfo( cFilename ).size();
+  m_sStreamInfo.m_bForceRaw = forceRaw;
 
   QVariant var;
   var.setValue<unsigned int>( Width );
@@ -248,21 +251,22 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   return true;
 }
 
-bool VideoStreamSubWindow::loadFile( CalypFileInfo* streamInfo )
+bool VideoStreamSubWindow::loadFile( CalypFileInfo streamInfo )
 {
   assert( m_pcResourceManager != nullptr );
 
   m_uiResourceId = m_pcResourceManager->getResource( m_pCurrStream );
   m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
 
-  if( !m_pCurrStream->open( streamInfo->m_cFilename.toStdString(), streamInfo->m_uiWidth, streamInfo->m_uiHeight,
-                            streamInfo->m_iPelFormat, streamInfo->m_uiBitsPelPixel, streamInfo->m_iEndianness,
-                            streamInfo->m_uiFrameRate, streamInfo->m_bForceRaw, CalypStream::Type::Input ) )
+  if( !m_pCurrStream->open( streamInfo.m_cFilename.toStdString(), streamInfo.m_uiWidth, streamInfo.m_uiHeight,
+                            streamInfo.m_iPelFormat, streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
+                            streamInfo.m_uiFrameRate, streamInfo.m_bForceRaw, CalypStream::Type::Input ) )
   {
     return false;
   }
 
-  m_sStreamInfo = *streamInfo;
+  m_cFilename = streamInfo.m_cFilename;
+  m_sStreamInfo = std::move( streamInfo );
 
 #ifdef CALYP_MANAGED_RESOURCES
   m_pcResourceManager->startResourceWorker( m_uiResourceId );
@@ -272,13 +276,12 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo* streamInfo )
 
   refreshFrame();
 
-  m_cFilename = streamInfo->m_cFilename;
   updateVideoWindowInfo();
   setWindowName( QFileInfo( m_cFilename ).fileName() );
   return true;
 }
 
-bool VideoStreamSubWindow::guessFormat( QString filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
+bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
                                         int& rEndianness, unsigned int& rFrameRate )
 {
   std::vector<CalypStandardResolution> stdResList = CalypStream::stdResolutionSizes();
@@ -515,7 +518,7 @@ bool VideoStreamSubWindow::goToNextFrame( bool bThreaded )
   return bEndOfSeq;
 }
 
-bool VideoStreamSubWindow::saveStream( QString filename )
+bool VideoStreamSubWindow::saveStream( const QString& filename )
 {
   bool iRet = false;
   QApplication::setOverrideCursor( Qt::WaitCursor );

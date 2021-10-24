@@ -79,15 +79,15 @@ MainWindow::MainWindow()
   setWindowTitle( QApplication::applicationName() );
   setWindowIcon( QIcon( ":logos/calyp-icon.png" ) );
   setUnifiedTitleAndToolBarOnMac( true );
-  setCentralWidget( m_pcWindowHandle );
+  setCentralWidget( m_pcWindowHandle->getWidget() );
   setAcceptDrops( true );
   setBackgroundRole( QPalette::Window );
 
-  connect( m_pcWindowHandle, &SubWindowHandle::windowActivated, this, &MainWindow::update );
-  connect( m_pcWindowHandle, &SubWindowHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
-  connect( m_appModuleVideo, &VideoHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
-  connect( m_appModuleQuality, &QualityHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
-  connect( m_appModuleExtensions, &ModulesHandle::changed, this, &MainWindow::update, Qt::QueuedConnection );
+  connect( m_pcWindowHandle, &SubWindowHandle::windowActivated, this, &MainWindow::updateMainWindow );
+  connect( m_pcWindowHandle, &SubWindowHandle::changed, this, &MainWindow::updateMainWindow, Qt::QueuedConnection );
+  connect( m_appModuleVideo, &VideoHandle::changed, this, &MainWindow::updateMainWindow, Qt::QueuedConnection );
+  connect( m_appModuleQuality, &QualityHandle::changed, this, &MainWindow::updateMainWindow, Qt::QueuedConnection );
+  connect( m_appModuleExtensions, &ModulesHandle::changed, this, &MainWindow::updateMainWindow, Qt::QueuedConnection );
 }
 
 bool MainWindow::parseArgs( int argc, char* argv[] )
@@ -185,7 +185,13 @@ void MainWindow::closeAll()
   m_pcWindowHandle->removeAllSubWindow();
 }
 
-void MainWindow::loadFile( QString fileName, CalypFileInfo* pStreamInfo )
+void MainWindow::loadFile( CalypFileInfo pStreamInfo )
+{
+  QString filename{ pStreamInfo.m_cFilename };
+  loadFile( std::move( filename ), std::move( pStreamInfo ) );
+}
+
+void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> streamInfo )
 {
   if( !QFileInfo( fileName ).exists() )
   {
@@ -201,21 +207,22 @@ void MainWindow::loadFile( QString fileName, CalypFileInfo* pStreamInfo )
   videoSubWindow = new VideoStreamSubWindow();  // createSubWindow();
   videoSubWindow->setResourceManaget( m_appResourceHandle.get() );
 
-  if( !pStreamInfo )
+  if( !streamInfo.has_value() )
   {
-    int idx = findCalypStreamInfo( m_aRecentFileStreamInfo, fileName );
-    pStreamInfo = (CalypFileInfo*)( idx >= 0 ? &m_aRecentFileStreamInfo.at( idx ) : NULL );
+    auto idx = findCalypStreamInfo( m_aRecentFileStreamInfo, fileName );
+    if( idx >= 0 )
+      streamInfo = m_aRecentFileStreamInfo.at( idx );
   }
 
   try
   {
     bool opened = false;
 
-    if( pStreamInfo != nullptr )
+    if( streamInfo.has_value() )
     {
       try
       {
-        opened = videoSubWindow->loadFile( pStreamInfo );
+        opened = videoSubWindow->loadFile( std::move( *streamInfo ) );
       }
       catch( CalypFailure& e )
       {
@@ -313,7 +320,7 @@ void MainWindow::open()
   {
     if( !fileNameList.at( i ).isEmpty() )
     {
-      loadFile( fileNameList.at( i ) );
+      loadFile( std::move( fileNameList.at( i ) ) );
     }
   }
 }
@@ -326,9 +333,10 @@ void MainWindow::open()
 void MainWindow::openRecent()
 {
   QAction* action = qobject_cast<QAction*>( sender() );
-  CalypFileInfo recentFile = action->data().value<CalypFileInfo>();
   if( action )
-    loadFile( recentFile.m_cFilename, &recentFile );
+  {
+    loadFile( action->data().value<CalypFileInfo>() );
+  }
 }
 
 void MainWindow::saveFrame()
@@ -408,7 +416,7 @@ void MainWindow::format()
       m_pcCurrentSubWindow->close();
     }
     m_pcCurrentSubWindow = NULL;
-    update();
+    updateMainWindow();
   }
 }
 
@@ -418,7 +426,7 @@ void MainWindow::reload()
   {
     m_pcCurrentSubWindow->refreshSubWindow();
     m_pcCurrentSubWindow = NULL;
-    update();
+    updateMainWindow();
   }
 }
 
@@ -439,7 +447,7 @@ void MainWindow::reloadAll()
     }
   }
   m_pcCurrentSubWindow = NULL;
-  update();
+  updateMainWindow();
 }
 
 void MainWindow::loadAll()
@@ -553,7 +561,7 @@ VideoStreamSubWindow* MainWindow::findVideoStreamSubWindow( const SubWindowHandl
 
 // -----------------------  Update Functions  -----------------------
 
-void MainWindow::update()
+void MainWindow::updateMainWindow()
 {
   SubWindowAbstract* activeSubWindow = m_pcWindowHandle->activeSubWindow();
   QCoreApplication::processEvents();
@@ -821,12 +829,9 @@ void MainWindow::createMenus()
 
   menuBar()->addMenu( m_appModuleVideo->createVideoMenu() );
   menuBar()->addMenu( m_appModuleVideo->createImageMenu() );
-  QMenu* QualityMenu = m_appModuleQuality->createMenu();
-  menuBar()->addMenu( QualityMenu );
-  QMenu* ModuleMenu = m_appModuleExtensions->createMenu();
-  menuBar()->addMenu( ModuleMenu );
-  QMenu* windowMenu = m_pcWindowHandle->createMenu();
-  menuBar()->addMenu( windowMenu );
+  menuBar()->addMenu( m_appModuleQuality->createMenu() );
+  menuBar()->addMenu( m_appModuleExtensions->createMenu() );
+  menuBar()->addMenu( m_pcWindowHandle->createMenu() );
 
   menuBar()->addSeparator();
 

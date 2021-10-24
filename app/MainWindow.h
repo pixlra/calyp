@@ -39,6 +39,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QVector>
+#include <optional>
 
 #include "CommonDefs.h"
 #include "VideoStreamSubWindow.h"
@@ -76,7 +77,8 @@ class MainWindow : public QMainWindow
 public:
   MainWindow();
   bool parseArgs( int argc, char* argv[] );
-  void loadFile( QString fileName, CalypFileInfo* pStreamInfo = NULL );
+  void loadFile( CalypFileInfo pStreamInfo );
+  void loadFile( QString fileName, std::optional<CalypFileInfo> pStreamInfo = {} );
 
 public Q_SLOTS:
   void printMessage( const QString& msg );
@@ -117,7 +119,7 @@ private Q_SLOTS:
   void dragEnterEvent( QDragEnterEvent* event );
   void dropEvent( QDropEvent* event );
 
-  void update();
+  void updateMainWindow();
   void updateZoomFactorSBox();
 
 private:

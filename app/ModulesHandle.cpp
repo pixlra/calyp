@@ -36,7 +36,7 @@
 #include "modules/CalypModulesFactory.h"
 
 ModulesHandle::ModulesHandle( QWidget* parent, SubWindowHandle* windowManager, VideoHandle* moduleVideo )
-    : QWidget( parent ), m_pcParent( parent ), m_pcMainWindowManager( windowManager ), m_appModuleVideo( moduleVideo )
+    : m_pcParent( parent ), m_pcMainWindowManager( windowManager ), m_appModuleVideo( moduleVideo )
 {
   setParent( m_pcParent );
 }
@@ -51,32 +51,32 @@ void ModulesHandle::createActions()
   connect( m_pcActionMapper, SIGNAL( mapped( int ) ), this, SLOT( processOpt( int ) ) );
 
   //  m_arrayActions[FORCE_PLAYING_REFRESH_ACT] = new QAction( "Refresh while
-  //  playing", parent() );
+  //  playing", m_pcParent );
   //  m_arrayActions[FORCE_PLAYING_REFRESH_ACT]->setStatusTip( "Force module
   //  refreshing while playing" );
   //  m_arrayActions[FORCE_PLAYING_REFRESH_ACT]->setCheckable( true );
 
-  m_arrayActions[LOAD_EXTERNAL_ACT] = new QAction( "Load external module", parent() );
+  m_arrayActions[LOAD_EXTERNAL_ACT] = new QAction( "Load external module", m_pcParent );
   m_arrayActions[LOAD_EXTERNAL_ACT]->setStatusTip( "Load an externally build module" );
-  connect( m_arrayActions[LOAD_EXTERNAL_ACT], SIGNAL( triggered() ), this, SLOT( loadExternalModule() ) );
+  connect( m_arrayActions[LOAD_EXTERNAL_ACT], &QAction::triggered, this, &ModulesHandle::loadExternalModule );
 
-  m_arrayActions[APPLY_ALL_ACT] = new QAction( "Apply to All", parent() );
+  m_arrayActions[APPLY_ALL_ACT] = new QAction( "Apply to All", m_pcParent );
   m_arrayActions[APPLY_ALL_ACT]->setStatusTip( "Apply module to all frames and save the result" );
   connect( m_arrayActions[APPLY_ALL_ACT], SIGNAL( triggered() ), m_pcActionMapper, SLOT( map() ) );
   m_pcActionMapper->setMapping( m_arrayActions[APPLY_ALL_ACT], APPLY_ALL_ACT );
 
-  m_arrayActions[SWAP_FRAMES_ACT] = new QAction( "Swap frames", parent() );
+  m_arrayActions[SWAP_FRAMES_ACT] = new QAction( "Swap frames", m_pcParent );
   m_arrayActions[SWAP_FRAMES_ACT]->setStatusTip( "Swap Sub Window order" );
   connect( m_arrayActions[SWAP_FRAMES_ACT], SIGNAL( triggered() ), m_pcActionMapper, SLOT( map() ) );
   m_pcActionMapper->setMapping( m_arrayActions[SWAP_FRAMES_ACT], SWAP_FRAMES_ACT );
 
-  m_arrayActions[DISABLE_ACT] = new QAction( "Disable Modules", parent() );
-  connect( m_arrayActions[DISABLE_ACT], SIGNAL( triggered() ), this, SLOT( destroyWindowModules() ) );
+  m_arrayActions[DISABLE_ACT] = new QAction( "Disable Modules", m_pcParent );
+  connect( m_arrayActions[DISABLE_ACT], &QAction::triggered, this, &ModulesHandle::destroyWindowModules );
 
-  m_arrayActions[DISABLE_ALL_ACT] = new QAction( "Disable All Modules", parent() );
-  connect( m_arrayActions[DISABLE_ALL_ACT], SIGNAL( triggered() ), this, SLOT( destroyAllModulesIf() ) );
+  m_arrayActions[DISABLE_ALL_ACT] = new QAction( "Disable All Modules", m_pcParent );
+  connect( m_arrayActions[DISABLE_ALL_ACT], &QAction::triggered, this, &ModulesHandle::destroyAllModulesIf );
 
-  m_arrayActions[FORCE_NEW_WINDOW_ACT] = new QAction( "Use New Window", parent() );
+  m_arrayActions[FORCE_NEW_WINDOW_ACT] = new QAction( "Use New Window", m_pcParent );
   m_arrayActions[FORCE_NEW_WINDOW_ACT]->setStatusTip(
       "Show module result in a new window. Some modules already force this "
       "feature" );
@@ -85,20 +85,16 @@ void ModulesHandle::createActions()
 
 QMenu* ModulesHandle::createMenu()
 {
-  m_pcModulesMenu = new QMenu( "&Modules", this );
+  m_pcModulesMenu = new QMenu( "&Modules", m_pcParent );
   buildMenu();
   return m_pcModulesMenu;
 }
 
 void ModulesHandle::buildMenu()
 {
-  QString ModuleIfinternalName;
-  QAction* currAction;
-  QMenu* currSubMenu;
-
-  for( int i = 0; i < m_arrayModulesActions.size(); i++ )
+  for( auto& action : m_arrayModulesActions )
   {
-    delete m_arrayModulesActions.at( i );
+    delete action;
   }
   m_arrayModulesActions.clear();
   m_pcModulesMenu->clear();
@@ -109,9 +105,9 @@ void ModulesHandle::buildMenu()
   for( ; it != moduleFactoryMap.end(); ++it )
   {
     auto pcCurrModuleIf = it->second();
-    ModuleIfinternalName = QString::fromLocal8Bit( it->first );
+    QString ModuleIfinternalName = QString::fromLocal8Bit( it->first );
 
-    currSubMenu = NULL;
+    QMenu* currSubMenu{ nullptr };
     if( pcCurrModuleIf->m_iModuleAPI <= CLP_MODULE_API_2 )
     {
       if( pcCurrModuleIf->m_pchModuleCategory )
@@ -132,7 +128,7 @@ void ModulesHandle::buildMenu()
       }
     }
 
-    currAction = new QAction( pcCurrModuleIf->getModuleLongName(), parent() );
+    QAction* currAction = new QAction( pcCurrModuleIf->getModuleLongName(), m_pcParent );
     QString moduleTooltip = pcCurrModuleIf->m_pchModuleTooltip;
     if( pcCurrModuleIf->m_uiNumberOfFrames > 1 )
       moduleTooltip += QString( " | Requires %1 frames" ).arg( pcCurrModuleIf->m_uiNumberOfFrames );
@@ -140,7 +136,7 @@ void ModulesHandle::buildMenu()
     currAction->setStatusTip( moduleTooltip );
     currAction->setData( ModuleIfinternalName );
     currAction->setCheckable( false );
-    connect( currAction, SIGNAL( triggered() ), this, SLOT( activateModule() ) );
+    connect( currAction, &QAction::triggered, this, &ModulesHandle::activateModule );
     m_arrayModulesActions.append( currAction );
 
     if( currSubMenu )
@@ -160,20 +156,20 @@ void ModulesHandle::buildMenu()
 
 void ModulesHandle::updateMenus()
 {
-  VideoSubWindow* pcSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
-  bool hasSubWindow = pcSubWindow ? true : false;
-  QAction* currModuleAction;
+  VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
+
+  bool hasSubWindow = pcSubWindow != nullptr ? true : false;
 
   for( int i = 0; i < m_arrayModulesActions.size(); i++ )
   {
-    currModuleAction = m_arrayModulesActions.at( i );
-    //currModuleAction->setEnabled( hasSubWindow );
+    auto* currModuleAction = m_arrayModulesActions.at( i );
+    // currModuleAction->setEnabled( hasSubWindow );
     currModuleAction->setChecked( false );
   }
-  //for( int i = 0; i < m_pcModulesSubMenuList.size(); i++ )
+  // for( int i = 0; i < m_pcModulesSubMenuList.size(); i++ )
   //{
   //	m_pcModulesSubMenuList.at( i )->setEnabled( hasSubWindow );
-  //}
+  // }
 
   for( int i = 0; i < m_arrayActions.size(); i++ )
   {
@@ -213,7 +209,7 @@ void ModulesHandle::writeSettings()
 
 void ModulesHandle::processOpt( int index )
 {
-  VideoSubWindow* pcSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( pcSubWindow )
   {
     CalypAppModuleIf* pcCurrentModule = pcSubWindow->getDisplayModule();
@@ -262,7 +258,7 @@ void ModulesHandle::activateModule()
   Qt::KeyboardModifiers keyModifiers = QApplication::keyboardModifiers();
   bool bTmpForceNewWindow = false;
 
-  VideoSubWindow* pcVideoSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcVideoSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( !pcVideoSubWindow )
   {
     return;
@@ -336,7 +332,7 @@ void ModulesHandle::activateModule()
         {
           videoSubWindowList.clear();
           qobject_cast<MainWindow*>( m_pcParent )->printMessage( "Error! Incompatible frames", CLP_LOG_ERROR );
-          //destroyModuleIf( pcCurrAppModuleIf );
+          // destroyModuleIf( pcCurrAppModuleIf );
           return;
         }
       }
@@ -351,7 +347,7 @@ void ModulesHandle::activateModule()
   {
     qobject_cast<MainWindow*>( m_pcParent )
         ->printMessage( "Error! There is no windows to apply the module", CLP_LOG_ERROR );
-    //destroyModuleIf( pcCurrAppModuleIf );
+    // destroyModuleIf( pcCurrAppModuleIf );
     return;
   }
 
@@ -366,7 +362,7 @@ void ModulesHandle::activateModule()
     if( moduleOptDialog.runConfiguration() == QDialog::Rejected )
     {
       qobject_cast<MainWindow*>( m_pcParent )->printMessage( "Module canceled by user!", CLP_LOG_WARNINGS );
-      //destroyModuleIf( pcCurrAppModuleIf );
+      // destroyModuleIf( pcCurrAppModuleIf );
       return;
     }
   }
@@ -434,7 +430,7 @@ void ModulesHandle::activateModule()
   if( !moduleCreated )
   {
     qobject_cast<MainWindow*>( m_pcParent )->printMessage( "Error! Module cannot be created", CLP_LOG_ERROR );
-    //destroyModuleIf( pcCurrAppModuleIf );
+    // destroyModuleIf( pcCurrAppModuleIf );
     return;
   }
 
@@ -471,7 +467,7 @@ void ModulesHandle::activateModule()
 
 void ModulesHandle::destroyWindowModules()
 {
-  VideoSubWindow* pcVideoSubWindow = qobject_cast<VideoSubWindow*>( m_pcMainWindowManager->activeSubWindow() );
+  VideoSubWindow* pcVideoSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
   if( pcVideoSubWindow )
   {
     pcVideoSubWindow->disableAllModules();

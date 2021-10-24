@@ -112,6 +112,7 @@ public:
    *   with desc as an optional help description
    */
   CalypOptions& operator()( const std::string& name, const std::string& desc );
+  CalypOptions& addOption( const std::string& name, const std::string& desc );
 
   /**
    * Add option described by name to the parent Options list,
@@ -121,14 +122,18 @@ public:
    */
   template <typename T>
   CalypOptions& operator()( const std::string& name, T& storage, const std::string& desc );
+  template <typename T>
+  CalypOptions& addOption( const std::string& name, T& storage, const std::string& desc );
 
   template <typename T>
   CalypOptions& operator()( const std::string& name, T& storage, const std::string& desc, const std::string& defaults );
+  template <typename T>
+  CalypOptions& addOption( const std::string& name, T& storage, const std::string& desc, const std::string& defaults );
 
   bool checkListingOpts();
 
 private:
-  void addOption( std::unique_ptr<OptionBase> opt );
+  void addOptionInternal( std::unique_ptr<OptionBase> opt );
 
 private:
   std::map<std::string, std::list<Option*>> opt_long_map;
@@ -143,7 +148,7 @@ private:
   bool storePair( bool allow_long, bool allow_short, const std::string& name, const std::string& value );
   bool storePair( const std::string& name, const std::string& value );
   unsigned int parseLONG( unsigned int argc, char* argv[] );  // NOLINT
-  unsigned int parseLONG( std::string arg );
+  unsigned int parseLONG( const std::string& arg );
   unsigned int parseSHORT( unsigned int argc, char* argv[] );          // NOLINT
   std::list<const char*> scanArgv( unsigned int argc, char* argv[] );  // NOLINT
 };

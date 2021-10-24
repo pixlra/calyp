@@ -214,8 +214,10 @@ bool CalypAppModuleIf::process()
 
 void CalypAppModuleIf::show()
 {
+#ifdef CALYP_THREADED_MODULES
   if( m_canceling )
     return;
+#endif
   switch( m_pcModule->m_iModuleType )
   {
   case ClpModuleType::FrameProcessing: {

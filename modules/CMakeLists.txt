@@ -13,7 +13,9 @@ SET(Calyp_Mod_SRCS CalypModulesFactory.cpp)
 #
 # Modules List
 #
-# SET( MODULE_LOCATION  "")
+IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  ADD_MODULE_USE_OPENCV(DummyOpencvModule "DummyOpencvModule" VERSION 3.1.0 MODULES core)
+ENDIF()
 
 ADD_MODULE(FilterComponentLuma "FilterComponent")
 ADD_MODULE(FilterComponentChromaU "FilterComponent")
@@ -33,6 +35,8 @@ ADD_MODULE(LumaAverage "LumaAverage")
 ADD_MODULE(WeightedPSNR "WeightedPSNR")
 ADD_MODULE(HEVCIntraPrediction "HEVCIntraPrediction")
 ADD_MODULE(OptimiseDisplay "OptimiseDisplay")
+
+ADD_MODULE_USE_OPENCV(ShapeDetection "ShapeDetection" VERSION 3.1.0 MODULES core)
 
 ADD_MODULE_USE_OPENCV(
   MeasureOpticalFlowDualTVL1
@@ -85,15 +89,7 @@ ADD_MODULE_USE_OPENCV(
   imgproc
   photo
 )
-# ADD_MODULE_USE_OPENCV(
-#   ThreeSixtyDynamicDownsampling
-#   "ThreeSixtyDynamicDownsampling"
-#   VERSION
-#   3.1.0
-#   MODULES
-#   core
-#   imgproc
-# )
+# ADD_MODULE_USE_OPENCV( ThreeSixtyDynamicDownsampling "ThreeSixtyDynamicDownsampling" VERSION 3.1.0 MODULES core imgproc )
 ADD_MODULE_USE_OPENCV(
   ThreeSixtyNxN
   "ThreeSixtyNxN"

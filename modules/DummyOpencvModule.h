@@ -1,6 +1,5 @@
 /*    This file is a part of Calyp project
  *    Copyright (C) 2014-2021  by Joao Carreira   (jfmcarreira@gmail.com)
- *
  *                                Luis Lucas      (luisfrlucas@gmail.com)
  *
  *    This program is free software; you can redistribute it and/or modify
@@ -19,40 +18,33 @@
  */
 
 /**
- * \file     main.cpp
- * \brief    main file
+ * \file     DummyOpencvModule.h
+ * \brief    Modules to detect curves shape
  */
 
-#include <iostream>
+#ifndef __DUMMYOPENCVMODULE_H__
+#define __DUMMYOPENCVMODULE_H__
 
-#include "CalypTools.h"
+// CalypLib
+#include "lib/CalypModuleIf.h"
 
-int main( int argc, char* argv[] )
+// OpenCV
+#include <opencv2/core/core.hpp>
+#include <opencv2/saliency.hpp>
+
+class DummyOpencvModule : public CalypOpenCVModuleIf,
+                          public CalypModuleInstace<DummyOpencvModule>
 {
-  int iRet = 0;
-  CalypTools CalypToolsApp;
+  using Mat = cv::Mat;
 
-  iRet = CalypToolsApp.Open( argc, argv );
-  if( iRet == 1 )
-  {
-    return 0;
-  }
-  if( iRet < 0 )
-  {
-    std::cout << "Exiting with error" << std::endl;
-    return 1;
-  }
+private:
+  std::unique_ptr<Mat> m_resultImage;
 
-  if( CalypToolsApp.Process() < 0 )
-  {
-    std::cout << "Exiting with error" << std::endl;
-    return 1;
-  }
+public:
+  DummyOpencvModule();
+  virtual ~DummyOpencvModule() = default;
+  Mat* create_using_opencv( const std::vector<Mat>& apcMatList ) override;
+  Mat* process_using_opencv( const std::vector<Mat>& apcMatList ) override;
+};
 
-  if( CalypToolsApp.Close() < 0 )
-  {
-    std::cout << "Exiting with error" << std::endl;
-    return 1;
-  }
-  return 0;
-}
+#endif  // __DUMMYOPENCVMODULE_H__

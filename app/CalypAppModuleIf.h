@@ -49,8 +49,6 @@ class QDockWidget;
 class CalypStream;
 class CalypFrame;
 
-#define CLP_MODULE_MAX_NUM_FRAMES 5
-
 class VideoSubWindow;
 class ModuleSubWindow;
 
@@ -60,7 +58,6 @@ class CalypAppModuleIf : std::enable_shared_from_this<CalypAppModuleIf>,
 #else
                          public QObject
 #endif
-
 {
   friend class ModulesHandle;
   friend class ModuleHandleDock;

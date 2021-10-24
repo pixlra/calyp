@@ -46,8 +46,6 @@
 #include "config.h"
 #include "lib/CalypModuleIf.h"
 
-using namespace std;
-
 struct ParseFailure : public std::exception
 {
   std::string arg;
@@ -189,7 +187,13 @@ private:
  */
 CalypOptions& CalypOptions::operator()( const std::string& name, const std::string& desc )
 {
-  addOption( std::make_unique<boolOption>( name, desc ) );
+  addOptionInternal( std::make_unique<boolOption>( name, desc ) );
+  return *this;
+}
+
+CalypOptions& CalypOptions::addOption( const std::string& name, const std::string& desc )
+{
+  addOptionInternal( std::make_unique<boolOption>( name, desc ) );
   return *this;
 }
 
@@ -201,14 +205,27 @@ CalypOptions& CalypOptions::operator()( const std::string& name, const std::stri
 template <typename T>
 CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc )
 {
-  addOption( std::make_unique<StandardOption<T>>( name, storage, desc, std::string( "" ) ) );
+  addOptionInternal( std::make_unique<StandardOption<T>>( name, storage, desc, std::string( "" ) ) );
+  return *this;
+}
+template <typename T>
+CalypOptions& CalypOptions::addOption( const std::string& name, T& storage, const std::string& desc )
+{
+  addOptionInternal( std::make_unique<StandardOption<T>>( name, storage, desc, std::string( "" ) ) );
   return *this;
 }
 
 template <typename T>
 CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc, const std::string& defaults )
 {
-  addOption( std::make_unique<StandardOption<T>>( name, storage, desc ) );
+  addOptionInternal( std::make_unique<StandardOption<T>>( name, storage, desc ) );
+  return *this;
+}
+
+template <typename T>
+CalypOptions& CalypOptions::addOption( const std::string& name, T& storage, const std::string& desc, const std::string& defaults )
+{
+  addOptionInternal( std::make_unique<StandardOption<T>>( name, storage, desc ) );
   return *this;
 }
 
@@ -270,15 +287,15 @@ CalypOptions& CalypOptions::addOptions()
   return *this;
 }
 
-void CalypOptions::addOption( std::unique_ptr<OptionBase> opt )
+void CalypOptions::addOptionInternal( std::unique_ptr<OptionBase> opt )
 {
   auto names = std::make_unique<Option>();
   names->base_opt = std::move( opt );
   opt = nullptr;
-  string& opt_string = opt->opt_string;
+  const std::string& opt_string = names->base_opt->opt_string;
 
   size_t opt_start = 0;
-  for( size_t opt_end = 0; opt_end != string::npos; )
+  for( size_t opt_end = 0; opt_end != std::string::npos; )
   {
     opt_end = opt_string.find_first_of( ',', opt_start );
     bool force_short = 0;
@@ -287,7 +304,7 @@ void CalypOptions::addOption( std::unique_ptr<OptionBase> opt )
       opt_start++;
       force_short = 1;
     }
-    string opt_name = opt_string.substr( opt_start, opt_end - opt_start );
+    std::string opt_name = opt_string.substr( opt_start, opt_end - opt_start );
     if( force_short || opt_name.size() == 1 )
     {
       names->opt_short.push_back( opt_name );
@@ -303,7 +320,7 @@ void CalypOptions::addOption( std::unique_ptr<OptionBase> opt )
   opt_list.push_back( std::move( names ) );
 }
 
-static void setOptions( std::list<CalypOptions::Option*>& opt_list, const string& value )
+static void setOptions( std::list<CalypOptions::Option*>& opt_list, const std::string& value )
 {
   /* multiple options may be registered for the same name:
    *   allow each to parse value
@@ -314,7 +331,7 @@ static void setOptions( std::list<CalypOptions::Option*>& opt_list, const string
   }
 }
 
-bool CalypOptions::storePair( bool allow_long, bool allow_short, const string& name, const string& value )
+bool CalypOptions::storePair( bool allow_long, bool allow_short, const std::string& name, const std::string& value )
 {
   bool found = false;
   std::map<std::string, std::list<Option*>>::iterator opt_it;
@@ -342,7 +359,7 @@ bool CalypOptions::storePair( bool allow_long, bool allow_short, const string& n
     if( !m_bAllowUnkonw )
     {
       /* not found */
-      cerr << "Unknown option: `" << name << "' (value:`" << value << "')" << endl;
+      std::cerr << "Unknown option: `" << name << "' (value:`" << value << "')" << std::endl;
     }
     return false;
   }
@@ -351,7 +368,7 @@ bool CalypOptions::storePair( bool allow_long, bool allow_short, const string& n
   return true;
 }
 
-bool CalypOptions::storePair( const string& name, const string& value )
+bool CalypOptions::storePair( const std::string& name, const std::string& value )
 {
   return storePair( true, true, name, value );
 }
@@ -365,13 +382,13 @@ unsigned int CalypOptions::parseLONG( unsigned int argc, char* argv[] )  // NOLI
    *  --option=arg
    *  --option arg
    */
-  string arg( argv[0] );
-  size_t arg_opt_start = arg.find_first_not_of( '-' );
-  size_t arg_opt_sep = arg.find_first_of( '=' );
-  string option = arg.substr( arg_opt_start, arg_opt_sep - arg_opt_start );
+  std::string arg( argv[0] );
+  std::size_t arg_opt_start = arg.find_first_not_of( '-' );
+  std::size_t arg_opt_sep = arg.find_first_of( '=' );
+  std::string option = arg.substr( arg_opt_start, arg_opt_sep - arg_opt_start );
 
   unsigned int extra_argc_consumed = 0;
-  if( arg_opt_sep == string::npos )
+  if( arg_opt_sep == std::string::npos )
   {
 /* no argument found => argument in argv[1] (maybe) */
 /* xxx, need to handle case where option isn't required */
@@ -391,7 +408,7 @@ unsigned int CalypOptions::parseLONG( unsigned int argc, char* argv[] )  // NOLI
   else
   {
     /* argument occurs after option_sep */
-    string val = arg.substr( arg_opt_sep + 1 );
+    std::string val = arg.substr( arg_opt_sep + 1 );
     storePair( true, false, option, val );
   }
   return extra_argc_consumed;
@@ -400,7 +417,7 @@ unsigned int CalypOptions::parseLONG( unsigned int argc, char* argv[] )  // NOLI
 /**
  * returns number of extra arguments consumed
  */
-unsigned int CalypOptions::parseLONG( string arg )
+unsigned int CalypOptions::parseLONG( const std::string& arg )
 {
   /* gnu style long options can take the forms:
    *  --option=arg
@@ -408,10 +425,10 @@ unsigned int CalypOptions::parseLONG( string arg )
    */
   size_t arg_opt_start = arg.find_first_not_of( '-' );
   size_t arg_opt_sep = arg.find_first_of( '=' );
-  string option = arg.substr( arg_opt_start, arg_opt_sep - arg_opt_start );
+  std::string option = arg.substr( arg_opt_start, arg_opt_sep - arg_opt_start );
 
   unsigned int extra_argc_consumed = 0;
-  if( arg_opt_sep == string::npos )
+  if( arg_opt_sep == std::string::npos )
   {
     /* no argument found => argument in argv[1] (maybe) */
     /* xxx, need to handle case where option isn't required */
@@ -423,7 +440,7 @@ unsigned int CalypOptions::parseLONG( string arg )
   else
   {
     /* argument occurs after option_sep */
-    string val = arg.substr( arg_opt_sep + 1 );
+    std::string val = arg.substr( arg_opt_sep + 1 );
     storePair( true, false, option, val );
   }
   return extra_argc_consumed;
@@ -435,19 +452,19 @@ unsigned int CalypOptions::parseSHORT( unsigned int argc, char* argv[] )  // NOL
    *  --option arg
    *  -option arg
    */
-  string arg( argv[0] );
-  size_t arg_opt_start = arg.find_first_not_of( '-' );
-  string option = arg.substr( arg_opt_start );
+  std::string arg( argv[0] );
+  std::size_t arg_opt_start = arg.find_first_not_of( '-' );
+  std::string option = arg.substr( arg_opt_start );
   /* lookup option */
 
   /* argument in argv[1] */
   /* xxx, need to handle case where option isn't required */
   if( argc == 1 )
   {
-    cerr << "Not processing option without argument `" << option << "'" << endl;
+    std::cerr << "Not processing option without argument `" << option << "'" << std::endl;
     return 0; /* run out of argv for argument */
   }
-  storePair( false, true, option, string( argv[1] ) );
+  storePair( false, true, option, std::string( argv[1] ) );
 
   return 1;
 }
@@ -475,10 +492,10 @@ int CalypOptions::parse( unsigned int argc, char* argv[] )  // NOLINT
 }
 
 // NOLINTNEXTLINE(*-avoid-c-arrays)
-list<const char*> CalypOptions::scanArgv( unsigned int argc, char* argv[] )
+std::list<const char*> CalypOptions::scanArgv( unsigned int argc, char* argv[] )
 {
   /* a list for anything that didn't get handled as an option */
-  list<const char*> non_option_arguments;
+  std::list<const char*> non_option_arguments;
 
   for( unsigned int i = 1; i < argc; i++ )
   {
@@ -536,13 +553,13 @@ static const char spaces[41] = "                                        ";
  * using the formatting: "-x, --long",
  * if a short/long option isn't specified, it is not printed
  */
-static void doHelpOpt( ostream& out, const CalypOptions::Option& entry, unsigned int pad_short = 0 )
+static void doHelpOpt( std::ostream& out, const CalypOptions::Option& entry, unsigned int pad_short = 0 )
 {
-  pad_short = min( pad_short, 8u );
+  pad_short = std::min( pad_short, 8u );
 
   if( !entry.opt_short.empty() )
   {
-    unsigned int pad = max( (int)pad_short - (int)entry.opt_short.front().size(), 0 );
+    unsigned int pad = std::max( (int)pad_short - (int)entry.opt_short.front().size(), 0 );
     out << "-" << entry.opt_short.front();
     if( !entry.opt_long.empty() )
     {
@@ -563,19 +580,19 @@ static void doHelpOpt( ostream& out, const CalypOptions::Option& entry, unsigned
 }
 
 /* format the help text */
-void CalypOptions::doHelp( ostream& out, unsigned int columns )
+void CalypOptions::doHelp( std::ostream& out, unsigned int columns )
 {
   const unsigned int pad_short = 3;
   /* first pass: work out the longest option name */
   unsigned int max_width = 0;
   for( auto& opt : opt_list )
   {
-    ostringstream line( ios_base::out );
+    std::ostringstream line( std::ios_base::out );
     doHelpOpt( line, *opt, pad_short );
-    max_width = max( max_width, (unsigned int)line.tellp() );
+    max_width = std::max( max_width, (unsigned int)line.tellp() );
   }
 
-  unsigned int opt_width = min( max_width + 2, 28u + pad_short ) + 2;
+  unsigned int opt_width = std::min( max_width + 2, 28u + pad_short ) + 2;
   unsigned int desc_width = columns - opt_width;
 
   /* second pass: write out formatted option and help text.
@@ -585,15 +602,15 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
    */
   for( auto& opt : opt_list )
   {
-    ostringstream line( ios_base::out );
+    std::ostringstream line( std::ios_base::out );
     line << "  ";
     doHelpOpt( line, *opt, pad_short );
 
-    const string& opt_desc = opt->base_opt->opt_desc;
+    const std::string& opt_desc = opt->base_opt->opt_desc;
     if( opt_desc.empty() )
     {
       /* no help text: output option, skip further processing */
-      cout << line.str() << endl;
+      std::cout << line.str() << std::endl;
       continue;
     }
     size_t currlength = size_t( line.tellp() );
@@ -601,17 +618,17 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
     {
       /* if option text is too long (and would collide with the
        * help text, split onto next line */
-      line << endl;
+      line << std::endl;
       currlength = 0;
     }
     /* split up the help text, taking into account new lines,
      *   (add opt_width of padding to each new line) */
-    for( size_t newline_pos = 0, cur_pos = 0; cur_pos != string::npos; currlength = 0 )
+    for( std::size_t newline_pos = 0, cur_pos = 0; cur_pos != std::string::npos; currlength = 0 )
     {
       /* print any required padding space for vertical alignment */
       line << &( spaces[40 - opt_width + currlength] );
       newline_pos = opt_desc.find_first_of( '\n', newline_pos );
-      if( newline_pos != string::npos )
+      if( newline_pos != std::string::npos )
       {
         /* newline found, print substring (newline needn't be stripped) */
         newline_pos++;
@@ -628,14 +645,14 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
       /* find a suitable point to split text (avoid spliting in middle of word)
        */
       size_t split_pos = opt_desc.find_last_of( ' ', cur_pos + desc_width );
-      if( split_pos != string::npos )
+      if( split_pos != std::string::npos )
       {
         /* eat up multiple space characters */
         split_pos = opt_desc.find_last_not_of( ' ', split_pos ) + 1;
       }
 
       /* bad split if no suitable space to split at.  fall back to width */
-      bool bad_split = split_pos == string::npos || split_pos <= cur_pos;
+      bool bad_split = split_pos == std::string::npos || split_pos <= cur_pos;
       if( bad_split )
       {
         split_pos = cur_pos + desc_width;
@@ -653,10 +670,9 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
       {
         break;
       }
-      line << endl;
+      line << std::endl;
     }
-
-    cout << line.str() << endl;
+    std::cout << line.str() << std::endl;
   }
 }
 
@@ -666,24 +682,24 @@ bool CalypOptions::checkListingOpts()
 
   if( hasOpt( "version" ) )
   {
-    std::cout << "Calyp version " << CALYP_VERSION_STRING << "\n";
+    std::cout << "Calyp version" << CALYP_VERSION_STRING << std::endl;
     bRet |= true;
   }
   if( hasOpt( "pel_fmts" ) )
   {
-    printf( "Calyp supported pixel formats: \n" );
+    std::cout << "Calyp supported pixel formats:" << std::endl;
     for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames().size(); i++ )
     {
-      printf( "   %s\n", CalypFrame::supportedPixelFormatListNames()[i].c_str() );
+      std::cout << "   " << CalypFrame::supportedPixelFormatListNames()[i] << std::endl;
     }
     bRet |= true;
   }
   if( hasOpt( "quality_metrics" ) )
   {
-    printf( "Calyp supported quality metrics: \n" );
+    std::cout << "Calyp supported quality metrics:" << std::endl;
     for( unsigned int i = 0; i < CalypFrame::supportedQualityMetricsList().size(); i++ )
     {
-      printf( "   %s\n", CalypFrame::supportedQualityMetricsList()[i].c_str() );
+      std::cout << "   " << CalypFrame::supportedQualityMetricsList()[i] << std::endl;
     }
     bRet |= true;
   }

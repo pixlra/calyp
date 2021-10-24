@@ -1280,6 +1280,12 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
       case CLP_COLOR_YUV:
         cv::cvtColor( tmpMat, cvMat, cv::COLOR_YCrCb2RGB );
         break;
+      case CLP_COLOR_RGB:
+      case CLP_COLOR_RGBA:
+        cvMat = tmpMat;
+        break;
+      default:
+        assert( false );
       }
     }
   }

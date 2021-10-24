@@ -32,7 +32,7 @@
 #include "CommonDefs.h"
 #include "config.h"
 
-class OpionConfiguration;
+class OptionConfiguration;
 
 /**
  *
@@ -47,7 +47,7 @@ public:
 
 private:
   CalypAppModuleIf* m_pcCurrModuleIf;
-  QVector<OpionConfiguration*> m_apcOptionList;
+  QVector<OptionConfiguration*> m_apcOptionList;
 };
 
 #endif  // __MODULEHANDLEOPTDIALOG_H__

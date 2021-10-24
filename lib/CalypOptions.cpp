@@ -40,6 +40,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 #include "config.h"
@@ -52,32 +53,33 @@ struct ParseFailure : public std::exception
   std::string arg;
   std::string val;
   ParseFailure( std::string arg0, std::string val0 ) throw()
-      : arg( arg0 ), val( val0 ) {}
+      : arg{ std::move( arg0 ) }, val{ std::move( val0 ) } {}
+  ParseFailure( ParseFailure&& other ) noexcept = delete;
+  ParseFailure& operator=( ParseFailure&& other ) noexcept = delete;
+  ParseFailure( const ParseFailure& other ) = delete;
+  ParseFailure& operator=( const ParseFailure& other ) = delete;
   ~ParseFailure() throw() {}
-  const char* what() const throw() { return "Option Parse Failure"; }
+  const char* what() const throw() override { return "Option Parse Failure"; }
 };
 
 /** Type specific option storage */
-class boolOption : public OptionBase
+class boolOption : public CalypOptions::OptionBase
 {
 public:
   boolOption( const std::string& name, const std::string& desc )
-      : OptionBase( name, desc, "(1-0)" ) { is_binary = true; }
-  void parse( const std::string& arg ) { arg_count++; }
+      : CalypOptions::OptionBase( name, desc, "(1-0)" ) { is_binary = true; }
+  void parse( const std::string& arg ) override { arg_count++; }
 };
 
 /** Type specific option storage */
 template <typename T>
-class StandardOption : public OptionBase
+class StandardOption : public CalypOptions::OptionBase
 {
 public:
   StandardOption( const std::string& name, T& storage, const std::string& desc, const std::string& def )
-      : OptionBase( name, desc, def ), opt_storage( storage )
-  {
-    is_binary = false;
-  }
+      : CalypOptions::OptionBase( name, desc, def ), opt_storage( storage ) {}
 
-  void parse( const std::string& arg );
+  void parse( const std::string& arg ) override;
   T& opt_storage;
   std::vector<T> opt_storage_array;
 };
@@ -105,7 +107,7 @@ inline void StandardOption<T>::parse( const std::string& arg )
 template <>
 inline void StandardOption<std::vector<unsigned int>>::parse( const std::string& arg )
 {
-  unsigned int aux_opt_storage;
+  unsigned int aux_opt_storage{ 0 };
   std::istringstream arg_ss( arg, std::istringstream::in );
   arg_ss.exceptions( std::ios::failbit );
   try
@@ -123,7 +125,7 @@ inline void StandardOption<std::vector<unsigned int>>::parse( const std::string&
 template <>
 inline void StandardOption<std::vector<int>>::parse( const std::string& arg )
 {
-  int aux_opt_storage;
+  int aux_opt_storage{ 0 };
   std::istringstream arg_ss( arg, std::istringstream::in );
   arg_ss.exceptions( std::ios::failbit );
   try
@@ -155,26 +157,26 @@ inline void StandardOption<std::vector<std::string>>::parse( const std::string& 
 }
 
 /** Option class for argument handling using a user provided function */
-struct FunctionOption : public OptionBase
+struct FunctionOption : public CalypOptions::OptionBase
 {
-public:
-  typedef void( Func )( CalypOptions&, const std::string& );
+  using OptFunc = std::function<void( CalypOptions&, const std::string& )>;
 
-  FunctionOption( const std::string& name, CalypOptions& parent_, Func* func_, const std::string& desc, const std::string& def )
-      : OptionBase( name, desc, def ), parent( parent_ ), func( func_ )
+public:
+  FunctionOption( const std::string& name, CalypOptions& parent, OptFunc func, const std::string& desc, const std::string& def )
+      : CalypOptions::OptionBase( name, desc, def ), m_parent( parent ), m_func( func )
   {
     is_binary = false;
   }
 
-  void parse( const std::string& arg )
+  void parse( const std::string& arg ) override
   {
-    func( parent, arg );
+    m_func( m_parent, arg );
     arg_count++;
   }
 
 private:
-  CalypOptions& parent;
-  void ( *func )( CalypOptions&, const std::string& );
+  CalypOptions& m_parent;
+  OptFunc m_func;
 };
 
 /* Helper method to initiate adding options to Options */
@@ -187,7 +189,7 @@ private:
  */
 CalypOptions& CalypOptions::operator()( const std::string& name, const std::string& desc )
 {
-  addOption( new boolOption( name, desc ) );
+  addOption( std::make_unique<boolOption>( name, desc ) );
   return *this;
 }
 
@@ -199,14 +201,14 @@ CalypOptions& CalypOptions::operator()( const std::string& name, const std::stri
 template <typename T>
 CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc )
 {
-  addOption( new StandardOption<T>( name, storage, desc, std::string( "" ) ) );
+  addOption( std::make_unique<StandardOption<T>>( name, storage, desc, std::string( "" ) ) );
   return *this;
 }
 
 template <typename T>
 CalypOptions& CalypOptions::operator()( const std::string& name, T& storage, const std::string& desc, const std::string& defaults )
 {
-  addOption( new StandardOption<T>( name, storage, desc ) );
+  addOption( std::make_unique<StandardOption<T>>( name, storage, desc ) );
   return *this;
 }
 
@@ -223,53 +225,35 @@ template CalypOptions& CalypOptions::operator()( const std::string& name, std::v
 template CalypOptions& CalypOptions::operator()( const std::string& name, std::vector<std::string>& storage,
                                                  const std::string& desc );
 
-CalypOptions::Option::Option()
-    : opt( 0 ) {}
-
-CalypOptions::Option::~Option()
+CalypOptions::CalypOptions( std::string name )
+    : m_cOptionGroupName{ std::move( name ) }
 {
-  if( opt )
-    delete opt;
 }
 
-CalypOptions::CalypOptions( const std::string& name )
-{
-  m_cOptionGroupName = name;
-  m_bAllowUnkonw = true;
-}
-
-CalypOptions::~CalypOptions()
-{
-  for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); it++ )
-  {
-    delete *it;
-  }
-}
-
-OptionBase* CalypOptions::operator[]( const std::string& optName )
+CalypOptions::OptionBase* CalypOptions::operator[]( const std::string& optName )
 {
   return getOption( optName );
 }
 
-OptionBase* CalypOptions::getOption( const std::string& optName )
+CalypOptions::OptionBase* CalypOptions::getOption( const std::string& optName )
 {
-  CalypOptions::OptionMap::iterator opt_it;
+  std::map<std::string, std::list<Option*>>::iterator opt_it;
   opt_it = opt_short_map.find( optName );
   if( opt_it != opt_short_map.end() )
   {
-    OptionsList opt_list = ( *opt_it ).second;
-    for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); ++it )
+    auto opt_list = ( *opt_it ).second;
+    for( auto& option : opt_list )
     {
-      return ( *it )->opt;
+      return option->base_opt.get();
     }
   }
   opt_it = opt_long_map.find( optName );
   if( opt_it != opt_long_map.end() )
   {
-    OptionsList opt_list = ( *opt_it ).second;
-    for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); ++it )
+    auto opt_list = ( *opt_it ).second;
+    for( auto& option : opt_list )
     {
-      return ( *it )->opt;
+      return option->base_opt.get();
     }
   }
   return NULL;
@@ -281,26 +265,16 @@ bool CalypOptions::hasOpt( const std::string& optName )
   return opt ? opt->count() > 0 ? true : false : false;
 }
 
-void CalypOptions::addDefaultOptions()
-{
-  addOptions()                                                /**/
-      ( "help", "produce help message" )                      /**/
-      ( "version", "show version and exit" )                  /**/
-      ( "pel_fmts", "list pixel formats" )                    /**/
-      ( "quality_metrics", "list supported quality metrics" ) /**/
-      ( "module_list", "list supported modules" )             /**/
-      ( "module_list_full", "detailed list supported modules" );
-}
-
 CalypOptions& CalypOptions::addOptions()
 {
   return *this;
 }
 
-void CalypOptions::addOption( OptionBase* opt )
+void CalypOptions::addOption( std::unique_ptr<OptionBase> opt )
 {
-  Option* names = new Option();
-  names->opt = opt;
+  auto names = std::make_unique<Option>();
+  names->base_opt = std::move( opt );
+  opt = nullptr;
   string& opt_string = opt->opt_string;
 
   size_t opt_start = 0;
@@ -317,32 +291,33 @@ void CalypOptions::addOption( OptionBase* opt )
     if( force_short || opt_name.size() == 1 )
     {
       names->opt_short.push_back( opt_name );
-      opt_short_map[opt_name].push_back( names );
+      opt_short_map[opt_name].push_back( names.get() );
     }
     else
     {
       names->opt_long.push_back( opt_name );
-      opt_long_map[opt_name].push_back( names );
+      opt_long_map[opt_name].push_back( names.get() );
     }
     opt_start += opt_end + 1;
   }
-  opt_list.push_back( names );
+  opt_list.push_back( std::move( names ) );
 }
 
-static void setOptions( CalypOptions::OptionsList& opt_list, const string& value )
+static void setOptions( std::list<CalypOptions::Option*>& opt_list, const string& value )
 {
   /* multiple options may be registered for the same name:
-   *   allow each to parse value */
-  for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); ++it )
+   *   allow each to parse value
+   */
+  for( auto& option : opt_list )
   {
-    ( *it )->opt->parse( value );
+    option->base_opt->parse( value );
   }
 }
 
 bool CalypOptions::storePair( bool allow_long, bool allow_short, const string& name, const string& value )
 {
   bool found = false;
-  CalypOptions::OptionMap::iterator opt_it;
+  std::map<std::string, std::list<Option*>>::iterator opt_it;
   if( allow_long )
   {
     opt_it = opt_long_map.find( name );
@@ -384,7 +359,7 @@ bool CalypOptions::storePair( const string& name, const string& value )
 /**
  * returns number of extra arguments consumed
  */
-unsigned int CalypOptions::parseLONG( unsigned int argc, char* argv[] )
+unsigned int CalypOptions::parseLONG( unsigned int argc, char* argv[] )  // NOLINT
 {
   /* gnu style long options can take the forms:
    *  --option=arg
@@ -454,7 +429,7 @@ unsigned int CalypOptions::parseLONG( string arg )
   return extra_argc_consumed;
 }
 
-unsigned int CalypOptions::parseSHORT( unsigned int argc, char* argv[] )
+unsigned int CalypOptions::parseSHORT( unsigned int argc, char* argv[] )  // NOLINT
 {
   /* short options can take the forms:
    *  --option arg
@@ -477,7 +452,7 @@ unsigned int CalypOptions::parseSHORT( unsigned int argc, char* argv[] )
   return 1;
 }
 
-int CalypOptions::parse( unsigned int argc, char* argv[] )
+int CalypOptions::parse( unsigned int argc, char* argv[] )  // NOLINT
 {
   try
   {
@@ -499,6 +474,7 @@ int CalypOptions::parse( unsigned int argc, char* argv[] )
   return 0;
 }
 
+// NOLINTNEXTLINE(*-avoid-c-arrays)
 list<const char*> CalypOptions::scanArgv( unsigned int argc, char* argv[] )
 {
   /* a list for anything that didn't get handled as an option */
@@ -592,10 +568,10 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
   const unsigned int pad_short = 3;
   /* first pass: work out the longest option name */
   unsigned int max_width = 0;
-  for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); it++ )
+  for( auto& opt : opt_list )
   {
     ostringstream line( ios_base::out );
-    doHelpOpt( line, **it, pad_short );
+    doHelpOpt( line, *opt, pad_short );
     max_width = max( max_width, (unsigned int)line.tellp() );
   }
 
@@ -607,13 +583,13 @@ void CalypOptions::doHelp( ostream& out, unsigned int columns )
    *  - if the option text is longer than opt_width, place the help
    *    text at opt_width on the next line.
    */
-  for( CalypOptions::OptionsList::iterator it = opt_list.begin(); it != opt_list.end(); it++ )
+  for( auto& opt : opt_list )
   {
     ostringstream line( ios_base::out );
     line << "  ";
-    doHelpOpt( line, **it, pad_short );
+    doHelpOpt( line, *opt, pad_short );
 
-    const string& opt_desc = ( *it )->opt->opt_desc;
+    const string& opt_desc = opt->base_opt->opt_desc;
     if( opt_desc.empty() )
     {
       /* no help text: output option, skip further processing */

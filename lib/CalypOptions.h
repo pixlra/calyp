@@ -47,30 +47,6 @@
 #include "CalypDefs.h"
 
 /**
- * \class    OptionBase
- * \ingroup  CalypLibGrp
- * \brief    Virtual base class for storing information relating to a
- * specific option This base class describes common elements.
- * Type specific information should be stored in a derived class.
- */
-class OptionBase
-{
-public:
-  OptionBase( const std::string& name, const std::string& desc, const std::string& def )
-      : arg_count( 0 ), opt_string( name ), opt_desc( desc ), opt_defaults( def ) {}
-  virtual ~OptionBase() {}
-  /* parse argument arg, to obtain a value for the option */
-  virtual void parse( const std::string& arg ) = 0;
-  int count() { return arg_count; }
-  bool isBinary() { return is_binary; }
-  int arg_count;
-  std::string opt_string;
-  std::string opt_desc;
-  std::string opt_defaults;
-  bool is_binary;
-};
-
-/**
  * \class    CalypOptions
  * \ingroup  CalypLibGrp
  * \brief    Main class to store options
@@ -78,34 +54,56 @@ public:
 class CalypOptions
 {
 public:
+  /**
+   * Virtual base class for storing information relating to a
+   * specific option This base class describes common elements.
+   * Type specific information should be stored in a derived class.
+   */
+  class OptionBase
+  {
+  public:
+    OptionBase( std::string name, std::string desc, std::string def )
+        : opt_string{ std::move( name ) }, opt_desc{ std::move( desc ) }, opt_defaults{ std::move( def ) } {}
+    OptionBase( OptionBase&& other ) noexcept = delete;
+    OptionBase& operator=( OptionBase&& other ) noexcept = delete;
+    OptionBase( const OptionBase& other ) = delete;
+    OptionBase& operator=( const OptionBase& other ) = delete;
+    virtual ~OptionBase() = default;
+    /* parse argument arg, to obtain a value for the option */
+    virtual void parse( const std::string& arg ) = 0;
+    auto count() const -> std::size_t { return arg_count; }
+    auto isBinary() const -> bool { return is_binary; }
+    std::string opt_string;
+    std::string opt_desc;
+    std::string opt_defaults;
+
+  protected:
+    std::size_t arg_count{ 0 };
+    bool is_binary{ false };
+  };
   struct Option
   {
-    Option();
-    ~Option();
     std::list<std::string> opt_long;
     std::list<std::string> opt_short;
-    OptionBase* opt;
+    std::unique_ptr<OptionBase> base_opt{ nullptr };
   };
-  typedef std::list<Option*> OptionsList;
 
-  CalypOptions( const std::string& name = "" );
-  ~CalypOptions();
+  CalypOptions() = default;
+  CalypOptions( std::string name );
 
-  int parse( unsigned int argc, char* argv[] );
+  int parse( unsigned int argc, char* argv[] );  // NOLINT
   void parse( std::vector<std::string> args_array );
 
   std::list<const char*>& getUnhandledArgs() { return m_aUnhandledArgs; }
   void doHelp( std::ostream& out, unsigned columns = 80 );
 
-  OptionBase* operator[]( const std::string& optName );
-  OptionBase* getOption( const std::string& optName );
+  CalypOptions::OptionBase* operator[]( const std::string& optName );
+  CalypOptions::OptionBase* getOption( const std::string& optName );
 
   bool hasOpt( const std::string& optName );
 
-  OptionsList getOptionList() { return opt_list; }
-  void addDefaultOptions();
+  auto getOptionList() -> const std::list<std::unique_ptr<Option>>& { return opt_list; }
   CalypOptions& addOptions();
-  void addOption( OptionBase* opt );
 
   /**
    * Add option described by name to the parent Options list,
@@ -130,22 +128,24 @@ public:
   bool checkListingOpts();
 
 private:
-  typedef std::map<std::string, OptionsList> OptionMap;
-  OptionMap opt_long_map;
-  OptionMap opt_short_map;
+  void addOption( std::unique_ptr<OptionBase> opt );
 
-  OptionsList opt_list;
+private:
+  std::map<std::string, std::list<Option*>> opt_long_map;
+  std::map<std::string, std::list<Option*>> opt_short_map;
 
-  std::string m_cOptionGroupName;
-  bool m_bAllowUnkonw;
+  std::list<std::unique_ptr<Option>> opt_list;
+
+  std::string m_cOptionGroupName{ "" };
+  bool m_bAllowUnkonw{ true };
   std::list<const char*> m_aUnhandledArgs;
 
   bool storePair( bool allow_long, bool allow_short, const std::string& name, const std::string& value );
   bool storePair( const std::string& name, const std::string& value );
-  unsigned int parseLONG( unsigned int argc, char* argv[] );
+  unsigned int parseLONG( unsigned int argc, char* argv[] );  // NOLINT
   unsigned int parseLONG( std::string arg );
-  unsigned int parseSHORT( unsigned int argc, char* argv[] );
-  std::list<const char*> scanArgv( unsigned int argc, char* argv[] );
+  unsigned int parseSHORT( unsigned int argc, char* argv[] );          // NOLINT
+  std::list<const char*> scanArgv( unsigned int argc, char* argv[] );  // NOLINT
 };
 
 #endif  // __CALYPOPTIONS_H__

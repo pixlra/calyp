@@ -38,7 +38,7 @@ class QSpinBox;
 class QString;
 class QWidget;
 
-typedef QVector<CalypStandardResolution> CalypStandardResolutionVector;
+using CalypStandardResolutionVector = QVector<CalypStandardResolution>;
 QDataStream& operator<<( QDataStream& out, const CalypStandardResolutionVector& array );
 QDataStream& operator>>( QDataStream& in, CalypStandardResolutionVector& array );
 

@@ -40,7 +40,14 @@ CalypToolsCmdParser::CalypToolsCmdParser()
   m_bQuiet = false;
   m_iFrames = -1;
 
-  m_cOptions.addDefaultOptions();
+  m_cOptions.addOptions()                                     /**/
+      ( "help", "produce help message" )                      /**/
+      ( "version", "show version and exit" )                  /**/
+      ( "pel_fmts", "list pixel formats" )                    /**/
+      ( "quality_metrics", "list supported quality metrics" ) /**/
+      ( "module_list", "list supported modules" )             /**/
+      ( "module_list_full", "detailed list supported modules" );
+  ;
 }
 
 CalypToolsCmdParser::~CalypToolsCmdParser() {}

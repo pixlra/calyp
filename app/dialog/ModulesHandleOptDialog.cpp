@@ -36,18 +36,17 @@
 
 class QLineEdit;
 
-class OpionConfiguration : public QWidget
+class OptionConfiguration : public QWidget
 {
 public:
-  OpionConfiguration( OptionBase* option )
+  OptionConfiguration( CalypOptions::OptionBase* option )
+      : m_cName{ option->opt_string }
   {
-    m_pcChecked = NULL;
-    m_cName = option->opt_string;
-    m_pcDescription = new QLabel;
+    auto* pcDescription = new QLabel;
     QString desc = QString::fromStdString( option->opt_desc );
-    m_pcDescription->setText( desc );
+    pcDescription->setText( desc );
     QHBoxLayout* layout = new QHBoxLayout;
-    layout->addWidget( m_pcDescription, 0, Qt::AlignLeft );
+    layout->addWidget( pcDescription, 0, Qt::AlignLeft );
     if( !option->isBinary() )
     {
       m_pcValue = new QLineEdit;
@@ -64,7 +63,7 @@ public:
     layout->setContentsMargins( 1, 1, 1, 1 );
     setLayout( layout );
   }
-  const QString getValue() const
+  auto getValue() const -> QString
   {
     if( m_pcChecked )
     {
@@ -72,12 +71,11 @@ public:
     }
     return m_pcValue->text();
   }
-  const std::string& getName() { return m_cName; }
+  auto getName() const -> std::string { return m_cName; }
 
 private:
-  QLineEdit* m_pcValue;
-  QCheckBox* m_pcChecked;
-  QLabel* m_pcDescription;
+  QLineEdit* m_pcValue{ nullptr };
+  QCheckBox* m_pcChecked{ nullptr };
   std::string m_cName;
 };
 
@@ -87,13 +85,12 @@ ModulesHandleOptDialog::ModulesHandleOptDialog( QWidget* parent, CalypAppModuleI
   resize( 400, 10 );
   setWindowTitle( "Select module parameters" );
 
-  const CalypOptions::OptionsList& moduleOptions = m_pcCurrModuleIf->m_pcModule->m_cModuleOptions.getOptionList();
+  auto& moduleOptions = m_pcCurrModuleIf->m_pcModule->m_cModuleOptions.getOptionList();
 
   QVBoxLayout* optionsLayout = new QVBoxLayout;
-  OpionConfiguration* pcOption;
-  for( CalypOptions::OptionsList::const_iterator it = moduleOptions.begin(); it != moduleOptions.end(); ++it )
+  for( auto& option : moduleOptions )
   {
-    pcOption = new OpionConfiguration( ( *it )->opt );
+    auto pcOption = new OptionConfiguration( option->base_opt.get() );
     m_apcOptionList.append( pcOption );
     optionsLayout->addWidget( pcOption );
   }
@@ -125,13 +122,13 @@ int ModulesHandleOptDialog::runConfiguration()
   std::string optionString;
   QString valueString( "" );
 
-  for( int i = 0; i < m_apcOptionList.size(); i++ )
+  for( const auto& option : m_apcOptionList )
   {
-    valueString = m_apcOptionList.at( i )->getValue();
+    valueString = option->getValue();
     if( !valueString.isEmpty() )
     {
       optionString.append( "--" );
-      optionString.append( m_apcOptionList.at( i )->getName() );
+      optionString.append( option->getName() );
       if( !( valueString == "true" ) )
       {
         optionString.append( "=" );

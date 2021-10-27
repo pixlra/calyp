@@ -53,7 +53,7 @@ bool InterFrameVariance::create( std::vector<CalypFrame*> apcFrameList )
       return false;
 
   m_pcFrameVariance =
-      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::CLP_GRAY, 8 );
+      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::Gray, 8 );
 
   m_pVariance = CalypPlane<double>{ apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight() };
 

@@ -200,7 +200,7 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
     return false;
 
   // m_pcDownsampled = new CalypFrame( m_iWidth, m_uiHeight, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
-  m_pcDownsampled = new CalypFrame( m_iWidth, m_iHeight, ClpPixelFormats::CLP_GRAY, pcInputFrame->getBitsPel() );
+  m_pcDownsampled = new CalypFrame( m_iWidth, m_iHeight, ClpPixelFormats::Gray, pcInputFrame->getBitsPel() );
 
   m_isOdd = !( m_iHeight % 2 );
   for( unsigned ch = 0; ch < m_pcDownsampled->getNumberChannels(); ch++ )

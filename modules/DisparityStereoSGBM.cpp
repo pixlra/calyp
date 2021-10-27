@@ -51,7 +51,7 @@ bool DisparityStereoSGBM::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
   m_pcDisparityFrame =
-      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::CLP_GRAY );
+      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::Gray );
   if( ( m_uiBlockSize % 2 ) == 0 )
   {
     m_uiBlockSize++;

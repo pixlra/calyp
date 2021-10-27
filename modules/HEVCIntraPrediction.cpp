@@ -61,7 +61,7 @@ bool HEVCIntraPrediction::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
   m_pcPredBlock = NULL;
-  m_pcPredBlock = new CalypFrame( m_iBlockSize * 2 + 1, m_iBlockSize * 2 + 1, ClpPixelFormats::CLP_GRAY, apcFrameList[0]->getBitsPel() );
+  m_pcPredBlock = new CalypFrame( m_iBlockSize * 2 + 1, m_iBlockSize * 2 + 1, ClpPixelFormats::Gray, apcFrameList[0]->getBitsPel() );
 
   m_referenceMem.resize( m_iBlockSize * 4 );
 

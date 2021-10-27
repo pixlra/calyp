@@ -166,7 +166,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   ConfigureFormatDialog formatDialog( this );
   unsigned int Width = 0, Height = 0, BitsPel = 8, FrameRate = 30;
   int Endianness = CLP_LITTLE_ENDIAN;
-  auto InputFormat = ClpPixelFormats::CLP_YUV420P;
+  auto InputFormat = ClpPixelFormats::YUV420p;
   QSettings appSettings;
 
   if( m_pCurrStream )
@@ -427,7 +427,7 @@ bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& r
       rEndianness = CLP_LITTLE_ENDIAN;
     }
 
-    if( rWidth > 0 && rHeight > 0 && rInputFormat != ClpPixelFormats::CLP_INVALID_FMT )
+    if( rWidth > 0 && rHeight > 0 && rInputFormat != ClpPixelFormats::Invalid )
       bGuessed = true && !bGuessedByFilesize;
   }
   return !bGuessed;

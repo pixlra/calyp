@@ -105,7 +105,7 @@ bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
       m_dFrameRate = 1;
     }
     m_uiBitsPerPixel = 8;
-    m_iPixelFormat = ClpPixelFormats::CLP_BGR24;
+    m_iPixelFormat = ClpPixelFormats::BGR24;
 
     m_uiTotalNumberFrames = 1;
     if( m_pcVideoCapture )

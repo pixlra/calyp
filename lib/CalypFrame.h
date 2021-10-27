@@ -64,18 +64,17 @@ enum CalypColorSpace
  */
 enum class ClpPixelFormats : int
 {
-  CLP_INVALID_FMT = -1,  //!< Invalid
-  CLP_YUV420P = 0,       //!< YUV 420 progressive
-  CLP_YUV422P,           //!< YUV 422 progressive
-  CLP_YUV444P,           //!< YUV 444 progressive
-  CLP_YUYV422,           //!< YUV 422 interleaved
-  CLP_GRAY,              //!< Grayscale
-  CLP_RGB24P,            //!< RGB 32 bpp progressive
-  CLP_RGB24,             //!< RGB 32 bpp
-  CLP_BGR24,             //!< BGR 32 bpp
-  CLP_RGBA32,            //!< RGBA 32 bpp
-  CLP_BGRA32,            //!< BGRA 32 bpp
-  CLP_MAX_FMT = 254,     //!< Account for future formats
+  Invalid = -1,  //!< Invalid
+  YUV420p = 0,   //!< YUV 420 progressive
+  YUV422p,       //!< YUV 422 progressive
+  YUV444p,       //!< YUV 444 progressive
+  YUYV422,       //!< YUV 422 interleaved
+  Gray,          //!< Grayscale
+  RGB24p,        //!< RGB 32 bpp progressive
+  RGB24,         //!< RGB 32 bpp
+  BGR24,         //!< BGR 32 bpp
+  RGBA32,        //!< RGBA 32 bpp
+  BGRA32,        //!< BGRA 32 bpp
 };
 
 enum CLP_YUV_Components

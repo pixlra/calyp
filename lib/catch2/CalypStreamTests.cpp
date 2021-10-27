@@ -42,7 +42,7 @@ TEST_CASE( "Can open a YUV 420p file", "CalypStream" )
 {
   constexpr int kWidth{ 352 };
   constexpr int kHeight{ 288 };
-  constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUV420P };
+  constexpr auto kInputFormat{ ClpPixelFormats::YUV420p };
   constexpr int kBitsPel{ 8 };
   constexpr auto KEndianness{ CLP_INVALID_ENDIANESS };
 
@@ -85,7 +85,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
   };
   SECTION( "YUV420p" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUV420P };
+    constexpr auto kInputFormat{ ClpPixelFormats::YUV420p };
     const auto kFilename = getFileTestFilename( "Foreman.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
@@ -101,7 +101,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
   }
   SECTION( "YUV422p" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUV422P };
+    constexpr auto kInputFormat{ ClpPixelFormats::YUV422p };
     const auto kFilename = getFileTestFilename( "Foreman_352x288_yuv422p.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
@@ -117,7 +117,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
   }
   SECTION( "YUV444p" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUV444P };
+    constexpr auto kInputFormat{ ClpPixelFormats::YUV444p };
     const auto kFilename = getFileTestFilename( "Foreman_352x288_yuv444p.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
@@ -133,7 +133,7 @@ TEST_CASE( "Can open a YUV file", "CalypStream" )
   }
   SECTION( "YUYV422" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUYV422 };
+    constexpr auto kInputFormat{ ClpPixelFormats::YUYV422 };
     const auto kFilename = getFileTestFilename( "Foreman_352x288_yuyv422.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
@@ -166,7 +166,7 @@ TEST_CASE( "Can open a RGB file", "CalypStream" )
   };
   SECTION( "RGB24" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_RGB24 };
+    constexpr auto kInputFormat{ ClpPixelFormats::RGB24 };
     const auto kFilename = getFileTestFilename( "Foreman_352x288_rgb24.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
     CalypStream test_stream;
@@ -183,7 +183,7 @@ TEST_CASE( "Can open a RGB file", "CalypStream" )
 
   SECTION( "BGR24" )
   {
-    constexpr auto kInputFormat{ ClpPixelFormats::CLP_BGR24 };
+    constexpr auto kInputFormat{ ClpPixelFormats::BGR24 };
     const auto kFilename = getFileTestFilename( "Foreman_352x288_bgr24.yuv" );
     REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
     CalypStream test_stream;
@@ -212,7 +212,7 @@ TEST_CASE( "Can open a GRAY file", "CalypStream" )
            stream.getCodecName() == "Raw Video" &&
            stream.getEndianess() == CLP_BIG_ENDIAN;
   };
-  constexpr auto kInputFormat{ ClpPixelFormats::CLP_GRAY };
+  constexpr auto kInputFormat{ ClpPixelFormats::Gray };
   const auto kFilename = getFileTestFilename( "Foreman_352x288_gray.yuv" );
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
   CalypStream test_stream;
@@ -229,7 +229,7 @@ TEST_CASE( "Can open .batatas file as RAW video", "CalypStream" )
 {
   constexpr int kWidth{ 352 };
   constexpr int kHeight{ 288 };
-  constexpr auto kInputFormat{ ClpPixelFormats::CLP_YUV420P };
+  constexpr auto kInputFormat{ ClpPixelFormats::YUV420p };
   constexpr int kBitsPel{ 8 };
   constexpr auto KEndianness{ CLP_INVALID_ENDIANESS };
 

@@ -69,7 +69,7 @@ bool MeasureOpticalFlowDualTVL1::create( std::vector<CalypFrame*> apcFrameList )
 #else
   m_cTvl1 = cv::createOptFlow_DualTVL1();
 #endif
-  m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::CLP_GRAY );
+  m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::Gray );
 
   return true;
 }

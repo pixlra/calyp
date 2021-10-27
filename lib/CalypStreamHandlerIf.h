@@ -105,7 +105,7 @@ protected:
   bool m_bNative{ true };
   unsigned int m_uiWidth{ 0 };
   unsigned int m_uiHeight{ 0 };
-  ClpPixelFormats m_iPixelFormat{ ClpPixelFormats::CLP_INVALID_FMT };
+  ClpPixelFormats m_iPixelFormat{ ClpPixelFormats::Invalid };
   unsigned int m_uiBitsPerPixel{ 8 };
   int m_iEndianness{ CLP_INVALID_ENDIANESS };
   double m_dFrameRate{ 30 };

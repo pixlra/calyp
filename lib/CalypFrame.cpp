@@ -134,12 +134,12 @@ public:
   //! Struct with the pixel format description.
   const CalypPixelFormatDescriptor* m_pcPelFormat{ nullptr };
 
-  unsigned int m_uiWidth{ 0 };                                         //!< Width of the frame
-  unsigned int m_uiHeight{ 0 };                                        //!< Height of the frame
-  ClpPixelFormats m_iPixelFormat{ ClpPixelFormats::CLP_INVALID_FMT };  //!< Pixel format number (it follows the list of supported pixel formats)
-  unsigned int m_uiBitsPel{ 0 };                                       //!< Bits per pixel/channel
-  unsigned int m_uiHalfPelValue{ 0 };                                  //!< Bits per pixel/channel
-  bool m_bHasNegativeValues{ false };                                  //!< Half of the scale correspond to negative values
+  unsigned int m_uiWidth{ 0 };                                 //!< Width of the frame
+  unsigned int m_uiHeight{ 0 };                                //!< Height of the frame
+  ClpPixelFormats m_iPixelFormat{ ClpPixelFormats::Invalid };  //!< Pixel format number (it follows the list of supported pixel formats)
+  unsigned int m_uiBitsPel{ 0 };                               //!< Bits per pixel/channel
+  unsigned int m_uiHalfPelValue{ 0 };                          //!< Bits per pixel/channel
+  bool m_bHasNegativeValues{ false };                          //!< Half of the scale correspond to negative values
 
   ClpPel*** m_pppcInputPel{ nullptr };
 
@@ -176,7 +176,7 @@ public:
     m_uiHalfPelValue = 1 << ( m_uiBitsPel - 1 );
     m_bHasNegativeValues = has_negative_values;
 
-    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT || bitsPixel > kMaxBitsPerPixel )
+    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == ClpPixelFormats::Invalid || bitsPixel > kMaxBitsPerPixel )
     {
       throw CalypFailure( "CalypFrame", "Cannot create a CalypFrame of this type" );
     }
@@ -851,7 +851,7 @@ void CalypFrame::fillRGBBuffer() const
   }
   else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV )
   {
-    if( d->m_iPixelFormat == ClpPixelFormats::CLP_YUV420P )
+    if( d->m_iPixelFormat == ClpPixelFormats::YUV420p )
     {
       fillRGBBufferYUV420p( d->m_pppcInputPel, pARGB, d->m_uiWidth, d->m_uiHeight, shiftBits );
       return;
@@ -1323,15 +1323,15 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
   if( !d->m_bInit )
   {
     uchar depth = cvMat.type() & CV_MAT_DEPTH_MASK;
-    if( d->m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT )
+    if( d->m_iPixelFormat == ClpPixelFormats::Invalid )
     {
       switch( cvMat.channels() )
       {
       case 1:
-        d->m_iPixelFormat = ClpPixelFormats::CLP_GRAY;
+        d->m_iPixelFormat = ClpPixelFormats::Gray;
         break;
       case 3:
-        d->m_iPixelFormat = ClpPixelFormats::CLP_BGR24;
+        d->m_iPixelFormat = ClpPixelFormats::BGR24;
         break;
       default:
         assert( false );

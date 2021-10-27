@@ -247,7 +247,7 @@ public:
       return isInit;
     }
 
-    if( handler->m_uiWidth <= 0 || handler->m_uiHeight <= 0 || handler->m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT )
+    if( handler->m_uiWidth <= 0 || handler->m_uiHeight <= 0 || handler->m_iPixelFormat == ClpPixelFormats::Invalid )
     {
       close();
       throw CalypFailure( "CalypStream", "Incorrect configuration: width, height or pixel format" );
@@ -458,7 +458,7 @@ bool CalypStream::reload()
   d->handler->calculateFrameNumber();
   d->handler->configureBuffer( *refFrame );
 
-  if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT ||
+  if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat == ClpPixelFormats::Invalid ||
       d->handler->m_uiBitsPerPixel == 0 || d->handler->m_uiTotalNumberFrames == 0 )
   {
     return false;
@@ -529,7 +529,7 @@ void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, ClpPix
   {
     rWidth = 0;
     rHeight = 0;
-    rInputFormat = ClpPixelFormats::CLP_YUV420P;
+    rInputFormat = ClpPixelFormats::YUV420p;
     rBitsPerPel = kDefaultBitsPerPixel;
     rEndianness = 0;
     rFrameRate = kDefaultFrameRate;

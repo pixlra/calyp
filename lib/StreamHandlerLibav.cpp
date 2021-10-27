@@ -197,7 +197,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
     auxPixFmt = AV_PIX_FMT_GRAY8;
   }
 
-  m_iPixelFormat = ClpPixelFormats::CLP_INVALID_FMT;
+  m_iPixelFormat = ClpPixelFormats::Invalid;
   m_bNative = false;
   auto found_fmt = std::find_if( g_CalypPixFmtDescriptorsMap.begin(), g_CalypPixFmtDescriptorsMap.end(),
                                  [auxPixFmt]( const auto& fmt ) {
@@ -245,27 +245,27 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
 
   if( !m_bNative )
   {
-    ClpPixelFormats newPelFmt{ ClpPixelFormats::CLP_INVALID_FMT };
+    ClpPixelFormats newPelFmt{ ClpPixelFormats::Invalid };
     const AVPixFmtDescriptor* ffPelDesc = av_pix_fmt_desc_get( AVPixelFormat( m_ffPixFmt ) );
     if( ffPelDesc->flags & AV_PIX_FMT_FLAG_PAL )
     {
-      newPelFmt = ClpPixelFormats::CLP_RGB24;
+      newPelFmt = ClpPixelFormats::RGB24;
     }
     else if( ffPelDesc->flags & AV_PIX_FMT_FLAG_ALPHA )
     {
-      newPelFmt = ClpPixelFormats::CLP_RGBA32;
+      newPelFmt = ClpPixelFormats::RGBA32;
     }
     else if( ffPelDesc->flags & AV_PIX_FMT_FLAG_RGB )
     {
-      newPelFmt = ClpPixelFormats::CLP_RGB24;
+      newPelFmt = ClpPixelFormats::RGB24;
     }
     else if( ffPelDesc->nb_components == 1 )
     {
-      newPelFmt = ClpPixelFormats::CLP_GRAY;
+      newPelFmt = ClpPixelFormats::Gray;
     }
     else
     {
-      newPelFmt = ClpPixelFormats::CLP_YUV444P;
+      newPelFmt = ClpPixelFormats::YUV444p;
     }
     m_iPixelFormat = newPelFmt;
 

@@ -45,7 +45,7 @@
 
 const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
     {
-        ClpPixelFormats::CLP_YUV420P,
+        ClpPixelFormats::YUV420p,
         {
             "YUV420p"sv,
             CLP_COLOR_YUV,
@@ -62,7 +62,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_YUV422P,
+        ClpPixelFormats::YUV422p,
         {
             "YUV422p"sv,
             CLP_COLOR_YUV,
@@ -79,7 +79,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_YUV444P,
+        ClpPixelFormats::YUV444p,
         {
             "YUV444p"sv,
             CLP_COLOR_YUV,
@@ -96,7 +96,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_YUYV422,
+        ClpPixelFormats::YUYV422,
         {
             "YUYV422"sv,
             CLP_COLOR_YUV,
@@ -113,7 +113,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_GRAY,
+        ClpPixelFormats::Gray,
         {
             "GRAY"sv,
             CLP_COLOR_GRAY,
@@ -126,7 +126,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_RGB24P,
+        ClpPixelFormats::RGB24p,
         {
             "RGBp"sv,
             CLP_COLOR_RGB,
@@ -143,7 +143,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_RGB24,
+        ClpPixelFormats::RGB24,
         {
             "RGB"sv,
             CLP_COLOR_RGB,
@@ -160,7 +160,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_BGR24,
+        ClpPixelFormats::BGR24,
         {
             "BGR"sv,
             CLP_COLOR_RGB,
@@ -177,7 +177,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_RGBA32,
+        ClpPixelFormats::RGBA32,
         {
             "RGBA"sv,
             CLP_COLOR_RGBA,
@@ -195,7 +195,7 @@ const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescrip
         },
     },
     {
-        ClpPixelFormats::CLP_BGRA32,
+        ClpPixelFormats::BGRA32,
         {
             "BGRA"sv,
             CLP_COLOR_RGBA,

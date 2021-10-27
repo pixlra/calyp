@@ -384,7 +384,7 @@ ConfigureFormatDialog::ConfigureFormatDialog( QWidget* parent )
 
 auto findPelFormatColorSpace( ClpPixelFormats rInputFormat ) -> std::pair<int, std::int64_t>
 {
-  if( rInputFormat != ClpPixelFormats::CLP_INVALID_FMT )
+  if( rInputFormat != ClpPixelFormats::Invalid )
   {
     auto pelFmtName = CalypFrame::pixelFormatName( rInputFormat );
     for( unsigned int j = 0; j < CalypFrame::supportedColorSpacesListNames().size(); j++ )

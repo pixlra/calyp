@@ -29,8 +29,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo.hpp>
 
-//using cv::InputArray;
-//using cv::OutputArray;
 using cv::Rect;
 using cv::Scalar;
 using cv::Size;
@@ -201,8 +199,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
   if( m_iWidth == -1 || m_iHeight == -1 )  // output dimensions are needed
     return false;
 
-  //m_pcDownsampled = new CalypFrame( m_iWidth, m_uiHeight, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
-  m_pcDownsampled = new CalypFrame( m_iWidth, m_iHeight, CalypFrame::findPixelFormat( "GRAY" ), pcInputFrame->getBitsPel() );
+  // m_pcDownsampled = new CalypFrame( m_iWidth, m_uiHeight, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
+  m_pcDownsampled = new CalypFrame( m_iWidth, m_iHeight, ClpPixelFormats::CLP_GRAY, pcInputFrame->getBitsPel() );
 
   m_isOdd = !( m_iHeight % 2 );
   for( unsigned ch = 0; ch < m_pcDownsampled->getNumberChannels(); ch++ )
@@ -422,7 +420,7 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
               cv::flip( auxPointMap, auxPointMap, -1 );
               cv::flip( auxMask, auxMask, -1 );
 
-              //cv::imwrite( "auxMask.png", auxMask );
+              // cv::imwrite( "auxMask.png", auxMask );
               auxPointMap.copyTo( topTriangleReshape, auxMask );
 
               long shape_area = std::abs( r34_size.x ) * std::abs( r34_size.y );
@@ -493,7 +491,7 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
       else if( m_iRearrange == 4 )
       {
         intermediateReshapePoints = Mat_<Point>( 10 * p0.y, initialReshapePoints.cols, Point( -1, -1 ) );
-        //unsigned hor_pad = 0;
+        // unsigned hor_pad = 0;
         unsigned ver_pad = 0;
         if( m_uiY0 == 40 )
         {
@@ -713,7 +711,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
       }
     }
   }
-  //m_pcResultedFrame->copyFrom( m_pcDownsampled );
+  // m_pcResultedFrame->copyFrom( m_pcDownsampled );
 }
 
 CalypFrame* ThreeSixtyDownsampling::process( std::vector<CalypFrame*> apcFrameList )

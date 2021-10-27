@@ -27,7 +27,9 @@
 #define __CALYPFRAME_H__
 
 #include <cstdint>
+#include <map>
 #include <memory>
+#include <optional>
 #include <span>
 #include <string>
 #include <vector>
@@ -56,11 +58,11 @@ enum CalypColorSpace
 };
 
 /**
- * \enum CalypPixelFormats
+ * \enum ClpPixelFormats
  * \brief List of supported pixel formats
  * \ingroup CalypLibGrp
  */
-enum CalypPixelFormats
+enum class ClpPixelFormats : int
 {
   CLP_INVALID_FMT = -1,  //!< Invalid
   CLP_YUV420P = 0,       //!< YUV 420 progressive
@@ -73,7 +75,7 @@ enum CalypPixelFormats
   CLP_BGR24,             //!< BGR 32 bpp
   CLP_RGBA32,            //!< RGBA 32 bpp
   CLP_BGRA32,            //!< BGRA 32 bpp
-  CLP_MAX_FMT = 255,     //!< Account for future formats
+  CLP_MAX_FMT = 254,     //!< Account for future formats
 };
 
 enum CLP_YUV_Components
@@ -113,7 +115,7 @@ private:
   std::array<ClpPel, kMaxNumberOfComponents> m_pelComp{ 0, 0, 0, 0 };
 
 public:
-  static std::size_t getMaxNumberOfComponents() { return kMaxNumberOfComponents; }
+  static constexpr std::size_t getMaxNumberOfComponents() { return kMaxNumberOfComponents; }
 
   CalypPixel() = default;
   CalypPixel( const int CalypColorSpace, const ClpPel c0 = 0 );
@@ -130,16 +132,16 @@ public:
   auto components() const -> const std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
   auto components() -> std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
 
-  ClpPel operator[]( const int& channel ) const { return m_pelComp[channel]; }
-  ClpPel& operator[]( const int& channel ) { return m_pelComp[channel]; }
+  ClpPel operator[]( const std::size_t channel ) const { return m_pelComp[channel]; }
+  ClpPel& operator[]( const std::size_t channel ) { return m_pelComp[channel]; }
 
   CalypPixel& operator+=( const CalypPixel& );
   CalypPixel& operator-=( const CalypPixel& );
-  CalypPixel& operator*=( const double& );
+  CalypPixel& operator*=( const double );
 
   CalypPixel operator+( const CalypPixel& ) const;
   CalypPixel operator-( const CalypPixel& ) const;
-  CalypPixel operator*( const double& ) const;
+  CalypPixel operator*( const double ) const;
 
   auto operator==( const CalypPixel& other ) const -> bool;
 
@@ -218,11 +220,13 @@ public:
    * of CalypFrame
    * @return vector of strings with pixel formats names
    */
-  static std::vector<std::string> supportedPixelFormatListNames();
-  static std::vector<std::string> supportedPixelFormatListNames( int colorSpace );
-  static int numberOfFormats();
-  static int findPixelFormat( const std::string& name );
-  static int pelformatColorSpace( const int idx );
+  static constexpr auto numberOfFormats() -> std::size_t;
+  static auto findPixelFormat( const std::string& name ) -> std::optional<ClpPixelFormats>;
+  static auto findPixelFormat( const std::string_view name ) -> std::optional<ClpPixelFormats>;
+  static auto pelformatColorSpace( ClpPixelFormats idx ) -> int;
+  static auto supportedPixelFormatListNames() -> std::map<ClpPixelFormats, std::string_view>;
+  static auto supportedPixelFormatListNames( int colorSpace ) -> std::map<ClpPixelFormats, std::string_view>;
+  static auto pixelFormatName( ClpPixelFormats idx ) -> const std::string_view;
 
   /**
    * Creates a new frame using the following configuration
@@ -233,7 +237,7 @@ public:
    *
    * @note this function might misbehave if the pixel format enum is not correct
    */
-  CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
+  CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel = 8 );
 
   /**
    * Creates a new frame using the following configuration
@@ -244,7 +248,7 @@ public:
    *
    * @note this function might misbehave if the pixel format enum is not correct
    */
-  CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel, bool has_negative_values );
+  CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel, bool has_negative_values );
 
   /**
    * Move contructor
@@ -316,13 +320,13 @@ public:
    * Get pixel format information
    * @return pixel format index
    */
-  int getPelFormat() const;
+  ClpPixelFormats getPelFormat() const;
 
   /**
    * Get pixel format information
    * @return pixel format name
    */
-  std::string getPelFmtName() const;
+  auto getPelFmtName() const -> std::string;
 
   /**
    * Get color space information
@@ -403,7 +407,7 @@ public:
    * Get number of bytes per frame of a specific pixel format
    * @return number of bytes per frame
    */
-  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, int iPixelFormat, unsigned int bitsPixel );
+  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat, unsigned int bitsPixel );
 
   /**
    * Reset frame pixels to zero

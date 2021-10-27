@@ -22,10 +22,13 @@
  * \brief    Calyp modules interface for OpenCV
  */
 
+#include "CalypFrame.h"
 #include "CalypModuleIf.h"
 
 // OpenCV
 #include <opencv2/opencv.hpp>
+
+#include "PixelFormats.h"
 
 bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
 {
@@ -39,7 +42,7 @@ bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
   Mat* outputMat = create_using_opencv( acMatList );
   if( outputMat )
   {
-    unsigned pelFormat = m_bConvertToGray ? CalypFrame::findPixelFormat( "GRAY" ) : apcFrameList[0]->getPelFormat();
+    auto pelFormat = m_bConvertToGray ? ClpPixelFormats::CLP_GRAY : apcFrameList[0]->getPelFormat();
     m_pcOutputFrame = std::make_unique<CalypFrame>( outputMat->cols, outputMat->rows, pelFormat, apcFrameList[0]->getBitsPel() );
     bRet = true;
   }

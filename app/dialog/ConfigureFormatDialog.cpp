@@ -382,8 +382,28 @@ ConfigureFormatDialog::ConfigureFormatDialog( QWidget* parent )
   setFixedSize( MainLayout->sizeHint() );
 }
 
+auto findPelFormatColorSpace( ClpPixelFormats rInputFormat ) -> std::pair<int, std::int64_t>
+{
+  if( rInputFormat != ClpPixelFormats::CLP_INVALID_FMT )
+  {
+    auto pelFmtName = CalypFrame::pixelFormatName( rInputFormat );
+    for( unsigned int j = 0; j < CalypFrame::supportedColorSpacesListNames().size(); j++ )
+    {
+      const auto& formats_list = CalypFrame::supportedPixelFormatListNames( j );
+      for( const auto& [key, name] : formats_list )
+      {
+        if( pelFmtName == name )
+        {
+          return std::make_pair( j, static_cast<int>( key ) );
+        }
+      }
+    }
+  }
+  return std::make_pair( 0, 0 );
+}
+
 int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, unsigned int& rWidth, unsigned int& rHeight,
-                                                     int& rInputFormat, unsigned int& rBits, int& rEndianess, unsigned int& rFrameRate )
+                                                     ClpPixelFormats& rInputFormat, unsigned int& rBits, int& rEndianess, unsigned int& rFrameRate )
 {
   // Set default values
   // setWindowTitle( "Configure resolution for " + Filename );
@@ -391,24 +411,8 @@ int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, un
   m_spinBoxWidth->setValue( rWidth );
   m_spinBoxheight->setValue( rHeight );
 
-  int colorSpace = 0;
-  int sampling = 0;
-  if( rInputFormat >= 0 )
-  {
-    std::string pelFmtName = CalypFrame::supportedPixelFormatListNames()[rInputFormat];
-    for( unsigned int j = 0; j < CalypFrame::supportedColorSpacesListNames().size(); j++ )
-    {
-      for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames( j ).size(); i++ )
-      {
-        if( pelFmtName == CalypFrame::supportedPixelFormatListNames( j )[i] )
-        {
-          colorSpace = j;
-          sampling = i;
-          break;
-        }
-      }
-    }
-  }
+  auto [colorSpace, sampling] = findPelFormatColorSpace( rInputFormat );
+
   m_comboBoxColorSpace->setCurrentIndex( colorSpace );
   m_comboBoxPixelFormat->setCurrentIndex( sampling );
   m_spinBoxBits->setValue( rBits );
@@ -441,16 +445,8 @@ int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, un
   rWidth = m_spinBoxWidth->value();
   rHeight = m_spinBoxheight->value();
   colorSpace = m_comboBoxColorSpace->currentIndex();
-  sampling = m_comboBoxPixelFormat->currentIndex();
-  std::string pelFmtName = CalypFrame::supportedPixelFormatListNames( colorSpace )[sampling];
-  for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames().size(); i++ )
-  {
-    if( pelFmtName == CalypFrame::supportedPixelFormatListNames()[i] )
-    {
-      rInputFormat = i;
-      break;
-    }
-  }
+  sampling = m_comboBoxPixelFormat->currentData().toInt();
+  rInputFormat = static_cast<ClpPixelFormats>( sampling );
   rBits = m_spinBoxBits->value();
   rEndianess = m_comboBoxEndianness->currentIndex();
   rFrameRate = m_spinBoxFrameRate->value();
@@ -512,9 +508,10 @@ void ConfigureFormatDialog::slotColorSpaceChange( int idx )
     return;
 
   m_comboBoxPixelFormat->clear();
-  for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames( idx ).size(); i++ )
+  const auto& formats_list = CalypFrame::supportedPixelFormatListNames( idx );
+  for( const auto& [key, name] : formats_list )
   {
-    m_comboBoxPixelFormat->insertItem( i, CalypFrame::supportedPixelFormatListNames( idx )[i].c_str() );
+    m_comboBoxPixelFormat->addItem( QString::fromStdString( std::string( name ) ), static_cast<int>( key ) );
   }
   m_comboBoxPixelFormat->setCurrentIndex( 0 );
 }

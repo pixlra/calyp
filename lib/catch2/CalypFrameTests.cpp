@@ -29,32 +29,32 @@
 TEST_CASE( "create a 256x128 frame with 8 bits in YUV420 format", "CalypFrame" )
 {
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
-  CalypFrame testFrame( 256, 128, CLP_YUV420P, 8 );
+  CalypFrame testFrame( 256, 128, ClpPixelFormats::CLP_YUV420P, 8 );
 
   CHECK( testFrame.getWidth() == 256 );
   CHECK( testFrame.getHeight() == 128 );
-  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getPelFormat() == ClpPixelFormats::CLP_YUV420P );
   CHECK( testFrame.getBitsPel() == 8 );
 }
 
 TEST_CASE( "create a 256x128 frame with 10 bits in YUV420 format", "CalypFrame" )
 {
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
-  CalypFrame testFrame( 256, 128, CLP_YUV420P, 10 );
+  CalypFrame testFrame( 256, 128, ClpPixelFormats::CLP_YUV420P, 10 );
 
   CHECK( testFrame.getWidth() == 256 );
   CHECK( testFrame.getHeight() == 128 );
-  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getPelFormat() == ClpPixelFormats::CLP_YUV420P );
   CHECK( testFrame.getBitsPel() == 10 );
 }
 
 TEST_CASE( "create a 256x128 frame with 16 bits in YUV420 format", "CalypFrame" )
 {
   // Constructor: CalypFrame( unsigned int width, unsigned int height, int pelFormat, unsigned bitsPixel = 8 );
-  CalypFrame testFrame( 256, 128, CLP_YUV420P, 16 );
+  CalypFrame testFrame( 256, 128, ClpPixelFormats::CLP_YUV420P, 16 );
 
   CHECK( testFrame.getWidth() == 256 );
   CHECK( testFrame.getHeight() == 128 );
-  CHECK( testFrame.getPelFormat() == CLP_YUV420P );
+  CHECK( testFrame.getPelFormat() == ClpPixelFormats::CLP_YUV420P );
   CHECK( testFrame.getBitsPel() == 16 );
 }

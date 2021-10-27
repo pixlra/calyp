@@ -28,6 +28,8 @@
 #include <opencv2/opencv.hpp>
 
 #include "CalypFrame.h"
+#include "PixelFormats.h"
+
 #if CV_MAJOR_VERSION >= 3
 #include <opencv2/videoio.hpp>
 #endif
@@ -103,7 +105,7 @@ bool StreamHandlerOpenCV::openHandler( std::string strFilename, bool bInput )
       m_dFrameRate = 1;
     }
     m_uiBitsPerPixel = 8;
-    m_iPixelFormat = CalypFrame::findPixelFormat( "BGR" );
+    m_iPixelFormat = ClpPixelFormats::CLP_BGR24;
 
     m_uiTotalNumberFrames = 1;
     if( m_pcVideoCapture )

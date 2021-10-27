@@ -61,22 +61,22 @@ bool FrameMask::create( std::vector<CalypFrame*> apcFrameList )
   m_iWeight = m_iWeight > 100 || m_iWeight < 0 ? 5 : m_iWeight;
   m_iWeight = m_iWeight > 10 ? m_iWeight / 10 : m_iWeight;
 
-  int iPelFmt = 0;
+  auto iPelFmt = ClpPixelFormats::CLP_INVALID_FMT;
   int iColorSpace = apcFrameList[0]->getColorSpace();
   if( iColorSpace == CLP_COLOR_GRAY )
   {
-    iColorSpace = apcFrameList[1]->getPelFormat();
+    iColorSpace = apcFrameList[1]->getColorSpace();
   }
   switch( iColorSpace )
   {
   case CLP_COLOR_GRAY:
-    iPelFmt = CLP_GRAY;
+    iPelFmt = ClpPixelFormats::CLP_GRAY;
     break;
   case CLP_COLOR_YUV:
-    iPelFmt = CLP_YUV444P;
+    iPelFmt = ClpPixelFormats::CLP_YUV444P;
     break;
   case CLP_COLOR_RGB:
-    iPelFmt = CLP_RGB24;
+    iPelFmt = ClpPixelFormats::CLP_RGB24;
     break;
   }
 

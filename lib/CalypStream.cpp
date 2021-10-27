@@ -30,6 +30,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <string>
 
 #include "CalypFrame.h"
 #include "CalypStreamHandlerIf.h"
@@ -112,7 +113,7 @@ struct CalypStreamFrameBuffer : std::enable_shared_from_this<CalypStreamFrameBuf
   std::vector<std::unique_ptr<CalypFrame>> framePool;
   std::size_t bufferIdx{ 0 };
 
-  CalypStreamFrameBuffer( std::size_t size, unsigned int width, unsigned int height, int pelFormat, unsigned int bitsPixel, bool hasNegative )
+  CalypStreamFrameBuffer( std::size_t size, unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned int bitsPixel, bool hasNegative )
   {
     framePool.reserve( size );
     for( std::size_t i = 0; i < size; i++ )
@@ -199,7 +200,7 @@ public:
     close();
   }
 
-  bool open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
+  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness, bool hasNegative,
              unsigned int frame_rate, bool forceRaw, CalypStream::Type type )
   {
     if( isInit )
@@ -246,7 +247,7 @@ public:
       return isInit;
     }
 
-    if( handler->m_uiWidth <= 0 || handler->m_uiHeight <= 0 || handler->m_iPixelFormat < 0 )
+    if( handler->m_uiWidth <= 0 || handler->m_uiHeight <= 0 || handler->m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT )
     {
       close();
       throw CalypFailure( "CalypStream", "Incorrect configuration: width, height or pixel format" );
@@ -400,7 +401,6 @@ bool CalypStream::open( std::string filename, std::string resolution, std::strin
 {
   unsigned int width = 0;
   unsigned int height = 0;
-  int input_format = -1;
 
   if( resolution.size() > 0 )
   {
@@ -410,30 +410,28 @@ bool CalypStream::open( std::string filename, std::string resolution, std::strin
       return false;
     }
   }
-  for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames().size(); i++ )
+
+  const auto input_format = CalypFrame::findPixelFormat( input_format_name );
+  if( !input_format.has_value() )
   {
-    if( clpLowercase( CalypFrame::supportedPixelFormatListNames()[i] ) == clpLowercase( input_format_name ) )
-    {
-      input_format = i;
-      break;
-    }
+    return false;
   }
-  return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, false, type );
+  return d->open( std::move( filename ), width, height, *input_format, bitsPel, endianness, hasNegative, frame_rate, false, type );
 }
 
-bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness,
                         unsigned int frame_rate, CalypStream::Type type )
 {
   return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, false, type );
 }
 
-bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness, bool hasNegative,
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness, bool hasNegative,
                         unsigned int frame_rate, CalypStream::Type type )
 {
   return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, hasNegative, frame_rate, false, type );
 }
 
-bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, int input_format, unsigned int bitsPel, int endianness,
+bool CalypStream::open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness,
                         unsigned int frame_rate, bool forceRaw, CalypStream::Type type )
 {
   return d->open( std::move( filename ), width, height, input_format, bitsPel, endianness, false, frame_rate, forceRaw, type );
@@ -460,7 +458,7 @@ bool CalypStream::reload()
   d->handler->calculateFrameNumber();
   d->handler->configureBuffer( *refFrame );
 
-  if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat < 0 ||
+  if( d->handler->m_uiWidth <= 0 || d->handler->m_uiHeight <= 0 || d->handler->m_iPixelFormat == ClpPixelFormats::CLP_INVALID_FMT ||
       d->handler->m_uiBitsPerPixel == 0 || d->handler->m_uiTotalNumberFrames == 0 )
   {
     return false;
@@ -515,7 +513,7 @@ long CalypStream::getCurrFrameNum() const
   return d->iCurrFrameNum;
 }
 
-void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
+void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
                              unsigned int& rFrameRate ) const
 {
   if( d->isInit )
@@ -531,7 +529,7 @@ void CalypStream::getFormat( unsigned int& rWidth, unsigned int& rHeight, int& r
   {
     rWidth = 0;
     rHeight = 0;
-    rInputFormat = CLP_YUV420P;
+    rInputFormat = ClpPixelFormats::CLP_YUV420P;
     rBitsPerPel = kDefaultBitsPerPixel;
     rEndianness = 0;
     rFrameRate = kDefaultFrameRate;

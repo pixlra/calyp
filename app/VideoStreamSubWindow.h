@@ -107,7 +107,7 @@ public:
 private:
   bool goToNextFrame( bool bThreaded );
 
-  static bool guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
+  static bool guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPixel,
                            int& rEndianness, unsigned int& rFrameRate );
 
 private:  // NO_LINT

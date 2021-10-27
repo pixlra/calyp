@@ -43,11 +43,11 @@
 #define ADD_FFMPEG_PEL_FMT( fmt ) 0
 #endif
 
-const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
+const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
     {
-        CLP_YUV420P,
+        ClpPixelFormats::CLP_YUV420P,
         {
-            "YUV420p",
+            "YUV420p"sv,
             CLP_COLOR_YUV,
             3,
             3,
@@ -62,9 +62,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_YUV422P,
+        ClpPixelFormats::CLP_YUV422P,
         {
-            "YUV422p",
+            "YUV422p"sv,
             CLP_COLOR_YUV,
             3,
             3,
@@ -79,9 +79,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_YUV444P,
+        ClpPixelFormats::CLP_YUV444P,
         {
-            "YUV444p",
+            "YUV444p"sv,
             CLP_COLOR_YUV,
             3,
             3,
@@ -96,9 +96,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_YUYV422,
+        ClpPixelFormats::CLP_YUYV422,
         {
-            "YUYV422",
+            "YUYV422"sv,
             CLP_COLOR_YUV,
             3,
             1,
@@ -113,9 +113,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_GRAY,
+        ClpPixelFormats::CLP_GRAY,
         {
-            "GRAY",
+            "GRAY"sv,
             CLP_COLOR_GRAY,
             1,
             1,
@@ -126,9 +126,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_RGB24P,
+        ClpPixelFormats::CLP_RGB24P,
         {
-            "RGBp",
+            "RGBp"sv,
             CLP_COLOR_RGB,
             3,
             3,
@@ -143,9 +143,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_RGB24,
+        ClpPixelFormats::CLP_RGB24,
         {
-            "RGB",
+            "RGB"sv,
             CLP_COLOR_RGB,
             3,
             1,
@@ -160,9 +160,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_BGR24,
+        ClpPixelFormats::CLP_BGR24,
         {
-            "BGR",
+            "BGR"sv,
             CLP_COLOR_RGB,
             3,
             1,
@@ -177,9 +177,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_RGBA32,
+        ClpPixelFormats::CLP_RGBA32,
         {
-            "RGBA",
+            "RGBA"sv,
             CLP_COLOR_RGBA,
             4,
             1,
@@ -195,9 +195,9 @@ const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap = {
         },
     },
     {
-        CLP_BGRA32,
+        ClpPixelFormats::CLP_BGRA32,
         {
-            "BGRA",
+            "BGRA"sv,
             CLP_COLOR_RGBA,
             4,
             1,

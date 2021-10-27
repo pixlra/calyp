@@ -28,6 +28,7 @@
 #include <cstdio>
 
 #include "CalypFrame.h"
+#include "PixelFormats.h"
 
 std::vector<CalypStreamFormat> StreamHandlerPortableMap::supportedReadFormats()
 {
@@ -79,7 +80,7 @@ bool StreamHandlerPortableMap::openHandler( std::string strFilename, bool bInput
       }
     }
     m_uiBitsPerPixel = log( m_iMaxValue + 1 ) / log( 2 );
-    m_iPixelFormat = m_iMagicNumber == 1 || m_iMagicNumber == 2 || m_iMagicNumber == 5 ? CLP_GRAY : CLP_RGB24;
+    m_iPixelFormat = m_iMagicNumber == 1 || m_iMagicNumber == 2 || m_iMagicNumber == 5 ? ClpPixelFormats::CLP_GRAY : ClpPixelFormats::CLP_RGB24;
   }
   else
   {
@@ -88,17 +89,17 @@ bool StreamHandlerPortableMap::openHandler( std::string strFilename, bool bInput
     if( m_uiBitsPerPixel == 1 )
     {
       m_iMagicNumber = 1;
-      m_iPixelFormat = CalypFrame::findPixelFormat( "GRAY" );
+      m_iPixelFormat = ClpPixelFormats::CLP_GRAY;
     }
     else if( colorSpace == CLP_COLOR_GRAY )
     {
       m_iMagicNumber = 5;
-      m_iPixelFormat = CalypFrame::findPixelFormat( "GRAY" );
+      m_iPixelFormat = ClpPixelFormats::CLP_GRAY;
     }
     else if( colorSpace == CLP_COLOR_RGB )
     {
       m_iMagicNumber = 6;
-      m_iPixelFormat = CalypFrame::findPixelFormat( "RGB" );
+      m_iPixelFormat = ClpPixelFormats::CLP_RGB24;
     }
     else
     {

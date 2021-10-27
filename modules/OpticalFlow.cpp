@@ -62,7 +62,7 @@ bool OpticalFlowModule::commonCreate( std::vector<CalypFrame*> apcFrameList )
       return false;
 
   m_iStep = 16;
-  m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
+  m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::CLP_GRAY );
 
   return true;
 }

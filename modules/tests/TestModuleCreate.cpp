@@ -39,7 +39,7 @@ protected:
     std::string moduleName = CALYP_TEST_MODULE_NAME;
 
     pcStream = std::make_unique<CalypStream>();
-    pcStream->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, 0, 8,
+    pcStream->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, ClpPixelFormats::CLP_YUV420P, 8,
                     CLP_BIG_ENDIAN, 1, CalypStream::Type::Input );
   }
 

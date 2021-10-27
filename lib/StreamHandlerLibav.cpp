@@ -90,7 +90,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   //	}
 
   // Register all components of FFmpeg
-  //av_register_all();
+  // av_register_all();
 
   /* open input file, and allocate format context */
   if( avformat_open_input( &m_cFmtCtx, filename, NULL, NULL ) < 0 )
@@ -172,8 +172,8 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   m_uiBitsPerPixel = 8;
 
   /**
-	 * Auxiliar conversation to re-use similar pixfmt
-	 */
+   * Auxiliar conversation to re-use similar pixfmt
+   */
   int auxPixFmt = m_ffPixFmt;
   switch( m_ffPixFmt )
   {
@@ -197,20 +197,16 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
     auxPixFmt = AV_PIX_FMT_GRAY8;
   }
 
-  m_iPixelFormat = CLP_INVALID_FMT;
-  for( int i = 0; i < CalypFrame::numberOfFormats(); i++ )
+  m_iPixelFormat = ClpPixelFormats::CLP_INVALID_FMT;
+  m_bNative = false;
+  auto found_fmt = std::find_if( g_CalypPixFmtDescriptorsMap.begin(), g_CalypPixFmtDescriptorsMap.end(),
+                                 [auxPixFmt]( const auto& fmt ) {
+                                   return fmt.second.ffmpegPelFormat == auxPixFmt;
+                                 } );
+  if( found_fmt != g_CalypPixFmtDescriptorsMap.end() )
   {
-    if( g_CalypPixFmtDescriptorsMap.at( i ).ffmpegPelFormat == auxPixFmt )
-    {
-      m_iPixelFormat = i;
-      break;
-    }
-  }
-  if( m_iPixelFormat == CLP_INVALID_FMT )
-  {
-    m_bNative = false;
-    //throw CalypFailure( "StreamHandlerLibav", "Cannot open file using FFmpeg libs - unsupported pixel format" );
-    //return false;
+    m_bNative = true;
+    m_iPixelFormat = found_fmt->first;
   }
 
   double fr = 30;
@@ -249,27 +245,27 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
 
   if( !m_bNative )
   {
-    int newPelFmt = -1;
+    ClpPixelFormats newPelFmt{ ClpPixelFormats::CLP_INVALID_FMT };
     const AVPixFmtDescriptor* ffPelDesc = av_pix_fmt_desc_get( AVPixelFormat( m_ffPixFmt ) );
     if( ffPelDesc->flags & AV_PIX_FMT_FLAG_PAL )
     {
-      newPelFmt = CLP_RGB24;
+      newPelFmt = ClpPixelFormats::CLP_RGB24;
     }
     else if( ffPelDesc->flags & AV_PIX_FMT_FLAG_ALPHA )
     {
-      newPelFmt = CLP_RGBA32;
+      newPelFmt = ClpPixelFormats::CLP_RGBA32;
     }
     else if( ffPelDesc->flags & AV_PIX_FMT_FLAG_RGB )
     {
-      newPelFmt = CLP_RGB24;
+      newPelFmt = ClpPixelFormats::CLP_RGB24;
     }
     else if( ffPelDesc->nb_components == 1 )
     {
-      newPelFmt = CLP_GRAY;
+      newPelFmt = ClpPixelFormats::CLP_GRAY;
     }
     else
     {
-      newPelFmt = CLP_YUV444P;
+      newPelFmt = ClpPixelFormats::CLP_YUV444P;
     }
     m_iPixelFormat = newPelFmt;
 
@@ -369,8 +365,8 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
         bReadPkt = true;
       else
         return false;
-      //if( iRet == AVERROR_EOF )
-      //  m_isEOF = true;
+      // if( iRet == AVERROR_EOF )
+      //   m_isEOF = true;
     }
     else
     {

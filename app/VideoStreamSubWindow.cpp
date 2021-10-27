@@ -166,7 +166,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   ConfigureFormatDialog formatDialog( this );
   unsigned int Width = 0, Height = 0, BitsPel = 8, FrameRate = 30;
   int Endianness = CLP_LITTLE_ENDIAN;
-  int InputFormat = CLP_YUV420P;
+  auto InputFormat = ClpPixelFormats::CLP_YUV420P;
   QSettings appSettings;
 
   if( m_pCurrStream )
@@ -220,7 +220,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   m_sStreamInfo.m_cFilename = cFilename;
   m_sStreamInfo.m_uiWidth = Width;
   m_sStreamInfo.m_uiHeight = Height;
-  m_sStreamInfo.m_iPelFormat = InputFormat;
+  m_sStreamInfo.m_iPelFormat = static_cast<std::int64_t>( InputFormat );
   m_sStreamInfo.m_uiBitsPelPixel = BitsPel;
   m_sStreamInfo.m_iEndianness = Endianness;
   m_sStreamInfo.m_uiFrameRate = FrameRate;
@@ -259,7 +259,7 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo streamInfo )
   m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
 
   if( !m_pCurrStream->open( streamInfo.m_cFilename.toStdString(), streamInfo.m_uiWidth, streamInfo.m_uiHeight,
-                            streamInfo.m_iPelFormat, streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
+                            static_cast<ClpPixelFormats>( streamInfo.m_iPelFormat ), streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
                             streamInfo.m_uiFrameRate, streamInfo.m_bForceRaw, CalypStream::Type::Input ) )
   {
     return false;
@@ -281,7 +281,7 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo streamInfo )
   return true;
 }
 
-bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPixel,
+bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPixel,
                                         int& rEndianness, unsigned int& rFrameRate )
 {
   std::vector<CalypStandardResolution> stdResList = CalypStream::stdResolutionSizes();
@@ -299,12 +299,12 @@ bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& r
   {
     bGuessed = false;
     // Guess pixel format
-    auto formats_list = CalypFrame::supportedPixelFormatListNames();
-    for( std::size_t i = 0; i < formats_list.size(); i++ )
+    const auto& formats_list = CalypFrame::supportedPixelFormatListNames();
+    for( const auto& [key, name] : formats_list )
     {
-      if( FilenameShort.contains( formats_list[i].c_str(), Qt::CaseInsensitive ) )
+      if( FilenameShort.contains( QString::fromStdString( std::string( name ) ), Qt::CaseInsensitive ) )
       {
-        rInputFormat = i;
+        rInputFormat = key;
         break;
       }
     }
@@ -427,7 +427,7 @@ bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& r
       rEndianness = CLP_LITTLE_ENDIAN;
     }
 
-    if( rWidth > 0 && rHeight > 0 && rInputFormat >= 0 )
+    if( rWidth > 0 && rHeight > 0 && rInputFormat != ClpPixelFormats::CLP_INVALID_FMT )
       bGuessed = true && !bGuessedByFilesize;
   }
   return !bGuessed;

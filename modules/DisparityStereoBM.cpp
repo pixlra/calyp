@@ -25,6 +25,8 @@
 
 #include "DisparityStereoBM.h"
 
+#include "lib/CalypFrame.h"
+
 DisparityStereoBM::DisparityStereoBM()
 {
   /* Module Definition */
@@ -49,7 +51,7 @@ bool DisparityStereoBM::create( std::vector<CalypFrame*> apcFrameList )
 {
   _BASIC_MODULE_API_2_CHECK_
   m_pcDisparityFrame =
-      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), CLP_GRAY );
+      new CalypFrame( apcFrameList[0]->getWidth(), apcFrameList[0]->getHeight(), ClpPixelFormats::CLP_GRAY );
   if( ( m_uiBlockSize % 2 ) == 0 )
   {
     m_uiBlockSize++;

@@ -688,9 +688,10 @@ bool CalypOptions::checkListingOpts()
   if( hasOpt( "pel_fmts" ) )
   {
     std::cout << "Calyp supported pixel formats:" << std::endl;
-    for( unsigned int i = 0; i < CalypFrame::supportedPixelFormatListNames().size(); i++ )
+    const auto& fmt_list = CalypFrame::supportedPixelFormatListNames();
+    for( const auto& [key, name] : fmt_list )
     {
-      std::cout << "   " << CalypFrame::supportedPixelFormatListNames()[i] << std::endl;
+      std::cout << "   " << name << std::endl;
     }
     bRet |= true;
   }

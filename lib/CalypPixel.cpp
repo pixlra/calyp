@@ -36,16 +36,16 @@ constexpr auto kMaxPixelValue{ 255 };
 
 static inline void yuvToRgb( const int& iY, const int& iU, const int& iV, int& iR, int& iG, int& iB )
 {
-  iR = std::clamp( iY + ( ( 1436 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      //NOLINT
-  iG = std::clamp( iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );  //NOLINT
-  iB = std::clamp( iY + ( ( 1812 * ( iU - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      //NOLINT
+  iR = std::clamp( iY + ( ( 1436 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      // NOLINT
+  iG = std::clamp( iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );  // NOLINT
+  iB = std::clamp( iY + ( ( 1812 * ( iU - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );                      // NOLINT
 }
 
 static inline void rgbToYuv( const int& iR, const int& iG, const int& iB, int& iY, int& iU, int& iV )
 {
-  iY = ( 299 * iR + 587 * iG + 114 * iB + 500 ) / 1000;  //NOLINT
-  iU = ( 1000 * ( iB - iY ) + 226816 ) / 1772;           //NOLINT
-  iV = ( 1000 * ( iR - iY ) + 179456 ) / 1402;           //NOLINT
+  iY = ( 299 * iR + 587 * iG + 114 * iB + 500 ) / 1000;  // NOLINT
+  iU = ( 1000 * ( iB - iY ) + 226816 ) / 1772;           // NOLINT
+  iV = ( 1000 * ( iR - iY ) + 179456 ) / 1402;           // NOLINT
 }
 
 CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0 )
@@ -95,7 +95,7 @@ CalypPixel& CalypPixel::operator-=( const CalypPixel& in )
   return *this;
 }
 
-CalypPixel& CalypPixel::operator*=( const double& op )
+CalypPixel& CalypPixel::operator*=( const double op )
 {
   std::transform( m_pelComp.begin(),
                   m_pelComp.end(),
@@ -130,7 +130,7 @@ CalypPixel CalypPixel::operator-( const CalypPixel& in ) const
   return result;
 }
 
-CalypPixel CalypPixel::operator*( const double& op ) const
+CalypPixel CalypPixel::operator*( const double op ) const
 {
   CalypPixel result{ m_colorSpace };
   auto& comp = result.components();

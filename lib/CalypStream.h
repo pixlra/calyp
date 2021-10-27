@@ -96,18 +96,12 @@ public:
              bool hasNegative,
              unsigned int frame_rate,
              Type type );
+  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness,
+             unsigned int frame_rate, CalypStream::Type type );
   bool open( std::string filename,
              unsigned int width,
              unsigned int height,
-             int input_format,
-             unsigned int bitsPel,
-             int endianness,
-             unsigned int frame_rate,
-             Type type );
-  bool open( std::string filename,
-             unsigned int width,
-             unsigned int height,
-             int input_format,
+             ClpPixelFormats input_format,
              unsigned int bitsPel,
              int endianness,
              bool hasNegative,
@@ -116,7 +110,7 @@ public:
   bool open( std::string filename,
              unsigned int width,
              unsigned int height,
-             int input_format,
+             ClpPixelFormats input_format,
              unsigned int bitsPel,
              int endianness,
              unsigned int frame_rate,
@@ -135,7 +129,7 @@ public:
   int getEndianess() const;
   long getCurrFrameNum() const;
   double getFrameRate() const;
-  void getFormat( unsigned int& rWidth, unsigned int& rHeight, int& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
+  void getFormat( unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
                   unsigned int& rFrameRate ) const;
 
   auto hasNextFrame() -> bool;

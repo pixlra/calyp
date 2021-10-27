@@ -29,11 +29,21 @@
 
 #include "CalypFrame.h"
 
-#define CHROMA_RESAMPLING( X ) ( ( ( X + 1 ) >> 1 ) << 1 )
+using namespace std::string_view_literals;
 
-#define CHROMARATIO( SIZE, RATIO ) ( RATIO > 1 ? ( ( SIZE + 1 ) / RATIO ) : SIZE )
+template <typename T>
+inline constexpr T CHROMA_RESAMPLING( T in )
+{
+  return ( ( ( in + 1 ) >> 1 ) << 1 );
+}
 
-typedef struct CalypComponentDescriptor
+template <typename T, typename R>
+inline constexpr T CHROMARATIO( T size, R ratio )
+{
+  return ( ratio > 1 ? ( ( size + 1 ) / ratio ) : size );
+}
+
+struct CalypComponentDescriptor
 {
   /**
    * Which of the 4 planes contains the component.
@@ -51,8 +61,7 @@ typedef struct CalypComponentDescriptor
    * Elements are bits for bitstream formats, bytes otherwise.
    */
   unsigned short offset_plus1;
-
-} CalypComponentDescriptor;
+};
 
 /**
  * Descriptor that unambiguously describes how the bits of a pixel are
@@ -63,9 +72,9 @@ typedef struct CalypComponentDescriptor
  *       and all the YUV variants) AVPixFmtDescriptor just stores how values
  *       are stored not what these values represent.
  */
-typedef struct CalypPixelFormatDescriptor
+struct CalypPixelFormatDescriptor
 {
-  const char* name;
+  std::string_view name;
 
   int colorSpace;
 
@@ -102,11 +111,9 @@ typedef struct CalypPixelFormatDescriptor
    * otherwise 0 is luma, 1 is chroma-U and 2 is chroma-V.
    */
   CalypComponentDescriptor comp[4];
+};
 
-} CalypPixelFormatDescriptor;
-
-#define MAX_NUMBER_PLANES 3
-
-extern const std::map<int, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap;
+static constexpr std::size_t kNumberOfPixelFormats{ 10 };
+extern const std::map<ClpPixelFormats, CalypPixelFormatDescriptor> g_CalypPixFmtDescriptorsMap;
 
 #endif  // __PIXELFORMATS_H__

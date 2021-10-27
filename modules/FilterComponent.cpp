@@ -41,7 +41,7 @@ FilterComponentModule::FilterComponentModule()
 bool FilterComponentModule::createFilter( unsigned int uiWidth, unsigned int uiHeight, unsigned int bitsPixel )
 {
   m_pcFilteredFrame = NULL;
-  m_pcFilteredFrame = new CalypFrame( uiWidth, uiHeight, CLP_GRAY, bitsPixel );
+  m_pcFilteredFrame = new CalypFrame( uiWidth, uiHeight, ClpPixelFormats::CLP_GRAY, bitsPixel );
   return true;
 }
 

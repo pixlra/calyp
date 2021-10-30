@@ -113,6 +113,7 @@ TEST_F( TestModuleCreate, CREATE_OK )
     moduleCreated = true;
   }
   EXPECT_EQ( moduleCreated, true );
+  pcModule->destroy();
 }
 
 TEST_F( TestModuleCreate, CREATE_FAIL_LESS_ONE )
@@ -129,6 +130,7 @@ TEST_F( TestModuleCreate, CREATE_FAIL_LESS_ONE )
     }
     bool moduleCreated = pcModule->create( apcFrameList );
     EXPECT_NE( moduleCreated, true );
+    pcModule->destroy();
   }
 }
 
@@ -144,6 +146,7 @@ TEST_F( TestModuleCreate, CREATE_FAIL_PLUS_ONE )
     }
     bool moduleCreated = pcModule->create( apcFrameList );
     EXPECT_NE( moduleCreated, true );
+    pcModule->destroy();
   }
 }
 
@@ -159,5 +162,6 @@ TEST_F( TestModuleCreate, CREATE_FAIL_NULL_FRAME )
     }
     bool moduleCreated = pcModule->create( apcFrameList );
     EXPECT_NE( moduleCreated, true );
+    pcModule->destroy();
   }
 }

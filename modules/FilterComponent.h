@@ -31,22 +31,21 @@
 class FilterComponentModule : public CalypModuleIf
 {
 private:
-  CalypFrame* m_pcFilteredFrame;
+  std::unique_ptr<CalypFrame> m_pcFilteredFrame{ nullptr };
 
 public:
   FilterComponentModule();
   virtual ~FilterComponentModule() {}
   bool create( std::vector<CalypFrame*> apcFrameList ) = 0;
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList ) = 0;
-  void destroy();
 
   bool createFilter( unsigned int uiWidth, unsigned int uiHeight, unsigned int bitsPixel );
   CalypFrame* filterComponent( CalypFrame* InputFrame, int Component );
 };
 
-class FilterComponentLuma : public FilterComponentModule
+class FilterComponentLuma : public FilterComponentModule,
+                            public CalypModuleInstace<FilterComponentLuma>
 {
-  REGISTER_CLASS_FACTORY( FilterComponentLuma )
 public:
   FilterComponentLuma();
   virtual ~FilterComponentLuma() {}
@@ -54,9 +53,9 @@ public:
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
 };
 
-class FilterComponentChromaU : public FilterComponentModule
+class FilterComponentChromaU : public FilterComponentModule,
+                               public CalypModuleInstace<FilterComponentChromaU>
 {
-  REGISTER_CLASS_FACTORY( FilterComponentChromaU )
 public:
   FilterComponentChromaU();
   virtual ~FilterComponentChromaU() {}
@@ -64,9 +63,9 @@ public:
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
 };
 
-class FilterComponentChromaV : public FilterComponentModule
+class FilterComponentChromaV : public FilterComponentModule,
+                               public CalypModuleInstace<FilterComponentChromaV>
 {
-  REGISTER_CLASS_FACTORY( FilterComponentChromaV )
 public:
   FilterComponentChromaV();
   virtual ~FilterComponentChromaV() {}

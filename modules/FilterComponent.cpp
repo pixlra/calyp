@@ -34,15 +34,12 @@ FilterComponentModule::FilterComponentModule()
   m_uiNumberOfFrames = 1;
   m_uiModuleRequirements = ClpModuleFeature::None;
   m_pchModuleCategory = "Filtering";
-
-  m_pcFilteredFrame = NULL;
 }
 
 bool FilterComponentModule::createFilter( unsigned int uiWidth, unsigned int uiHeight, unsigned int bitsPixel )
 {
-  m_pcFilteredFrame = NULL;
-  m_pcFilteredFrame = new CalypFrame( uiWidth, uiHeight, ClpPixelFormats::Gray, bitsPixel );
-  return true;
+  m_pcFilteredFrame = std::make_unique<CalypFrame>( uiWidth, uiHeight, ClpPixelFormats::Gray, bitsPixel );
+  return m_pcFilteredFrame != nullptr;
 }
 
 CalypFrame* FilterComponentModule::filterComponent( CalypFrame* InputFrame, int Component )
@@ -51,14 +48,7 @@ CalypFrame* FilterComponentModule::filterComponent( CalypFrame* InputFrame, int 
   ClpPel*** pppInputPelYUV = InputFrame->getPelBufferYUV();
   memcpy( pppOutputPelYUV[CLP_LUMA][0], pppInputPelYUV[Component][0],
           m_pcFilteredFrame->getWidth() * m_pcFilteredFrame->getHeight() * sizeof( ClpPel ) );
-  return m_pcFilteredFrame;
-}
-
-void FilterComponentModule::destroy()
-{
-  if( m_pcFilteredFrame )
-    delete m_pcFilteredFrame;
-  m_pcFilteredFrame = NULL;
+  return m_pcFilteredFrame.get();
 }
 
 FilterComponentLuma::FilterComponentLuma()

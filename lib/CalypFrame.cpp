@@ -563,6 +563,8 @@ CalypPixel CalypFrame::operator()( unsigned int xPos, unsigned int yPos ) const
 
 CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos ) const
 {
+  assert( xPos < d->m_uiWidth );
+  assert( yPos < d->m_uiHeight );
   CalypPixel PixelValue( d->m_pcPelFormat->colorSpace );
   for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
   {
@@ -1245,27 +1247,29 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
   {
     return bRet;
   }
-  unsigned int cvPrecision = getBitsPel() > 8 ? CV_16U : CV_8U;
-  unsigned numBytes = getBitsPel() > sizeof( char ) ? 2 : 1;
-  unsigned numChannels = getNumberChannels();
-  unsigned scaleFactor = 1 << ( numBytes * 8 - getBitsPel() );
-  if( !scale )
+  constexpr int kNumBitsInByte = 8;
+  auto numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
+  auto numChannels = getNumberChannels();
+  double scaleFactor = 1 << ( numBytes * kNumBitsInByte - getBitsPel() );
+  if( scale == 0 )
     scaleFactor = 1;
+
   if( convertToGray )
   {
     channel = channel >= numChannels ? 0 : channel;
     numChannels = 1;
   }
 
-  unsigned imgWidth = getWidth( channel );
-  unsigned imgHeight = getHeight( channel );
+  auto imgWidth = getWidth( channel );
+  auto imgHeight = getHeight( channel );
 
+  const auto cvPrecision = getBitsPel() > 8 ? CV_16U : CV_8U;
   cvMat.create( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
   if( numChannels > 1 )
   {
     cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
 
-    unsigned char* cv_data = tmpMat.data;
+    auto* cv_data = tmpMat.data;
     for( unsigned y = 0; y < imgHeight; y++ )
     {
       for( unsigned x = 0; x < imgWidth; x++ )
@@ -1273,28 +1277,25 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
         CalypPixel currPel = getPixel( x, y );
         currPel *= scaleFactor;
         for( unsigned int ch = 0; ch < numChannels; ch++ )
-          for( unsigned b = 0; b < numBytes; b++ )
+          for( auto b = 0; b < numBytes; b++ )
           {
-            unsigned char pel = currPel[ch] >> ( 8 * b );
+            unsigned char pel = currPel[ch] >> ( kNumBitsInByte * b );
             *cv_data++ = pel;
           }
       }
     }
-    if( getNumberChannels() >= 1 )
+    // TODO: check for other formats
+    switch( getColorSpace() )
     {
-      // TODO: check for other formats
-      switch( getColorSpace() )
-      {
-      case CLP_COLOR_YUV:
-        cv::cvtColor( tmpMat, cvMat, cv::COLOR_YCrCb2RGB );
-        break;
-      case CLP_COLOR_RGB:
-      case CLP_COLOR_RGBA:
-        cvMat = tmpMat;
-        break;
-      default:
-        assert( false );
-      }
+    case CLP_COLOR_YUV:
+      cv::cvtColor( tmpMat, cvMat, cv::COLOR_YCrCb2RGB );
+      break;
+    case CLP_COLOR_RGB:
+    case CLP_COLOR_RGBA:
+      cvMat = tmpMat;
+      break;
+    default:
+      assert( false );
     }
   }
   else
@@ -1304,7 +1305,7 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
     for( unsigned y = 0; y < imgHeight * imgWidth; y++ )
     {
       ClpPel currPel = ( *pel++ ) * scaleFactor;
-      for( unsigned b = 0; b < numBytes; b++ )
+      for( auto b = 0; b < numBytes; b++ )
         *cv_data++ = currPel >> ( 8 * b );
     }
   }

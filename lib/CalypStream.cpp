@@ -174,10 +174,6 @@ public:
   std::shared_ptr<CalypStreamFrameBuffer> frameBuffer;
   std::deque<std::shared_ptr<CalypFrame>> frameFifo;
 
-  // std::vector<std::unique_ptr<CalypFrame>> framePool;
-  // std::deque<std::shared_ptr<CalypFrame>> frameFifo;
-  // std::size_t bufferIdx{ 0 };
-
   std::string cFilename;
   long long int iCurrFrameNum;
   bool bLoadAll;

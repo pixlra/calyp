@@ -2,6 +2,9 @@
 # CMakeLists for Calyp lis tests using catch2
 #
 
+FETCHCONTENT_MAKEAVAILABLE(Catch2)
+
+
 SET(Calyp_Lib_Catch2_Tests_SRCS
     CalypLibTests.cpp
     CalypStreamTests.cpp

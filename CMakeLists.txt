@@ -104,7 +104,8 @@ SET(UPDATE_CHANNEL
 # ####################################################################################################################################################
 INCLUDE(FetchContent)
 
-# ####################################################################################################################################################
+SET(FETCHCONTENT_BASE_DIR  "${CMAKE_SOURCE_DIR}/deps")
+
 # Doxygen
 IF(BUILD_DOC)
   FIND_PACKAGE(Doxygen)
@@ -117,7 +118,23 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
-# ####################################################################################################################################################
+# Type safe
+FETCHCONTENT_DECLARE(
+  type_safe
+  GIT_REPOSITORY https://github.com/foonathan/type_safe
+  GIT_TAG v0.2.2
+  SOURCE_DIR "${CMAKE_SOURCE_DIR}/deps/type_safe"
+)
+
+SET_PACKAGE_PROPERTIES(
+  type_safe PROPERTIES
+  URL "https://github.com/foonathan/type_safe"
+  DESCRIPTION "Zero overhead abstractions that use the C++ type system to prevent bugs."
+  TYPE REQUIRED
+)
+FETCHCONTENT_MAKEAVAILABLE(type_safe)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps/type_safe/include/ ${CMAKE_SOURCE_DIR}/deps/type_safe/external/debug_assert/)
+
 # Catch2 and Google Tests
 IF(BUILD_TESTS)
   FETCHCONTENT_DECLARE(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
@@ -126,7 +143,12 @@ IF(BUILD_TESTS)
       ON
       CACHE BOOL "" FORCE
   )
-  FETCHCONTENT_MAKEAVAILABLE(googletest)
+  FETCHCONTENT_DECLARE(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.1
+  )
+
   SET_PACKAGE_PROPERTIES(
     googletest PROPERTIES
     URL "https://github.com/google/googletest"
@@ -134,19 +156,13 @@ IF(BUILD_TESTS)
     TYPE OPTIONAL
   )
 
-  FETCHCONTENT_DECLARE(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v2.13.1
-  )
-  FETCHCONTENT_MAKEAVAILABLE(Catch2)
   SET_PACKAGE_PROPERTIES(
     Catch2 PROPERTIES
     URL "https://github.com/catchorg/Catch2"
     DESCRIPTION "Catch2 unit tests"
     TYPE OPTIONAL
   )
-  INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/_deps/catch2-src/contrib/Catch.cmake)
+  INCLUDE(${CMAKE_SOURCE_DIR}/deps/catch2-src/contrib/Catch.cmake)
   INCLUDE(CTest)
   ENABLE_TESTING()
 
@@ -156,23 +172,9 @@ IF(BUILD_TESTS)
   )
 ENDIF()
 
-# ####################################################################################################################################################
-# Type safe
-FETCHCONTENT_DECLARE(
-  type_safe
-  GIT_REPOSITORY https://github.com/foonathan/type_safe
-  GIT_TAG v0.2.2
-)
-FETCHCONTENT_MAKEAVAILABLE(type_safe)
-SET_PACKAGE_PROPERTIES(
-  type_safe PROPERTIES
-  URL "https://github.com/foonathan/type_safe"
-  DESCRIPTION "Zero overhead abstractions that use the C++ type system to prevent bugs."
-  TYPE REQUIRED
-)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/_deps/type_safe-src/include/ ${CMAKE_CURRENT_BINARY_DIR}/_deps/type_safe-src/external/debug_assert/)
 
-# ####################################################################################################################################################
+
+
 # OpenCV
 OPTION(USE_OPENCV "Add OpenCV support" ON)
 IF(USE_OPENCV)
@@ -199,7 +201,6 @@ SET_PACKAGE_PROPERTIES(
   TYPE OPTIONAL
 )
 
-# ####################################################################################################################################################
 # FFmpeg
 OPTION(USE_FFMPEG "Add FFMPEG support" ON)
 IF(USE_FFMPEG)

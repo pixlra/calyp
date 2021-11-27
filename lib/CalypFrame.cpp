@@ -24,6 +24,7 @@
 
 #include "CalypFrame.h"
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -782,18 +783,20 @@ inline constexpr auto convert_to_pel_argb( const T r, const T g, const T b ) -> 
 template <typename T>
 inline constexpr void convert_yuv_to_rgb( const T iY, const T iU, const T iV, T& iR, T& iG, T& iB )
 {
-  auto clamp_pel_value = []( auto X ) {if( X < 0 )
-    return 0;
-  if( X > 255 )
-    return 255;
-  return X; };
+  auto clamp_pel_value = []( auto X ) {
+    if( X < 0 )
+      return 0;
+    if( X > 255 )
+      return 255;
+    return X;
+  };
 
   iR = iY + ( ( 1436 * ( iV - 128 ) ) >> 10 );
   iG = iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 );
   iB = iY + ( ( 1812 * ( iU - 128 ) ) >> 10 );
-  clamp_pel_value( iR );
-  clamp_pel_value( iG );
-  clamp_pel_value( iB );
+  iR = clamp_pel_value( iR );
+  iG = clamp_pel_value( iG );
+  iB = clamp_pel_value( iB );
 }
 
 void fillRGBBufferYUV420p( ClpPel*** pppInputPel, uint32_t* pARGB, unsigned uiWidth, unsigned uiHeight, int shiftBits )
@@ -828,23 +831,40 @@ void fillRGBBufferYUV420p( ClpPel*** pppInputPel, uint32_t* pARGB, unsigned uiWi
   }
 }
 
-void CalypFrame::fillRGBBuffer() const
+void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
 {
-  if( d->m_bHasRGBPel )
-    return;
-  int shiftBits = d->m_uiBitsPel - 8;
+  auto shiftBits = static_cast<int>( d->m_uiBitsPel ) - 8;
 
   d->m_bHasRGBPel = true;
   // 4 bytes for A, R, G and B
   uint32_t* pARGB = (uint32_t*)d->m_pcARGB32.data();
-  if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY )
+  if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY || ( channel.has_value() && *channel == 0 ) )
   {
-    ClpPel* pY = d->m_pppcInputPel[CLP_LUMA][0];
-    unsigned char finalPel{ 0 };
+    ClpPel* pY = d->m_pppcInputPel[0][0];
     for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
     {
-      finalPel = ( *pY++ ) >> shiftBits;
+      unsigned char finalPel = ( *pY++ ) >> shiftBits;
       *pARGB++ = convert_to_pel_argb( finalPel, finalPel, finalPel );
+    }
+  }
+  else if( channel.has_value() && *channel > 0 )
+  {
+    ClpPel* pLine = d->m_pppcInputPel[*channel][0];
+    for( unsigned y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
+    {
+      for( int i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
+      {
+        ClpPel* pPel = pLine;
+        for( unsigned x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
+        {
+          unsigned char finalPel = ( *pPel++ ) >> shiftBits;
+          for( int j = 0; j < ( 1 << d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          {
+            *pARGB++ = convert_to_pel_argb( finalPel, finalPel, finalPel );
+          }
+        }
+      }
+      pLine += CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth );
     }
   }
   else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB )
@@ -908,6 +928,14 @@ void CalypFrame::fillRGBBuffer() const
       pLineV += uiChromaStride;
     }
   }
+}
+
+void CalypFrame::fillRGBBuffer() const
+{
+  if( d->m_bHasRGBPel )
+    return;
+
+  fillRGBBuffer( {} );
 }
 
 /**

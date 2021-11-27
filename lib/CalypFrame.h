@@ -26,7 +26,6 @@
 #ifndef __CALYPFRAME_H__
 #define __CALYPFRAME_H__
 
-#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
@@ -492,6 +491,7 @@ public:
   void frameFromBuffer( const std::vector<ClpByte>&, int );
   void frameToBuffer( std::vector<ClpByte>&, int ) const;
 
+  void fillRGBBuffer( std::optional<std::size_t> channel ) const;
   void fillRGBBuffer() const;
 
   /**

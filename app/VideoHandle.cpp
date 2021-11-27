@@ -42,6 +42,7 @@
 #include "SubWindowSelectorDialog.h"
 #include "VideoStreamSubWindow.h"
 #include "VideoSubWindow.h"
+#include "lib/CalypFrame.h"
 
 VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
     : m_pcParent( parent ), m_pcMainWindowManager( windowManager )
@@ -123,6 +124,24 @@ void VideoHandle::createActions()
   connect( m_pcFrameSlider, SIGNAL( valueChanged( int ) ), this, SLOT( seekSliderEvent( int ) ) );
 
   // ------------ Image ------------
+  m_mapperComponent = new QSignalMapper( this );
+  m_actionGroupComponent = new QActionGroup( this );
+  m_actionGroupComponent->setExclusive( true );
+  m_mapperComponent->setMapping( m_actionGroupComponent->addAction( "All" ), -1 );
+  m_mapperComponent->setMapping( m_actionGroupComponent->addAction( "Red" ), 0 );
+  m_mapperComponent->setMapping( m_actionGroupComponent->addAction( "Green" ), 1 );
+  m_mapperComponent->setMapping( m_actionGroupComponent->addAction( "Blue" ), 2 );
+  m_mapperComponent->setMapping( m_actionGroupComponent->addAction( "Alpha" ), 3 );
+  for( int i = 0; i < m_actionGroupComponent->actions().size(); i++ )
+  {
+    m_actionGroupComponent->actions().at( i )->setCheckable( true );
+    m_actionGroupComponent->actions().at( i )->setVisible( false );
+    connect( m_actionGroupComponent->actions().at( i ), SIGNAL( triggered() ), m_mapperComponent, SLOT( map() ) );
+  }
+  m_actionGroupComponent->actions().at( 0 )->setChecked( true );
+  m_actionGroupComponent->actions().at( 0 )->setVisible( true );
+  connect( m_mapperComponent, SIGNAL( mapped( int ) ), this, SLOT( setComponent( int ) ) );
+
   m_actionGroupTools = new QActionGroup( this );
   m_actionGroupTools->setExclusive( true );
 
@@ -158,9 +177,11 @@ void VideoHandle::createActions()
   m_mapperGrid = new QSignalMapper( this );
   m_actionGroupGrid = new QActionGroup( this );
   m_actionGroupGrid->setExclusive( true );
+  m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "4x4" ), 4 );
   m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "8x8" ), 8 );
   m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "16x16" ), 16 );
   m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "64x64" ), 64 );
+  m_mapperGrid->setMapping( m_actionGroupGrid->addAction( "128x128" ), 128 );
 
   for( int i = 0; i < m_actionGroupGrid->actions().size(); i++ )
   {
@@ -194,6 +215,8 @@ QMenu* VideoHandle::createVideoMenu()
 QMenu* VideoHandle::createImageMenu()
 {
   m_pcMenuImage = new QMenu( "Image", m_pcParent );
+  m_menuComponent = m_pcMenuImage->addMenu( "Component" );
+  m_menuComponent->addActions( m_actionGroupComponent->actions() );
   m_pcMenuImage->addAction( m_arrayActions[NAVIGATION_TOOL_ACT] );
   m_pcMenuImage->addAction( m_arrayActions[SELECTION_TOOL_ACT] );
   m_pcMenuImage->addAction( m_arrayActions[BLOCK_SELECTION_TOOL_ACT] );
@@ -268,6 +291,62 @@ QWidget* VideoHandle::createStatusBarMessage()
   return pcStatusBarWidget;
 }
 
+void VideoHandle::updateComponentMenu()
+{
+  VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
+  if( pcSubWindow == nullptr )
+  {
+    m_menuComponent->setEnabled( false );
+    return;
+  }
+
+  const auto* frame = pcSubWindow->getCurrFrame();
+  if( frame == nullptr )
+  {
+    m_menuComponent->setEnabled( false );
+    return;
+  }
+
+  m_menuComponent->setEnabled( true );
+  for( int i = 1; i < m_actionGroupComponent->actions().size(); i++ )
+  {
+    m_actionGroupComponent->actions()[i]->setChecked( false );
+    m_actionGroupComponent->actions()[i]->setVisible( false );
+  }
+  switch( frame->getColorSpace() )
+  {
+  case CLP_COLOR_GRAY:
+    m_actionGroupComponent->actions().at( 1 )->setText( QStringLiteral( "Gray" ) );
+    m_actionGroupComponent->actions().at( 1 )->setVisible( true );
+    break;
+  case CLP_COLOR_YUV:
+    m_actionGroupComponent->actions().at( 1 )->setText( QStringLiteral( "Luminance" ) );
+    m_actionGroupComponent->actions().at( 1 )->setVisible( true );
+    m_actionGroupComponent->actions().at( 2 )->setText( QStringLiteral( "Chrominance U (Cb)" ) );
+    m_actionGroupComponent->actions().at( 2 )->setVisible( true );
+    m_actionGroupComponent->actions().at( 3 )->setText( QStringLiteral( "Chrominance V (Cr)" ) );
+    m_actionGroupComponent->actions().at( 3 )->setVisible( true );
+    break;
+  case CLP_COLOR_RGBA:
+    m_actionGroupComponent->actions().at( 4 )->setText( QStringLiteral( "Alpha" ) );
+    m_actionGroupComponent->actions().at( 4 )->setVisible( true );
+    [[fallthrough]];
+  case CLP_COLOR_RGB:
+    m_actionGroupComponent->actions().at( 1 )->setText( QStringLiteral( "Red" ) );
+    m_actionGroupComponent->actions().at( 1 )->setVisible( true );
+    m_actionGroupComponent->actions().at( 2 )->setText( QStringLiteral( "Green" ) );
+    m_actionGroupComponent->actions().at( 2 )->setVisible( true );
+    m_actionGroupComponent->actions().at( 3 )->setText( QStringLiteral( "Blue" ) );
+    m_actionGroupComponent->actions().at( 3 )->setVisible( true );
+    break;
+  default:
+    Q_ASSERT( false );
+  }
+  auto component = pcSubWindow->getViewArea()->getFilteredChannel();
+  int idx = component.has_value() ? *component : 0;
+  m_actionGroupComponent->actions().at( idx )->setChecked( true );
+}
+
 void VideoHandle::updateMenus()
 {
   VideoSubWindow* pcSubWindow = m_pcMainWindowManager->activeSubWindow<VideoSubWindow>();
@@ -296,6 +375,8 @@ void VideoHandle::updateMenus()
   m_arrayActions[SELECTION_TOOL_ACT]->setEnabled( hasSubWindow );
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setEnabled( hasSubWindow );
   m_arrayActions[SHOW_GRID_ACT]->setEnabled( hasSubWindow );
+
+  updateComponentMenu();
 }
 
 void VideoHandle::readSettings()
@@ -857,6 +938,20 @@ void VideoHandle::videoSelectionButtonEvent()
   else
   {
     stop();
+  }
+}
+
+void VideoHandle::setComponent( int component )
+{
+  if( m_pcCurrentVideoSubWindow == nullptr )
+    return;
+  if( component < 0 )
+  {
+    m_pcCurrentVideoSubWindow->getViewArea()->clearFilteredChannel();
+  }
+  else
+  {
+    m_pcCurrentVideoSubWindow->getViewArea()->setFilteredChannel( static_cast<std::size_t>( component ) );
   }
 }
 

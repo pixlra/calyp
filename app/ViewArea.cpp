@@ -25,6 +25,7 @@
 
 #include "ViewArea.h"
 
+#include <qcolor.h>
 #include <qnamespace.h>
 
 #include <QColor>
@@ -42,9 +43,11 @@
 
 #include "GridManager.h"
 
-static const QColor selectionColor = Qt::cyan;
-static const QColor imageMaskColor = Qt::green;
-static const QColor eraserColor = Qt::red;
+constexpr auto kSelectionColor = QColorConstants::Cyan;
+constexpr auto kImageMaskColor = QColorConstants::Green;
+constexpr auto kEraserColor = QColorConstants::Red;
+constexpr double kMaxZoom = 100.0;
+constexpr double kMinZoom = 0.01;
 
 ViewArea::ViewArea( QWidget* parent )
     : QWidget( parent )
@@ -53,15 +56,6 @@ ViewArea::ViewArea( QWidget* parent )
   m_grid = GridManager();
   m_mask = QBitmap();
   m_selectedArea = QRect();
-  m_dZoomFactor = 1;
-  m_xOffset = 0;
-  m_yOffset = 0;
-  m_mode = NormalMode;
-  m_eTool = NavigationTool;
-  m_bGridVisible = false;
-  m_snapToGrid = false;
-  m_blockTrackEnable = false;
-  m_visibleZoomRect = true;
 
   m_zoomWinTimer.setSingleShot( true );
   m_zoomWinTimer.setInterval( 2000 );
@@ -72,7 +66,15 @@ void ViewArea::setImage( std::shared_ptr<CalypFrame> frame )
 {
   m_nextFrame = frame;
   m_uiPixelHalfScale = 1 << ( m_nextFrame->getBitsPel() - 1 );
-  m_nextFrame->fillRGBBuffer();
+  if( m_filterSingleChannel.has_value() )
+  {
+    m_nextFrame->fillRGBBuffer( m_filterSingleChannel );
+  }
+  else
+  {
+    m_nextFrame->fillRGBBuffer();
+  }
+
   m_image = QImage( m_nextFrame->getRGBBuffer(),
                     m_nextFrame->getWidth(),
                     m_nextFrame->getHeight(),
@@ -86,14 +88,47 @@ void ViewArea::setImage( std::shared_ptr<CalypFrame> frame )
   initZoomWinRect();
 }
 
-void ViewArea::clear()
+// void ViewArea::clear()
+// {
+//   m_image = QImage();
+//   m_mask = QBitmap();
+//   m_mode = NormalMode;
+//   updateSize();
+//   update();
+//   updateGeometry();
+// }
+
+auto ViewArea::getFilteredChannel() -> std::optional<std::size_t>
 {
-  m_image = QImage();
-  m_mask = QBitmap();
-  m_mode = NormalMode;
-  updateSize();
+  return m_filterSingleChannel;
+}
+
+void ViewArea::setFilteredChannel( std::size_t channel )
+{
+  m_filterSingleChannel = channel;
+  if( m_nextFrame != nullptr )
+  {
+    m_nextFrame->fillRGBBuffer( m_filterSingleChannel );
+    m_image = QImage( m_nextFrame->getRGBBuffer(),
+                      m_nextFrame->getWidth(),
+                      m_nextFrame->getHeight(),
+                      QImage::Format_ARGB32 );
+  }
   update();
-  updateGeometry();
+}
+
+void ViewArea::clearFilteredChannel()
+{
+  m_filterSingleChannel = {};
+  if( m_nextFrame != nullptr )
+  {
+    m_nextFrame->fillRGBBuffer( m_filterSingleChannel );
+    m_image = QImage( m_nextFrame->getRGBBuffer(),
+                      m_nextFrame->getWidth(),
+                      m_nextFrame->getHeight(),
+                      QImage::Format_ARGB32 );
+  }
+  update();
 }
 
 void ViewArea::setTool( unsigned int view )
@@ -161,14 +196,14 @@ void ViewArea::setZoomFactor( double f )
 
 double ViewArea::scaleZoomFactor( double scale, QPoint center, QSize minimumSize )
 {
-  double maxZoom = 100.0;
-  double minZoom = 0.01;  //( 1.0 / m_image.width() );
+  Q_ASSERT( !m_image.isNull() );
+
   double new_scale = 1.0;
 
-  if( ( m_dZoomFactor == minZoom ) && ( scale < 1 ) )
+  if( ( m_dZoomFactor == kMinZoom ) && ( scale < 1 ) )
     return new_scale;
 
-  if( ( m_dZoomFactor == maxZoom ) && ( scale > 1 ) )
+  if( ( m_dZoomFactor == kMaxZoom ) && ( scale > 1 ) )
     return new_scale;
 
   double newZoomFactor = m_dZoomFactor * scale * 100.0;
@@ -209,16 +244,16 @@ double ViewArea::scaleZoomFactor( double scale, QPoint center, QSize minimumSize
 
   new_scale = scale;
 
-  if( newZoomFactor < minZoom )
+  if( newZoomFactor < kMinZoom )
   {
-    newZoomFactor = minZoom;
+    newZoomFactor = kMinZoom;
     new_scale = newZoomFactor / m_dZoomFactor;
   }
   else
   {
-    if( newZoomFactor > maxZoom )
+    if( newZoomFactor > kMaxZoom )
     {
-      newZoomFactor = maxZoom;
+      newZoomFactor = kMaxZoom;
       new_scale = newZoomFactor / m_dZoomFactor;
     }
   }
@@ -474,12 +509,12 @@ void ViewArea::paintEvent( QPaintEvent* event )
 
   // Draw a border around the image.
   /*  if( m_xOffset || m_yOffset )
-	 {
-	 painter.setPen( Qt::black );
-	 painter.drawRect( m_xOffset - 1, m_yOffset - 1, m_image.width() *
-	 m_dZoomFactor + 1, m_image.height() *
-	 m_dZoomFactor + 1 );
-	 }*/
+   {
+   painter.setPen( Qt::black );
+   painter.drawRect( m_xOffset - 1, m_yOffset - 1, m_image.width() *
+   m_dZoomFactor + 1, m_image.height() *
+   m_dZoomFactor + 1 );
+   }*/
 
   int frFormat = m_currFrame->getColorSpace();
 
@@ -567,16 +602,16 @@ void ViewArea::paintEvent( QPaintEvent* event )
 
     QRect vr = windowToView( winRect );
     QRect cVisibleImg = vr & cImg;
-    //cVisibleImg.moveTopLeft(vr.topLeft());
+    // cVisibleImg.moveTopLeft(vr.topLeft());
     QRect cVisibleWinRect;
     cVisibleWinRect.setLeft( floor( (double)cVisibleImg.x() / dRatio ) );
     cVisibleWinRect.setTop( floor( (double)cVisibleImg.y() / dRatio ) );
     cVisibleWinRect.setRight( round( (double)cVisibleImg.right() / dRatio ) );
     cVisibleWinRect.setBottom( round( (double)cVisibleImg.bottom() / dRatio ) );
 
-    //painter.fillRect( cImgWinRect, QBrush( QColor( 128, 128, 128, 128 ) ) );
+    // painter.fillRect( cImgWinRect, QBrush( QColor( 128, 128, 128, 128 ) ) );
     painter.setPen( QColor( 50, 50, 50, 128 ) );
-    //painter.drawRect( cImgWinRect );
+    // painter.drawRect( cImgWinRect );
     painter.setOpacity( 0.7 );
     painter.drawImage( cImgWinRect, m_image );
     painter.setOpacity( 1 );
@@ -599,7 +634,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
     painter.setPen( QColor( 255, 255, 255, 128 ) );
     painter.drawRect( cVisibleWinRect );
 
-    //qDebug() << "Debug VisibleZoomRect: " << winRect << vr << cImgWinRect << cVisibleWinRect << cVisibleImg << dRatio;
+    // qDebug() << "Debug VisibleZoomRect: " << winRect << vr << cImgWinRect << cVisibleWinRect << cVisibleImg << dRatio;
   }
 
   QRect sr = viewToWindow( m_selectedArea );
@@ -610,7 +645,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
     if( m_newShape || m_blockTrackEnable )
     {
       // Set the tool color
-      QColor selectColor = selectionColor;
+      QColor selectColor = kSelectionColor;
 
       selectColor.setAlpha( 120 );
 
@@ -664,7 +699,7 @@ void ViewArea::paintEvent( QPaintEvent* event )
   if( m_maskColor.isValid() )
     color = m_maskColor;
   else
-    color = imageMaskColor;
+    color = kImageMaskColor;
 
   color.setAlpha( 120 );
   painter.setPen( color );
@@ -684,16 +719,16 @@ void ViewArea::paintEvent( QPaintEvent* event )
         if( m_maskColor.isValid() )
           color = m_maskColor;
         else
-          color = imageMaskColor;
+          color = kImageMaskColor;
 
         break;
       }
       case EraserTool: {
-        color = eraserColor;
+        color = kEraserColor;
         break;
       }
       default:
-        color = selectionColor;  // ?Problems!
+        color = kSelectionColor;  // ?Problems!
       }
 
       color.setAlpha( 120 );
@@ -898,18 +933,18 @@ void ViewArea::mouseMoveEvent( QMouseEvent* event )
       }
     }
     /*    else // if tool() == BlockSelectionTool || MaskTool || EraserTool
-		 {
-		 m_blockTrackEnable = false;
-		 // If cursor is inside the selected area, we most redraw
-		 // the selection rect because it may be smaller.
-		 if( m_selectedArea.contains( actualPos ) )
-		 {
-		 m_selectedArea = m_grid.rectContains( m_lastPos );
-		 }
+     {
+     m_blockTrackEnable = false;
+     // If cursor is inside the selected area, we most redraw
+     // the selection rect because it may be smaller.
+     if( m_selectedArea.contains( actualPos ) )
+     {
+     m_selectedArea = m_grid.rectContains( m_lastPos );
+     }
 
-		 m_selectedArea = m_selectedArea.united( m_grid.rectContains( actualPos ) );
-		 }
-		 */
+     m_selectedArea = m_selectedArea.united( m_grid.rectContains( actualPos ) );
+     }
+     */
     if( tool() == SelectionTool )
     {
       // intercept the selected area with the image area to limit the

@@ -97,6 +97,11 @@ private:
   QSlider* m_pcFrameSlider;
   FrameNumberWidget* m_pcFrameNumInfo;
 
+  // Filter component actions
+  QMenu* m_menuComponent;
+  QActionGroup* m_actionGroupComponent;
+  QSignalMapper* m_mapperComponent;
+
   // Tools Actions
   QActionGroup* m_actionGroupTools;
   QSignalMapper* m_mapperTools;
@@ -131,6 +136,7 @@ private:
   void calculateRealFrameRate();
   unsigned long getMaxFrameNumber();
   void setTimerStatus();
+  void updateComponentMenu();
 
 Q_SIGNALS:
   void changed();
@@ -150,6 +156,7 @@ private Q_SLOTS:
   void seekEvent( int direction );
   void seekVideo();
   void videoSelectionButtonEvent();
+  void setComponent( int component );
   void setTool( int tool );
   void toggleGrid( bool checked );
   void setGridSize( int size );

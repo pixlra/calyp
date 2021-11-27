@@ -56,16 +56,14 @@ public:
 
   ViewArea( QWidget* parent = 0 );
 
-  QImage& image() { return m_image; };
   void setImage( std::shared_ptr<CalypFrame> frame );
+
+  auto getFilteredChannel() -> std::optional<std::size_t>;
+  void setFilteredChannel( std::size_t channel );
+  void clearFilteredChannel();
 
   void setMode( int mode );
   void setMaskColor( const QColor& color = QColor() );
-
-  /**
-   * Clears any contents.
-   */
-  void clear();
 
   /**
    * Select tool from the menu
@@ -108,12 +106,12 @@ public Q_SLOTS:
   //  void setSelectedArea( QRect &rect );
 
 protected:
-  void paintEvent( QPaintEvent* event );
-  void resizeEvent( QResizeEvent* event );
-  void mousePressEvent( QMouseEvent* event );
-  void mouseMoveEvent( QMouseEvent* event );
-  void mouseReleaseEvent( QMouseEvent* event );
-  void wheelEvent( QWheelEvent* event );
+  void paintEvent( QPaintEvent* event ) override;
+  void resizeEvent( QResizeEvent* event ) override;
+  void mousePressEvent( QMouseEvent* event ) override;
+  void mouseMoveEvent( QMouseEvent* event ) override;
+  void mouseReleaseEvent( QMouseEvent* event ) override;
+  void wheelEvent( QWheelEvent* event ) override;
 
   void updateSize();
   void updateOffset();
@@ -149,34 +147,35 @@ private:
   QRect viewToWindow( const QRect& rc ) const;
 
   std::shared_ptr<CalypFrame> m_currFrame;
+  QImage m_image;
   std::shared_ptr<CalypFrame> m_nextFrame;
 
+  std::optional<std::size_t> m_filterSingleChannel;
   ClpPel m_uiPixelHalfScale;
 
-  Tool m_eTool;
-  bool m_bGridVisible;
+  Tool m_eTool{ NavigationTool };
+  bool m_bGridVisible{ false };
 
   QTimer m_zoomWinTimer;
   double m_dZoomWinRatio;
-  double m_dZoomFactor;
+  double m_dZoomFactor{ 1.0 };
 
-  QImage m_image;
-  //QPixmap m_pixmap;
+  // QPixmap m_pixmap;
   QBitmap m_mask;
   QRect m_selectedArea;
   QPoint m_lastPos;
   QPoint m_lastWindowPos;
   GridManager m_grid;
-  ViewMode m_mode;
+  ViewMode m_mode{ NormalMode };
 
   QColor m_maskColor;
-  int m_xOffset;
-  int m_yOffset;
-  bool m_blockTrackEnable;
+  int m_xOffset{ 0 };
+  int m_yOffset{ 0 };
+  bool m_blockTrackEnable{ false };
   bool m_newShape;
-  bool m_snapToGrid;
+  bool m_snapToGrid{ false };
   bool m_cursorInGrid;
-  bool m_visibleZoomRect;
+  bool m_visibleZoomRect{ true };
 };
 
 #endif  // __VIEWAREA_H__

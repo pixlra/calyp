@@ -162,6 +162,8 @@ IF(BUILD_TESTS)
     DESCRIPTION "Catch2 unit tests"
     TYPE OPTIONAL
   )
+  FETCHCONTENT_MAKEAVAILABLE(googletest Catch2)
+
   INCLUDE(${CMAKE_SOURCE_DIR}/deps/catch2-src/contrib/Catch.cmake)
   INCLUDE(CTest)
   ENABLE_TESTING()

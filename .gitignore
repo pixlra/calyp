@@ -1,6 +1,6 @@
 # Created by https://www.gitignore.io/api/c++,clion,linux
 # Edit at https://www.gitignore.io/?templates=c++,clion,linux
-
+deps/**
 ### C++ ###
 # Prerequisites
 *.d

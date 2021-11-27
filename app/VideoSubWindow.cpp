@@ -396,7 +396,7 @@ QSize VideoSubWindow::getScrollSize()
   return QSize( m_pcScrollArea->viewport()->size().width() - 5, m_pcScrollArea->viewport()->size().height() - 5 );
 }
 
-void VideoSubWindow::adjustScrollBarToRatio( const double& horRatio, const double& verRatio )
+void VideoSubWindow::adjustScrollBarToRatio( const double horRatio, const double verRatio )
 {
   QScrollBar* scrollBarH = m_pcScrollArea->horizontalScrollBar();
   QScrollBar* scrollBarV = m_pcScrollArea->verticalScrollBar();
@@ -500,12 +500,11 @@ void VideoSubWindow::zoomToFactor( double factor, QPoint center )
 
 void VideoSubWindow::scaleView( double scale, QPoint center )
 {
-  Q_ASSERT( !m_cViewArea->image().isNull() );
-  if( scale != 1.0 )
-  {
-    double usedScale = m_cViewArea->scaleZoomFactor( scale, center, getScrollSize() );
-    adjustScrollBarByScale( usedScale, center );
-  }
+  if( scale == 1.0 )
+    return;
+
+  double usedScale = m_cViewArea->scaleZoomFactor( scale, center, getScrollSize() );
+  adjustScrollBarByScale( usedScale, center );
 }
 
 void VideoSubWindow::scaleView( const QSize& size, QPoint center )
@@ -521,12 +520,7 @@ void VideoSubWindow::scaleView( const QSize& size, QPoint center )
   // Calc the zoom factor
   double wfactor = (double)newSize.width() / imgViewSize.width();
   double hfactor = (double)newSize.height() / imgViewSize.height();
-  double factor{ wfactor };
-
-  if( wfactor < hfactor )
-    factor = wfactor;
-  else
-    factor = hfactor;
+  auto factor = std::min( wfactor, hfactor );
 
   double curFactor = getScaleFactor();
   if( factor != curFactor )

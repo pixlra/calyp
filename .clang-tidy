@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-non-private-member-variables-in-classes, -cppcoreguidelines-owning-memory, -cppcoreguidelines-pro-bounds-constant-array-index'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-non-private-member-variables-in-classes, -cppcoreguidelines-owning-memory, -cppcoreguidelines-pro-bounds-constant-array-index, -readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -41,3 +41,5 @@ CheckOptions:
     value:           '0'
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
+  - key:             readability-magic-numbers.IgnorePowersOf2IntegerValues
+    value:           '1'

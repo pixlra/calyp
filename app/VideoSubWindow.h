@@ -135,7 +135,7 @@ public:
 
   void setFillWindow( bool bFlag );
 
-  void adjustScrollBarToRatio( const double& horRatio, const double& verRatio );
+  void adjustScrollBarToRatio( const double horRatio, const double verRatio );
 
 private:
   bool hasRunningModule();
@@ -177,8 +177,8 @@ protected:
 private:
   QScrollArea* m_pcScrollArea;
   QPoint m_cCurrScroll;
-  double m_dHorScroll;
-  double m_dVerScroll;
+  double m_dHorScroll{ 0 };
+  double m_dVerScroll{ 0 };
   ViewArea* m_cViewArea;
   QRect m_cSelectedArea;
   VideoSubWindow* m_pcReferenceSubWindow;

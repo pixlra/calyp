@@ -43,9 +43,15 @@
 
 #include "GridManager.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
 constexpr auto kSelectionColor = QColorConstants::Cyan;
 constexpr auto kImageMaskColor = QColorConstants::Green;
 constexpr auto kEraserColor = QColorConstants::Red;
+#else
+static const QColor kSelectionColor = Qt::cyan;
+static const QColor kImageMaskColor = Qt::green;
+static const QColor kEraserColor = Qt::red;
+#endif
 constexpr double kMaxZoom = 100.0;
 constexpr double kMinZoom = 0.01;
 

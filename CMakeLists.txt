@@ -104,7 +104,7 @@ SET(UPDATE_CHANNEL
 # ####################################################################################################################################################
 INCLUDE(FetchContent)
 
-SET(FETCHCONTENT_BASE_DIR  "${CMAKE_SOURCE_DIR}/deps")
+SET(FETCHCONTENT_BASE_DIR  "${CMAKE_BINARY_DIR}/deps")
 
 # Doxygen
 IF(BUILD_DOC)
@@ -123,7 +123,7 @@ FETCHCONTENT_DECLARE(
   type_safe
   GIT_REPOSITORY https://github.com/foonathan/type_safe
   GIT_TAG v0.2.2
-  SOURCE_DIR "${CMAKE_SOURCE_DIR}/deps/type_safe"
+  SOURCE_DIR "${CMAKE_BINARY_DIR}/deps/type_safe"
 )
 
 SET_PACKAGE_PROPERTIES(
@@ -133,7 +133,8 @@ SET_PACKAGE_PROPERTIES(
   TYPE REQUIRED
 )
 FETCHCONTENT_MAKEAVAILABLE(type_safe)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps/type_safe/include/ ${CMAKE_SOURCE_DIR}/deps/type_safe/external/debug_assert/)
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/deps/type_safe/include/ ${CMAKE_BINARY_DIR}/deps/type_safe/external/debug_assert/)
+ADD_DEFINITIONS(-DTYPE_SAFE_ENABLE_ASSERTIONS=0 -DTYPE_SAFE_ENABLE_PRECONDITION_CHECKS=0 -DDEBUG_ASSERT_DISABLE)
 
 # Catch2 and Google Tests
 IF(BUILD_TESTS)
@@ -164,7 +165,7 @@ IF(BUILD_TESTS)
   )
   FETCHCONTENT_MAKEAVAILABLE(googletest Catch2)
 
-  INCLUDE(${CMAKE_SOURCE_DIR}/deps/catch2-src/contrib/Catch.cmake)
+  INCLUDE(${CMAKE_BINARY_DIR}/deps/catch2-src/contrib/Catch.cmake)
   INCLUDE(CTest)
   ENABLE_TESTING()
 

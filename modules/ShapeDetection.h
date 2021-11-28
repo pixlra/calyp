@@ -30,7 +30,6 @@
 
 // OpenCV
 #include <opencv2/core/core.hpp>
-#include <opencv2/saliency.hpp>
 
 class ShapeDetection : public CalypOpenCVModuleIf,
                        public CalypModuleInstace<ShapeDetection>

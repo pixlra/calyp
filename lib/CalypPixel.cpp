@@ -149,6 +149,7 @@ auto CalypPixel::operator==( const CalypPixel& other ) const -> bool
 
 std::ostream& operator<<( std::ostream& os, const CalypPixel& p )
 {
+#ifdef CLP_DEBUG
   if( p.colorSpace() == CLP_COLOR_RGB || p.colorSpace() == CLP_COLOR_YUV )
   {
     os << "(" << p[0] << ", " << p[1] << ", " << p[2] << ")";
@@ -157,6 +158,7 @@ std::ostream& operator<<( std::ostream& os, const CalypPixel& p )
   {
     os << "(" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << ")";
   }
+#endif
   return os;
 }
 

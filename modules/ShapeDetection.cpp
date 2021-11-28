@@ -24,12 +24,10 @@
 #include "ShapeDetection.h"
 
 #include <cstdlib>
-
-//#include <opencv2/video/video.hpp>
+#include <opencv2/imgproc.hpp>
 
 using cv::Mat;
 using cv::Ptr;
-using namespace cv::saliency;
 
 ShapeDetection::ShapeDetection()
     : m_rng( 12345 )

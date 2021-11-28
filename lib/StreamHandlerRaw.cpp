@@ -62,7 +62,7 @@ bool StreamHandlerRaw::openHandler( std::string strFilename, bool bInput )
     return false;
   }
   calculateFrameNumber();
-  std::string fileExtension = std::filesystem::path{ strFilename }.extension();
+  std::string fileExtension = std::filesystem::path{ strFilename }.extension().string();
   fileExtension.erase( fileExtension.begin() );
   m_strFormatName = clpUppercase( fileExtension );
   m_strCodecName = "Raw Video";

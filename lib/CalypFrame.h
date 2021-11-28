@@ -26,6 +26,7 @@
 #ifndef __CALYPFRAME_H__
 #define __CALYPFRAME_H__
 
+#include <array>
 #include <map>
 #include <memory>
 #include <optional>

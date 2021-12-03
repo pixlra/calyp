@@ -22,7 +22,7 @@ SET(Calyp_Lib_Stream_SRCS
 
 SET(Calyp_Lib_OptionParser_SRCS CalypOptions.h CalypOptions.cpp)
 
-SET(Calyp_Lib_Modules_SRCS CalypOptions.h CalypOptions.cpp)
+SET(Calyp_Lib_Modules_SRCS CalypModuleIf.h CalypModuleIf.cpp)
 
 SET(Calyp_Lib_SRCS CalypLib.h CalypDefs.h ${Calyp_Lib_Frame_SRCS} ${Calyp_Lib_Stream_SRCS} ${Calyp_Lib_OptionParser_SRCS} ${Calyp_Lib_Modules_SRCS})
 
@@ -43,8 +43,6 @@ ENDIF()
 IF(USE_OPENCV)
   LIST(APPEND Calyp_Lib_SRCS StreamHandlerOpenCV.h)
   LIST(APPEND Calyp_Lib_SRCS StreamHandlerOpenCV.cpp)
-
-  LIST(APPEND Calyp_Lib_SRCS CalypOpenCVModuleIf.cpp)
 
   LIST(APPEND CMAKE_CFG_LINKER_LIBSS ${OpenCV_LIBRARIES})
   LIST(APPEND CMAKE_CFG_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS})

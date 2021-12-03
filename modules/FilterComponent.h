@@ -26,6 +26,7 @@
 #define __FILTERCOMPONENT_H__
 
 // CalypLib
+#include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 
 class FilterComponentModule : public CalypModuleIf

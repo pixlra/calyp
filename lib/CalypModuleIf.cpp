@@ -22,16 +22,17 @@
  * \brief    Calyp modules interface for OpenCV
  */
 
-#include "CalypFrame.h"
 #include "CalypModuleIf.h"
 
-// OpenCV
 #include <opencv2/opencv.hpp>
 
+#include "CalypFrame.h"
 #include "PixelFormats.h"
+#include "config.h"
 
 bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
 {
+#ifdef USE_OPENCV
   _BASIC_MODULE_API_2_CHECK_
   bool bRet = false;
   std::vector<Mat> acMatList( apcFrameList.size() );
@@ -51,10 +52,14 @@ bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
     return false;
   }
   return bRet;
+#else
+  return false;
+#endif
 }
 
 CalypFrame* CalypOpenCVModuleIf::process( std::vector<CalypFrame*> apcFrameList )
 {
+#ifdef USE_OPENCV
   m_pcOutputFrame->reset();
   std::vector<Mat> acMatList( apcFrameList.size() );
   for( unsigned i = 0; i < apcFrameList.size(); i++ )
@@ -64,8 +69,35 @@ CalypFrame* CalypOpenCVModuleIf::process( std::vector<CalypFrame*> apcFrameList 
   Mat* cvOutput = process_using_opencv( acMatList );
   m_pcOutputFrame->fromMat( *cvOutput );
   return m_pcOutputFrame.get();
+#else
+  return nullptr;
+#endif
 }
 
 void CalypOpenCVModuleIf::destroy()
 {
+}
+
+ClpModuleFeature operator|( ClpModuleFeature lhs, ClpModuleFeature rhs )
+{
+  return static_cast<ClpModuleFeature>(
+      static_cast<std::underlying_type_t<ClpModuleFeature>>( lhs ) |
+      static_cast<std::underlying_type_t<ClpModuleFeature>>( rhs ) );
+}
+
+ClpModuleFeature operator&( ClpModuleFeature lhs, ClpModuleFeature rhs )
+{
+  return static_cast<ClpModuleFeature>(
+      static_cast<std::underlying_type_t<ClpModuleFeature>>( lhs ) &
+      static_cast<std::underlying_type_t<ClpModuleFeature>>( rhs ) );
+}
+
+auto CalypModuleIf::getModuleLongName() -> const char*
+{
+  return m_pchModuleLongName ? m_pchModuleLongName : m_pchModuleName;
+}
+
+auto CalypModuleIf::has( ClpModuleFeature feature ) -> bool
+{
+  return ( m_uiModuleRequirements & feature ) != ClpModuleFeature::None;
 }

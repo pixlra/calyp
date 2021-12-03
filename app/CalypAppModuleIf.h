@@ -81,12 +81,11 @@ public:
   auto getSubWindowList() const -> const std::vector<VideoSubWindow*>& { return m_pcSubWindow; }
 
   CalypModuleIf* getModule() { return m_pcModule.get(); }
-  auto getModuleRequirements() const -> ClpModuleFeatures { return m_pcModule->m_uiModuleRequirements; }
+  auto hasFeature( ClpModuleFeature feature ) const -> bool { return m_pcModule->has( feature ); }
   std::string moduleInfo() const { return m_pcModule->moduleInfo(); }
   void update( bool isPlaying );
   bool apply( bool isPlaying = false, bool disableThreads = false );
   bool process();
-  // void setPlaying( bool isPlaying );
   bool isRunning() const;
   void show();
   void disable();

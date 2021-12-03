@@ -69,7 +69,7 @@ void ModuleSubWindow::updateVideoWindowInfo()
         }
       }
     }
-    if( module_ptr->getModuleRequirements().is_set( ClpModuleFeature::HasInfo ) )
+    if( module_ptr->hasFeature( ClpModuleFeature::HasInfo ) )
     {
       QStringList list = QString::fromStdString( module_ptr->moduleInfo() ).split( '\n' );
       windowInfoList.append( list );

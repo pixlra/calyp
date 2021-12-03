@@ -319,7 +319,7 @@ int CalypTools::Open( int argc, char* argv[] )
       return -1;
     }
 
-    if( m_pcCurrModuleIf->m_uiModuleRequirements & ClpModuleFeature::VariableNumOfFrames )
+    if( m_pcCurrModuleIf->has( ClpModuleFeature::VariableNumOfFrames ) )
     {
       m_pcCurrModuleIf->m_uiNumberOfFrames = m_apcInputStreams.size();
     }

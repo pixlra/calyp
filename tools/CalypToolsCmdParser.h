@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "config.h"
+#include "lib/CalypDefs.h"
 #include "lib/CalypOptions.h"
 
 class CalypToolsCmdParser

@@ -26,6 +26,7 @@
 #define __INTERFRAMEVARIANCE_H__
 
 // CalypLib
+#include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 
 class InterFrameVariance : public CalypModuleIf

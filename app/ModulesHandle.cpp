@@ -283,7 +283,7 @@ void ModulesHandle::activateModule()
   {
     int minNumFrames = numberOfFrames;
     int maxNumFrames = numberOfFrames;
-    if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::VariableNumOfFrames ) )
+    if( pcCurrAppModuleIf->m_pcModule->has( ClpModuleFeature::VariableNumOfFrames ) )
     {
       minNumFrames = numberOfFrames;
       maxNumFrames = 255;
@@ -356,7 +356,7 @@ void ModulesHandle::activateModule()
     pcCurrAppModuleIf->m_pcSubWindow[i] = videoSubWindowList.at( i );
   }
 
-  if( pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::Options ) )
+  if( pcCurrAppModuleIf->m_pcModule->has( ClpModuleFeature::Options ) )
   {
     ModulesHandleOptDialog moduleOptDialog( m_pcParent, pcCurrAppModuleIf.get() );
     if( moduleOptDialog.runConfiguration() == QDialog::Rejected )
@@ -373,7 +373,7 @@ void ModulesHandle::activateModule()
 
   if( pcCurrAppModuleIf->m_pcModule->m_iModuleType == ClpModuleType::FrameProcessing )
   {
-    if( bShowModulesNewWindow || pcCurrAppModuleIf->m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::NewWindow ) )
+    if( bShowModulesNewWindow || pcCurrAppModuleIf->m_pcModule->has( ClpModuleFeature::NewWindow ) )
     {
       auto pcModuleSubWindow = new ModuleSubWindow( pcCurrAppModuleIf.get() );
       pcModuleSubWindow->resetWindowName();

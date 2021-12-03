@@ -24,6 +24,8 @@
 
 #include "FrameDifference.h"
 
+#include "lib/CalypFrame.h"
+
 FrameDifference::FrameDifference()
 {
   /* Module Definition */

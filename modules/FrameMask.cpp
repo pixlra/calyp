@@ -24,6 +24,8 @@
 
 #include "FrameMask.h"
 
+#include "lib/CalypFrame.h"
+
 FrameMask::FrameMask()
 {
   /* Module Definition */

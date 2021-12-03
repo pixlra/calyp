@@ -20,7 +20,7 @@
 /**
  * \file     CalypDefs.h
  * \ingroup  CalypLibGrp
- * \brief    Define basic types, new types and enumerations
+ * \brief    Define basic types, new types and enumerations (private use only)
  */
 
 #ifndef __CALYPDEFS_H__

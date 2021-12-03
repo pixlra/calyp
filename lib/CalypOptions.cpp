@@ -38,12 +38,13 @@
 
 #include "CalypOptions.h"
 
-#include <cstring>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <sstream>
 
 #include "config.h"
+#include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 
 struct ParseFailure : public std::exception

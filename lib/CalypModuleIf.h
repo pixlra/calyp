@@ -35,7 +35,6 @@
  */
 
 #include <memory>
-#include <type_safe/flag_set.hpp>
 #include <vector>
 
 #include "CalypFrame.h"
@@ -95,19 +94,18 @@ enum class ClpModuleType : std::uint8_t
  * Features/Requirements of a module
  * @see m_uiModuleRequirements
  */
-enum class ClpModuleFeature
+enum class ClpModuleFeature : std::uint64_t
 {
-  None,
-  SkipWhilePlaying,
-  Options,
-  NewWindow,
-  KeysShortcuts,
-  VariableNumOfFrames,
-  HasInfo,
-  _flag_set_size
+  None = 0,
+  SkipWhilePlaying = 1,
+  Options = 2,
+  NewWindow = 4,
+  KeysShortcuts = 8,
+  VariableNumOfFrames = 16,
+  HasInfo = 32,
 };
 
-using ClpModuleFeatures = type_safe::flag_set<ClpModuleFeature>;
+auto operator|( ClpModuleFeature lhs, ClpModuleFeature rhs ) -> ClpModuleFeature;
 
 enum Module_Key_Supported
 {
@@ -116,6 +114,8 @@ enum Module_Key_Supported
   MODULE_KEY_UP,
   MODULE_KEY_DOWN,
 };
+
+class CalypFrame;
 
 /**
  * \class    CalypModuleIf
@@ -134,10 +134,8 @@ public:
   virtual ~CalypModuleIf() = default;
   virtual void destroy(){};
 
-  const char* getModuleLongName()
-  {
-    return m_pchModuleLongName ? m_pchModuleLongName : m_pchModuleName;
-  }
+  auto getModuleLongName() -> const char*;
+  auto has( ClpModuleFeature feature ) -> bool;
 
   /**
    * Module API version 1
@@ -175,7 +173,7 @@ public:
   //! Number of frames
   unsigned int m_uiNumberOfFrames{ 1 };
   //! Features/Requirements
-  ClpModuleFeatures m_uiModuleRequirements{ ClpModuleFeature::None };
+  ClpModuleFeature m_uiModuleRequirements{ ClpModuleFeature::None };
 
   unsigned int m_iFrameBufferCount{ 0 };
 
@@ -197,7 +195,7 @@ class CalypOpenCVModuleIf : public CalypModuleIf
   using Mat = cv::Mat;
 
 public:
-  CalypOpenCVModuleIf() { m_bConvertToGray = false; };
+  CalypOpenCVModuleIf() = default;
   virtual ~CalypOpenCVModuleIf() {}
 
   // Common API
@@ -216,7 +214,7 @@ public:
 protected:
   // const char* m_pchPythonFunctionName;
   std::unique_ptr<CalypFrame> m_pcOutputFrame;
-  bool m_bConvertToGray;
+  bool m_bConvertToGray{ false };
 };
 
 using CalypModulePtr = std::unique_ptr<CalypModuleIf>;

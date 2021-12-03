@@ -34,6 +34,9 @@ jobs:
     - name: Build without threads
       run: cmake -B ${{github.workspace}}/build -D CMAKE_C_COMPILER=gcc-10 -D CMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_WERROR=ON -DCALYP_MANAGED_RESOURCES=OFF -DCALYP_THREADED_MODULES=OFF; cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Build without threads
+      run: cmake -B ${{github.workspace}}/build -D CMAKE_C_COMPILER=gcc-10 -D CMAKE_CXX_COMPILER=g++-10 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_WERROR=ON -DUSE_OPENCV=OFF -DUSE_FFMPEG=OFF; cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
   check-tests:
     runs-on: ubuntu-latest
     steps:

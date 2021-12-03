@@ -104,7 +104,7 @@ SET(UPDATE_CHANNEL
 # ####################################################################################################################################################
 INCLUDE(FetchContent)
 
-SET(FETCHCONTENT_BASE_DIR  "${CMAKE_BINARY_DIR}/deps")
+SET(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/deps")
 
 # Doxygen
 IF(BUILD_DOC)
@@ -117,24 +117,6 @@ SET_PACKAGE_PROPERTIES(
   DESCRIPTION "Doxygen"
   TYPE OPTIONAL
 )
-
-# Type safe
-FETCHCONTENT_DECLARE(
-  type_safe
-  GIT_REPOSITORY https://github.com/foonathan/type_safe
-  GIT_TAG v0.2.2
-  SOURCE_DIR "${CMAKE_BINARY_DIR}/deps/type_safe"
-)
-
-SET_PACKAGE_PROPERTIES(
-  type_safe PROPERTIES
-  URL "https://github.com/foonathan/type_safe"
-  DESCRIPTION "Zero overhead abstractions that use the C++ type system to prevent bugs."
-  TYPE REQUIRED
-)
-FETCHCONTENT_MAKEAVAILABLE(type_safe)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/deps/type_safe/include/ ${CMAKE_BINARY_DIR}/deps/type_safe/external/debug_assert/)
-ADD_DEFINITIONS(-DTYPE_SAFE_ENABLE_ASSERTIONS=0 -DTYPE_SAFE_ENABLE_PRECONDITION_CHECKS=0 -DDEBUG_ASSERT_DISABLE)
 
 # Catch2 and Google Tests
 IF(BUILD_TESTS)
@@ -174,7 +156,6 @@ IF(BUILD_TESTS)
       CACHE PATH "Location of video information for testing"
   )
 ENDIF()
-
 
 # OpenCV
 OPTION(USE_OPENCV "Add OpenCV support" ON)

@@ -131,7 +131,7 @@ bool CalypAppModuleIf::apply( bool isPlaying, bool disableThreads )
     }
   }
 
-  if( !( isPlaying && m_pcModule->m_uiModuleRequirements.is_set( ClpModuleFeature::SkipWhilePlaying ) ) )
+  if( !( isPlaying && m_pcModule->has( ClpModuleFeature::SkipWhilePlaying ) ) )
   {
     m_frameList.clear();
     for( unsigned int i = 0; i < m_pcModule->m_uiNumberOfFrames; i++ )

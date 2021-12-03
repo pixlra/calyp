@@ -24,11 +24,13 @@
 
 #include "CalypModuleIf.h"
 
-#include <opencv2/opencv.hpp>
-
 #include "CalypFrame.h"
 #include "PixelFormats.h"
 #include "config.h"
+
+#ifdef USE_OPENCV
+#include <opencv2/opencv.hpp>
+#endif
 
 bool CalypOpenCVModuleIf::create( std::vector<CalypFrame*> apcFrameList )
 {

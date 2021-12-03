@@ -20,10 +20,10 @@ repos:
       entry: cmake -B build
       pass_filenames: false
       language: system
-    - id: cmake-build
-      name: Cmake Build
-      entry: cmake --build build
-      pass_filenames: false
-      language: system
+        #- id: cmake-build
+        #name: Cmake Build
+        #entry: cmake --build build
+        #pass_filenames: false
+        #language: system
 
 

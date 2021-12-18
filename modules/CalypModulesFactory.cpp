@@ -46,7 +46,7 @@ void CalypModulesFactory::Register( const std::string& moduleName, std::function
 
 void CalypModulesFactory::Register( const char* moduleName, std::function<CalypModulePtr( void )> pfnCreate )
 {
-  Register( moduleName, pfnCreate );
+  Register( std::string{ moduleName }, pfnCreate );
 }
 
 bool CalypModulesFactory::RegisterDl( const char* dlName )

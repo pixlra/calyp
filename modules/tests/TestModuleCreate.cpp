@@ -55,17 +55,7 @@ protected:
   void SetUp()
   {
     std::string moduleName = CALYP_TEST_MODULE_NAME;
-
-    CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-    CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
-    for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
-    {
-      if( strcmp( it->first, moduleName.c_str() ) == 0 )
-      {
-        pcModule = it->second();
-        break;
-      }
-    }
+    pcModule = CalypModulesFactory::Get()->CreateModule( moduleName );
   }
 
   // Called after each test

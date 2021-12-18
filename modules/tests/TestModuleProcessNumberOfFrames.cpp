@@ -55,16 +55,7 @@ protected:
     pcStream->open( std::string( CALYP_TEST_DATA_DIR ) + std::string( "/BasketballDrill_F10_832x480_yuv420p.yuv" ), 832, 480, ClpPixelFormats::YUV420p, 8,
                     CLP_BIG_ENDIAN, 1, CalypStream::Type::Input );
 
-    CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-    CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
-    for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
-    {
-      if( strcmp( it->first, moduleName.c_str() ) == 0 )
-      {
-        pcModule = it->second();
-        break;
-      }
-    }
+    pcModule = CalypModulesFactory::Get()->CreateModule( moduleName );
   }
 
   void TearDown()

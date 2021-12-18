@@ -56,11 +56,11 @@ class SubWindowAbstract : public QWidget
   Q_OBJECT
 
 private:
-  QHBoxLayout* m_pcLayout;
+  QHBoxLayout* m_pcLayout{ nullptr };
   unsigned int m_uiCategory;
   QString m_cWindowName;
 
-  MdiSubWindow* m_cSubWindow;
+  MdiSubWindow* m_cSubWindow{ nullptr };
 
 public:
   enum SubWindowCategory
@@ -90,7 +90,7 @@ public:
    */
   virtual void zoomToFit() = 0;
   /**
-   * Scale the image (zoomed in or out) to speficied absolute zoom value (1.0 =
+   * Scale the image (zoomed in or out) to specified absolute zoom value (1.0 =
    * original size).
    */
   virtual void zoomToFactor( double factor, QPoint center = QPoint() ) = 0;

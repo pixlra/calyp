@@ -35,7 +35,7 @@
 #include "MdiSubWindow.h"
 
 SubWindowAbstract::SubWindowAbstract( QWidget* parent, unsigned int category )
-    : QWidget( parent ), m_cSubWindow( NULL )
+    : QWidget{ parent }, m_uiCategory{ category }, m_cWindowName{ " " }
 {
   setParent( parent );
   setVisible( false );
@@ -45,11 +45,6 @@ SubWindowAbstract::SubWindowAbstract( QWidget* parent, unsigned int category )
   setBackgroundRole( QPalette::Window );
 
   setWindowIcon( QIcon( ":/logos/calyp-icon.png" ) );
-
-  // setWidgetResizable( true );
-  m_pcLayout = NULL;
-  m_uiCategory = category;
-  m_cWindowName = QString( " " );
 
   connect( this, SIGNAL( destroyed() ), this, SLOT( onDestroyed() ) );
 }

@@ -455,19 +455,19 @@ void VideoSubWindow::adjustScrollBarByScale( double scale, QPoint center )
 
 void VideoSubWindow::updateScrollValues()
 {
-  double xPos = m_pcScrollArea->horizontalScrollBar()->value();
-  double yPos = m_pcScrollArea->verticalScrollBar()->value();
+  auto xPos = m_pcScrollArea->horizontalScrollBar()->value();
+  auto yPos = m_pcScrollArea->verticalScrollBar()->value();
 
-  m_cCurrScroll.setX( xPos != 0 );
-  m_cCurrScroll.setY( yPos != 0 );
+  m_cCurrScroll.setX( xPos );
+  m_cCurrScroll.setY( yPos );
 
   m_dHorScroll = m_dVerScroll = 0;
 
   if( xPos != 0 )
-    m_dHorScroll = xPos / double( m_pcScrollArea->horizontalScrollBar()->maximum() );
+    m_dHorScroll = static_cast<double>( xPos ) / static_cast<double>( m_pcScrollArea->horizontalScrollBar()->maximum() );
 
   if( yPos != 0 )
-    m_dVerScroll = yPos / double( m_pcScrollArea->verticalScrollBar()->maximum() );
+    m_dVerScroll = static_cast<double>( yPos ) / static_cast<double>( m_pcScrollArea->verticalScrollBar()->maximum() );
 }
 
 void VideoSubWindow::normalSize()
@@ -476,8 +476,7 @@ void VideoSubWindow::normalSize()
   double curFactor = getScaleFactor();
   if( factor != curFactor )
   {
-    double usedScale;
-    usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, QPoint(), QSize() );
+    double usedScale = m_cViewArea->scaleZoomFactor( factor / curFactor, QPoint(), QSize() );
     adjustScrollBarByScale( usedScale, QPoint() );
   }
 }

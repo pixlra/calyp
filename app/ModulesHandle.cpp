@@ -100,12 +100,11 @@ void ModulesHandle::buildMenu()
   m_pcModulesMenu->clear();
   m_pcModulesSubMenuList.clear();
 
-  CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-  CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
-  for( ; it != moduleFactoryMap.end(); ++it )
+  const auto& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
+  for( auto& [name, create_fct] : moduleFactoryMap )
   {
-    auto pcCurrModuleIf = it->second();
-    QString ModuleIfinternalName = QString::fromLocal8Bit( it->first );
+    auto pcCurrModuleIf = create_fct();
+    QString moduleIfInternalName = QString::fromStdString( name );
 
     QMenu* currSubMenu{ nullptr };
     if( pcCurrModuleIf->m_iModuleAPI <= CLP_MODULE_API_2 )
@@ -134,7 +133,7 @@ void ModulesHandle::buildMenu()
       moduleTooltip += QString( " | Requires %1 frames" ).arg( pcCurrModuleIf->m_uiNumberOfFrames );
 
     currAction->setStatusTip( moduleTooltip );
-    currAction->setData( ModuleIfinternalName );
+    currAction->setData( moduleIfInternalName );
     currAction->setCheckable( false );
     connect( currAction, &QAction::triggered, this, &ModulesHandle::activateModule );
     m_arrayModulesActions.append( currAction );

@@ -25,37 +25,33 @@
 #ifndef __CALYPMODULESFACTORY_H__
 #define __CALYPMODULESFACTORY_H__
 
+#include <functional>
 #include <map>
 
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-#define REGISTER_MODULE( X ) Register( "X", &( X::Create ) );
-
-typedef CalypModulePtr ( *CreateModuleFn )( void );
-typedef std::map<const char*, CreateModuleFn> CalypModulesFactoryMap;
-
 // Factory for creating instances of CalypModuleIf
 class CalypModulesFactory
 {
+  using CalypModulesFactoryMap = std::map<std::string, std::function<CalypModulePtr( void )>>;
+
 private:
   CalypModulesFactory();
-  CalypModulesFactory& operator=( const CalypModulesFactory& ) { return *this; }
   CalypModulesFactoryMap m_FactoryMap;
 
 public:
-  ~CalypModulesFactory() = default;
-
   static CalypModulesFactory* Get()
   {
     static CalypModulesFactory instance;
     return &instance;
   }
 
-  void Register( const char* moduleName, CreateModuleFn pfnCreate );
+  void Register( const std::string& moduleName, std::function<CalypModulePtr( void )> pfnCreate );
+  void Register( const char* moduleName, std::function<CalypModulePtr( void )> pfnCreate );
   bool RegisterDl( const char* dlName );
 
-  CalypModulePtr CreateModule( const char* moduleName );
+  CalypModulePtr CreateModule( const std::string& moduleName ) const;
   CalypModulesFactoryMap& getMap() { return m_FactoryMap; }
 };
 

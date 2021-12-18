@@ -303,16 +303,7 @@ int CalypTools::Open( int argc, char* argv[] )
   {
     std::string moduleName = m_strModule;
 
-    CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-    CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
-    for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
-    {
-      if( strcmp( it->first, moduleName.c_str() ) == 0 )
-      {
-        m_pcCurrModuleIf = it->second();
-        break;
-      }
-    }
+    m_pcCurrModuleIf = CalypModulesFactory::Get()->CreateModule( moduleName );
     if( !m_pcCurrModuleIf )
     {
       log( CLP_LOG_ERROR, "Invalid module! " );

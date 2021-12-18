@@ -118,20 +118,10 @@ int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 void CalypToolsCmdParser::listModuleHelp()
 {
   std::string moduleName = m_strModule;
-
-  CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-  CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
-  for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
-  {
-    if( strcmp( it->first, moduleName.c_str() ) == 0 )
-    {
-      break;
-    }
-  }
-  auto pcCurrModuleIf = it->second();
+  auto pcCurrModuleIf = CalypModulesFactory::Get()->CreateModule( moduleName );
   if( pcCurrModuleIf )
   {
-    printf( "Usage: calypTools --module=%s options:\n", it->first );
+    printf( "Usage: calypTools --module=%s options:\n", moduleName.c_str() );
     pcCurrModuleIf->m_cModuleOptions.doHelp( std::cout );
   }
 }
@@ -143,27 +133,26 @@ void CalypToolsCmdParser::listModules()
   if( m_cOptions.hasOpt( "module_list_full" ) )
     bDetailed = true;
 
-  CalypModulesFactoryMap& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
-  CalypModulesFactoryMap::iterator it = moduleFactoryMap.begin();
+  const auto& moduleFactoryMap = CalypModulesFactory::Get()->getMap();
 
-  printf( "Calyp available modules: \n" );
-  printf( "   [Internal Name]                  " );
+  std::cout << "Calyp available modules:" << std::endl;
+  std::cout << "   [Internal Name]                  ";
   if( bDetailed )
   {
-    printf( "   [Full Name]                                " );
-    printf( "   [Type]        " );
-    printf( "   [Description]" );
+    std::cout << "   [Full Name]                                ";
+    std::cout << "   [Type]        ";
+    std::cout << "   [Description]";
   }
-  printf( " \n" );
+  std::cout << std::endl;
 
-  for( unsigned int i = 0; it != moduleFactoryMap.end(); ++it, i++ )
+  for( const auto& [name, moduleFct] : moduleFactoryMap )
   {
     printf( "   " );
-    printf( "%-33s", it->first );
+    printf( "%-33s", name.c_str() );
     if( bDetailed )
     {
       std::string ModuleNameString;
-      auto pcCurrModuleIf = it->second();
+      auto pcCurrModuleIf = moduleFct();
 
       if( pcCurrModuleIf->m_pchModuleCategory )
       {

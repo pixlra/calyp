@@ -84,7 +84,7 @@ bool StreamHandlerPortableMap::openHandler( std::string strFilename, bool bInput
   }
   else
   {
-    int colorSpace = CalypFrame::pelformatColorSpace( m_iPixelFormat );
+    int colorSpace = CalypFrame::pelFormatColorSpace( m_iPixelFormat );
     m_iMaxValue = ( 1 << m_uiBitsPerPixel ) - 1;
     if( m_uiBitsPerPixel == 1 )
     {

@@ -222,7 +222,7 @@ public:
   static constexpr auto numberOfFormats() -> std::size_t;
   static auto findPixelFormat( const std::string& name ) -> std::optional<ClpPixelFormats>;
   static auto findPixelFormat( const std::string_view name ) -> std::optional<ClpPixelFormats>;
-  static auto pelformatColorSpace( ClpPixelFormats idx ) -> int;
+  static auto pelFormatColorSpace( ClpPixelFormats idx ) -> int;
   static auto supportedPixelFormatListNames() -> std::map<ClpPixelFormats, std::string_view>;
   static auto supportedPixelFormatListNames( int colorSpace ) -> std::map<ClpPixelFormats, std::string_view>;
   static auto pixelFormatName( ClpPixelFormats idx ) -> const std::string_view;
@@ -416,7 +416,7 @@ public:
   ClpPel*** getPelBufferYUV() const;
   ClpPel*** getPelBufferYUV();
 
-  auto getRGBBuffer() const -> const unsigned char*;
+  auto getRGBBuffer() const -> std::optional<std::span<const std::uint8_t>>;
 
   /**
    * Get pixel value at coordinates

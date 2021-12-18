@@ -97,7 +97,7 @@ auto CalypFrame::findPixelFormat( const std::string_view name ) -> std::optional
   return {};
 }
 
-auto CalypFrame::pelformatColorSpace( ClpPixelFormats idx ) -> int
+auto CalypFrame::pelFormatColorSpace( ClpPixelFormats idx ) -> int
 {
   return g_CalypPixFmtDescriptorsMap.at( idx ).colorSpace;
 }
@@ -536,13 +536,13 @@ ClpPel*** CalypFrame::getPelBufferYUV()
   return d->m_pppcInputPel;
 }
 
-auto CalypFrame::getRGBBuffer() const -> const unsigned char*
+auto CalypFrame::getRGBBuffer() const -> std::optional<std::span<const std::uint8_t>>
 {
-  if( d->m_bHasRGBPel )
+  if( !d->m_bHasRGBPel )
   {
-    return d->m_pcARGB32.data();
+    return std::nullopt;
   }
-  return NULL;
+  return std::span{ d->m_pcARGB32 };
 }
 
 ClpPel CalypFrame::operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute ) const

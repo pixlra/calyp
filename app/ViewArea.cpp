@@ -81,7 +81,8 @@ void ViewArea::setImage( std::shared_ptr<CalypFrame> frame )
     m_nextFrame->fillRGBBuffer();
   }
 
-  m_image = QImage( m_nextFrame->getRGBBuffer(),
+  auto rgb_buffer = *m_nextFrame->getRGBBuffer();
+  m_image = QImage( rgb_buffer.data(),
                     m_nextFrame->getWidth(),
                     m_nextFrame->getHeight(),
                     QImage::Format_ARGB32 );
@@ -115,7 +116,8 @@ void ViewArea::setFilteredChannel( std::size_t channel )
   if( m_nextFrame != nullptr )
   {
     m_nextFrame->fillRGBBuffer( m_filterSingleChannel );
-    m_image = QImage( m_nextFrame->getRGBBuffer(),
+    auto rgb_buffer = *m_nextFrame->getRGBBuffer();
+    m_image = QImage( rgb_buffer.data(),
                       m_nextFrame->getWidth(),
                       m_nextFrame->getHeight(),
                       QImage::Format_ARGB32 );
@@ -129,7 +131,8 @@ void ViewArea::clearFilteredChannel()
   if( m_nextFrame != nullptr )
   {
     m_nextFrame->fillRGBBuffer( m_filterSingleChannel );
-    m_image = QImage( m_nextFrame->getRGBBuffer(),
+    auto rgb_buffer = *m_nextFrame->getRGBBuffer();
+    m_image = QImage( rgb_buffer.data(),
                       m_nextFrame->getWidth(),
                       m_nextFrame->getHeight(),
                       QImage::Format_ARGB32 );

@@ -202,7 +202,8 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
     }
     try
     {
-      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate, iPass == 1, CalypStream::Type::Input );
+      bRet = m_pCurrStream->open( cFilename.toStdString(), Width, Height, InputFormat, BitsPel, Endianness, FrameRate,
+                                  iPass == 1, CalypStream::Type::Input );
       forceRaw = iPass > 0;
     }
     catch( CalypFailure& e )
@@ -220,7 +221,7 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   m_sStreamInfo.m_cFilename = cFilename;
   m_sStreamInfo.m_uiWidth = Width;
   m_sStreamInfo.m_uiHeight = Height;
-  m_sStreamInfo.m_iPelFormat = static_cast<std::int64_t>( InputFormat );
+  m_sStreamInfo.m_iPelFormat = static_cast<int>( InputFormat );
   m_sStreamInfo.m_uiBitsPelPixel = BitsPel;
   m_sStreamInfo.m_iEndianness = Endianness;
   m_sStreamInfo.m_uiFrameRate = FrameRate;
@@ -259,8 +260,9 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo streamInfo )
   m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
 
   if( !m_pCurrStream->open( streamInfo.m_cFilename.toStdString(), streamInfo.m_uiWidth, streamInfo.m_uiHeight,
-                            static_cast<ClpPixelFormats>( streamInfo.m_iPelFormat ), streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
-                            streamInfo.m_uiFrameRate, streamInfo.m_bForceRaw, CalypStream::Type::Input ) )
+                            static_cast<ClpPixelFormats>( streamInfo.m_iPelFormat ), streamInfo.m_uiBitsPelPixel,
+                            streamInfo.m_iEndianness, streamInfo.m_uiFrameRate, streamInfo.m_bForceRaw,
+                            CalypStream::Type::Input ) )
   {
     return false;
   }
@@ -281,8 +283,9 @@ bool VideoStreamSubWindow::loadFile( CalypFileInfo streamInfo )
   return true;
 }
 
-bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPixel,
-                                        int& rEndianness, unsigned int& rFrameRate )
+bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight,
+                                        ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPixel, int& rEndianness,
+                                        unsigned int& rFrameRate )
 {
   std::vector<CalypStandardResolution> stdResList = CalypStream::stdResolutionSizes();
   bool bGuessed = true;
@@ -355,12 +358,13 @@ bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& r
         unsigned long long int uiFileSize = ftell( pF );
         fclose( pF );
 
-        int count = 0, module, frame_bytes, match;
+        int count = 0;
+        int match = -1;
         for( unsigned int i = 0; i < stdResList.size(); i++ )
         {
-          frame_bytes =
+          auto frame_bytes =
               CalypFrame::getBytesPerFrame( stdResList[i].uiWidth, stdResList[i].uiHeight, rInputFormat, 8 );
-          module = uiFileSize % frame_bytes;
+          auto module = uiFileSize % frame_bytes;
           if( module == 0 )
           {
             match = i;
@@ -390,10 +394,10 @@ bool VideoStreamSubWindow::guessFormat( const QString& filename, unsigned int& r
         rBitsPerPixel = -1;
       }
     }
-    QRegularExpressionMatch BppOnlybMatch = QRegularExpression( "_[0-9]+b" ).match( FilenameShort );
-    if( BppOnlybMatch.hasMatch() )
+    QRegularExpressionMatch BppOnlyMatch = QRegularExpression( "_[0-9]+b" ).match( FilenameShort );
+    if( BppOnlyMatch.hasMatch() )
     {
-      QString matchString = BppOnlybMatch.captured( BppOnlybMatch.lastCapturedIndex() );
+      QString matchString = BppOnlyMatch.captured( BppOnlyMatch.lastCapturedIndex() );
       matchString.remove( "_" );
       matchString.remove( "b" );
       rBitsPerPixel = matchString.toUInt();
@@ -488,9 +492,7 @@ bool VideoStreamSubWindow::goToNextFrame( bool bThreaded )
   m_cReadResult.waitForFinished();
 #endif
 #ifdef CALYP_MANAGED_RESOURCES
-  while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() )
-  {
-  }
+  while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() ) {}
 #endif
   bool bEndOfSeq = m_pCurrStream->setNextFrame();
 #ifdef CALYP_MANAGED_RESOURCES
@@ -573,17 +575,17 @@ void VideoStreamSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
   }
 }
 
-void VideoStreamSubWindow::seekRelativeEvent( bool bIsFoward )
+void VideoStreamSubWindow::seekRelativeEvent( bool bIsForward )
 {
   if( m_pCurrStream )
   {
-    if( bIsFoward )
+    if( bIsForward )
     {
       goToNextFrame( true );
     }
     else
     {
-      m_pCurrStream->seekInputRelative( bIsFoward );
+      m_pCurrStream->seekInputRelative( bIsForward );
 #ifdef CALYP_MANAGED_RESOURCES
       m_pcResourceManager->wakeResourceWorker( m_uiResourceId );
 #endif

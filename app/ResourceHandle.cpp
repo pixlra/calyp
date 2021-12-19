@@ -38,12 +38,11 @@
 ResourceWorker::ResourceWorker( std::shared_ptr<CalypStream> stream )
     : m_pcStream{ stream }
 {
-  m_bStop.clear();
 }
 
 void ResourceWorker::stop()
 {
-  m_bStop.test_and_set();
+  m_bStop = false;
   wake();
   wait();
 }
@@ -57,9 +56,10 @@ void ResourceWorker::wake()
 
 void ResourceWorker::run()
 {
-  m_bStop.clear();
+  m_bStop = false;
+
   // Loop forever
-  while( !m_bStop.test() )
+  while( !m_bStop )
   {
     // auto start = std::chrono::steady_clock::now();
     m_pcStream->readNextFrameFillRGBBuffer();
@@ -68,7 +68,7 @@ void ResourceWorker::run()
     //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
     //           << " ms" << std::endl;
 
-    while( !m_bStop.test() && !m_pcStream->hasWritingSlot() )
+    while( !m_bStop && !m_pcStream->hasWritingSlot() )
     {
       // Wait here
       m_Mutex.lock();

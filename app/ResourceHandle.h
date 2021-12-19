@@ -40,7 +40,7 @@ private:
   QMutex m_Mutex;
   QWaitCondition m_ResourceIdle;
   std::shared_ptr<CalypStream> m_pcStream;
-  std::atomic_flag m_bStop;
+  std::atomic<bool> m_bStop{ false };
 
 public:
   ResourceWorker( std::shared_ptr<CalypStream> stream );

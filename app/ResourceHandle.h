@@ -29,6 +29,7 @@
 #include <QThread>
 #include <QVector>
 #include <QWaitCondition>
+#include <atomic>
 
 #include "CommonDefs.h"
 #include "lib/CalypStream.h"
@@ -39,7 +40,7 @@ private:
   QMutex m_Mutex;
   QWaitCondition m_ResourceIdle;
   std::shared_ptr<CalypStream> m_pcStream;
-  bool m_bStop{ false };
+  std::atomic_flag m_bStop;
 
 public:
   ResourceWorker( std::shared_ptr<CalypStream> stream );

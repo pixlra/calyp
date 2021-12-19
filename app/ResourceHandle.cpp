@@ -36,13 +36,14 @@
 #include <optional>
 
 ResourceWorker::ResourceWorker( std::shared_ptr<CalypStream> stream )
+    : m_pcStream{ stream }
 {
-  m_pcStream = stream;
+  m_bStop.clear();
 }
 
 void ResourceWorker::stop()
 {
-  m_bStop = true;
+  m_bStop.test_and_set();
   wake();
   wait();
 }
@@ -56,26 +57,23 @@ void ResourceWorker::wake()
 
 void ResourceWorker::run()
 {
-  m_bStop = false;
+  m_bStop.clear();
   // Loop forever
-  while( !m_bStop )
+  while( !m_bStop.test() )
   {
-    //auto start = std::chrono::steady_clock::now();
+    // auto start = std::chrono::steady_clock::now();
     m_pcStream->readNextFrameFillRGBBuffer();
     // auto end = std::chrono::steady_clock::now();
     // std::cout << "Elapsed time reading and processing a frame: "
     //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
     //           << " ms" << std::endl;
 
-    // if( !m_pcStream->hasWritingSlot() )
-    // {
-    //   m_Mutex.lock();
-    //   m_ResourceIdle.wait( &m_Mutex );
-    //   m_Mutex.unlock();
-    // }
-    while( !m_bStop && !m_pcStream->hasWritingSlot() )
+    while( !m_bStop.test() && !m_pcStream->hasWritingSlot() )
     {
       // Wait here
+      m_Mutex.lock();
+      m_ResourceIdle.wait( &m_Mutex );
+      m_Mutex.unlock();
     }
   }
 }
@@ -149,6 +147,10 @@ void ResourceHandle::startResourceWorker( std::size_t id )
   {
     assert( false );
     return;
+  }
+  if( m_apcStreamResourcesList[id]->getFrameNum() < 2 )
+  {
+    return;  // No work to be done!
   }
   m_apcStreamResourcesWorkersList[id]->setObjectName(
       "RW-" +

@@ -42,7 +42,7 @@ ResourceWorker::ResourceWorker( std::shared_ptr<CalypStream> stream )
 
 void ResourceWorker::stop()
 {
-  m_bStop = false;
+  m_bStop = true;
   wake();
   wait();
 }

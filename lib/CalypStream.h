@@ -88,34 +88,14 @@ public:
   std::string getFormatName() const;
   std::string getCodecName() const;
 
-  bool open( std::string filename,
-             std::string resolution,
-             std::string input_format,
-             unsigned int bitsPel,
-             int endianness,
-             bool hasNegative,
-             unsigned int frame_rate,
-             Type type );
-  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format, unsigned int bitsPel, int endianness,
-             unsigned int frame_rate, CalypStream::Type type );
-  bool open( std::string filename,
-             unsigned int width,
-             unsigned int height,
-             ClpPixelFormats input_format,
-             unsigned int bitsPel,
-             int endianness,
-             bool hasNegative,
-             unsigned int frame_rate,
-             Type type );
-  bool open( std::string filename,
-             unsigned int width,
-             unsigned int height,
-             ClpPixelFormats input_format,
-             unsigned int bitsPel,
-             int endianness,
-             unsigned int frame_rate,
-             bool forceRaw,
-             Type type );
+  bool open( std::string filename, std::string resolution, std::string input_format, unsigned int bitsPel,
+             int endianness, bool hasNegative, unsigned int frame_rate, Type type );
+  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format,
+             unsigned int bitsPel, int endianness, unsigned int frame_rate, CalypStream::Type type );
+  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format,
+             unsigned int bitsPel, int endianness, bool hasNegative, unsigned int frame_rate, Type type );
+  bool open( std::string filename, unsigned int width, unsigned int height, ClpPixelFormats input_format,
+             unsigned int bitsPel, int endianness, unsigned int frame_rate, bool forceRaw, Type type );
 
   bool supportsFormatConfiguration();
   bool reload();
@@ -129,15 +109,15 @@ public:
   int getEndianess() const;
   long getCurrFrameNum() const;
   double getFrameRate() const;
-  void getFormat( unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPel, int& rEndianness,
-                  unsigned int& rFrameRate ) const;
+  void getFormat( unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPel,
+                  int& rEndianness, unsigned int& rFrameRate ) const;
 
   auto hasNextFrame() -> bool;
   auto hasWritingSlot() -> bool;
 
   void loadAll();
-  std::unique_ptr<CalypFrame> getCurrFrame( std::unique_ptr<CalypFrame> buffer );
   auto getCurrFrameAsset() -> std::shared_ptr<CalypFrame>;
+  auto getCurrFrame( std::unique_ptr<CalypFrame> buffer ) const -> std::unique_ptr<CalypFrame>;
   auto getCurrFrame() -> CalypFrame*;
   bool isEof();
   bool setNextFrame();

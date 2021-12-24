@@ -46,8 +46,7 @@ std::vector<CalypStreamFormat> StreamHandlerRaw::supportedWriteFormats()
   END_REGIST_CALYP_SUPPORTED_FMT;
 }
 
-StreamHandlerRaw::StreamHandlerRaw()
-    : CalypStreamHandlerIf{ true }
+StreamHandlerRaw::StreamHandlerRaw() : CalypStreamHandlerIf{ true }
 {
   m_pchHandlerName = "RawVideo";
 }
@@ -55,9 +54,9 @@ StreamHandlerRaw::StreamHandlerRaw()
 bool StreamHandlerRaw::openHandler( std::string strFilename, bool bInput )
 {
   m_bIsInput = bInput;
-  m_pFile = NULL;
+  m_pFile = nullptr;
   m_pFile = fopen( strFilename.c_str(), bInput ? "rb" : "wb" );
-  if( m_pFile == NULL )
+  if( m_pFile == nullptr )
   {
     return false;
   }
@@ -73,6 +72,7 @@ void StreamHandlerRaw::closeHandler()
 {
   if( m_pFile )
     fclose( m_pFile );
+  m_pFile = nullptr;
 }
 
 bool StreamHandlerRaw::configureBuffer( const CalypFrame& pcFrame )
@@ -107,7 +107,8 @@ bool StreamHandlerRaw::read( CalypFrame& pcFrame )
 {
   if( !m_pFile || m_pStreamBuffer.empty() || m_uiNBytesPerFrame == 0 )
     return false;
-  unsigned long long int processed_bytes = fread( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
+  unsigned long long int processed_bytes =
+      fread( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
   m_uiCurrFrameFileIdx++;
@@ -118,7 +119,8 @@ bool StreamHandlerRaw::read( CalypFrame& pcFrame )
 bool StreamHandlerRaw::write( const CalypFrame& pcFrame )
 {
   pcFrame.frameToBuffer( m_pStreamBuffer, m_iEndianness );
-  unsigned long long int processed_bytes = fwrite( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
+  unsigned long long int processed_bytes =
+      fwrite( m_pStreamBuffer.data(), sizeof( ClpByte ), m_uiNBytesPerFrame, m_pFile );
   if( processed_bytes != m_uiNBytesPerFrame )
     return false;
   return true;

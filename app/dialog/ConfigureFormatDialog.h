@@ -51,8 +51,9 @@ class ConfigureFormatDialog : public QDialog
 
 public:
   ConfigureFormatDialog( QWidget* parent = 0 );
-  int runConfigureFormatDialog( const QString& Filename, unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBits,
-                                int& rEndianess, unsigned int& rFrameRate );
+  auto runConfigureFormatDialog( const QString& Filename, unsigned int& rWidth, unsigned int& rHeight,
+                                 ClpPixelFormats& rInputFormat, unsigned int& rBits, int& rEndianess,
+                                 unsigned int& rFrameRate ) -> QDialog::DialogCode;
 
   void readSettings();
   void writeSettings();

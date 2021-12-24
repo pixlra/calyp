@@ -3,8 +3,13 @@
 #
 
 INCLUDE_DIRECTORIES(
-  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/external ${CMAKE_CURRENT_SOURCE_DIR}/dialog
-  ${CMAKE_CURRENT_SOURCE_DIR}/docks ${CMAKE_CURRENT_SOURCE_DIR}/widgets
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${CMAKE_CURRENT_SOURCE_DIR}/external
+  ${CMAKE_CURRENT_SOURCE_DIR}/dialog
+  ${CMAKE_CURRENT_SOURCE_DIR}/docks
+  ${CMAKE_CURRENT_SOURCE_DIR}/widgets
+  ${CMAKE_CURRENT_SOURCE_DIR}/models
 )
 
 OPTION(USE_QTDBUS "Build with QtDBus" ON)
@@ -44,28 +49,30 @@ ADD_DEFINITIONS(
   # -DQT_NO_SIGNALS_SLOTS_KEYWORDS -DQT_USE_QSTRINGBUILDER
 )
 
-SET(Calyp_App_SRCS
+SET(Calyp_App_Module_SRCS # Module Video
+    models/VideostreamResource.cpp ResourceHandle.cpp
+)
+
+SET(Calyp_App_GUI_SRCS
+    ${Calyp_App_Module_SRCS}
+    # Models
+    ModulesHandle.cpp
+    SubWindowHandle.cpp
+    VideoHandle.cpp
+    CalypAppModuleIf.cpp
+    QualityHandle.cpp
     # Main
     main.cpp
     MainWindow.cpp
     # Module SubWindow
-    SubWindowHandle.cpp
     MdiSubWindow.cpp
     SubWindowAbstract.cpp
-    # Module Video
-    ResourceHandle.cpp
-    VideoHandle.cpp
     VideoSubWindow.cpp
     VideoStreamSubWindow.cpp
     ModuleSubWindow.cpp
     ViewArea.cpp
     GridManager.cpp
-    # Module Quality
-    QualityHandle.cpp
     PlotSubWindow.cpp
-    # Module Plugins
-    ModulesHandle.cpp
-    CalypAppModuleIf.cpp
     # Dialogs
     dialog/AboutDialog.cpp
     dialog/ConfigureFormatDialog.cpp
@@ -83,7 +90,7 @@ SET(Calyp_App_SRCS
 )
 
 IF(USE_QTDBUS)
-  LIST(APPEND Calyp_App_SRCS DBusAppAdaptor.cpp)
+  LIST(APPEND Calyp_App_GUI_SRCS DBusAppAdaptor.cpp)
 ENDIF()
 
 SET(Calyp_App_UI "")
@@ -158,7 +165,7 @@ IF(WIN32)
       COMMENT "Add icon on windows platform"
     )
   ENDIF()
-  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${WINDOWS_RES_FILE})
+  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${WINDOWS_RES_FILE})
 ELSEIF(CMAKE_HOST_APPLE)
   SET(CMAKE_MACOSX_BUNDLE ON)
   SET(MACOSX_BUNDLE_EXECUTABLE_NAME ${PROJECT_NAME})
@@ -166,9 +173,9 @@ ELSEIF(CMAKE_HOST_APPLE)
   SET(MACOSX_BUNDLE_BUNDLE_NAME Calyp)
   SET(APP_ICON_MACOSX ${CMAKE_CURRENT_SOURCE_DIR}/resources/calyp.icns)
   SET_SOURCE_FILES_PROPERTIES(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-  ADD_EXECUTABLE(${PROJECT_NAME} MACOSX_BUNDLE ${Calyp_App_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${APP_ICON_MACOSX})
+  ADD_EXECUTABLE(${PROJECT_NAME} MACOSX_BUNDLE ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${APP_ICON_MACOSX})
 ELSE()
-  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC})
+  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC})
 ENDIF()
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PROJECT_LIBRARY} CalypModules ${APP_LINKER_LIBS} ${QT_LINKER_LIBS} QCustomPlotLib)
 
@@ -178,3 +185,24 @@ INSTALL(TARGETS ${PROJECT_NAME} DESTINATION bin)
 INSTALL(FILES resources/calyp.desktop DESTINATION share/applications)
 INSTALL(FILES resources/calyp.png DESTINATION share/pixmaps)
 INSTALL(FILES resources/calyp.xml DESTINATION share/mime/packages)
+
+IF(BUILD_TESTS)
+  FETCHCONTENT_MAKEAVAILABLE(Catch2)
+
+  SET(Calyp_App_Catch2_Tests_SRCS ${Calyp_App_Module_SRCS} catch2/CalypAppTests.cpp catch2/CalypResourcesTests.cpp)
+
+  ADD_DEFINITIONS(-DCALYP_TEST_DATA_DIR=\"${CALYP_TEST_DATA_DIR}\")
+
+  ADD_EXECUTABLE(CalypAppCatch2Tests ${Calyp_App_Catch2_Tests_SRCS})
+  TARGET_LINK_LIBRARIES(
+    CalypAppCatch2Tests
+    ${PROJECT_LIBRARY}
+    CalypModules
+    ${APP_LINKER_LIBS}
+    ${QT_LINKER_LIBS}
+    QCustomPlotLib
+    Catch2::Catch2
+  )
+  CATCH_DISCOVER_TESTS(CalypAppCatch2Tests)
+
+ENDIF()

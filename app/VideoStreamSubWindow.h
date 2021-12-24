@@ -36,6 +36,7 @@
 #include "VideoSubWindow.h"
 #include "config.h"
 #include "lib/CalypStream.h"
+#include "models/VideostreamResource.h"
 
 class QScrollArea;
 
@@ -44,30 +45,12 @@ class VideoStreamSubWindow;
 class ResourceHandle;
 class CalypAppModuleIf;
 
-struct CalypFileInfo
-{
-  QString m_cFilename;
-  unsigned int m_uiWidth;
-  unsigned int m_uiHeight;
-  int m_iPelFormat;
-  unsigned int m_uiBitsPelPixel;
-  int m_iEndianness;
-  unsigned int m_uiFrameRate;
-  unsigned long long int m_uiFileSize;
-  bool m_bForceRaw{ false };
-};
-using CalypFileInfoVector = QVector<CalypFileInfo>;
-
-QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& d );
-QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& d );
-auto findCalypStreamInfo( const CalypFileInfoVector& array, const QString& filename ) -> int;
-
 class VideoStreamSubWindow : public VideoSubWindow
 {
   Q_OBJECT
 
 public:
-  VideoStreamSubWindow( QWidget* parent = 0 );
+  VideoStreamSubWindow( ResourceHandle* resourceManager, QWidget* parent = 0 );
   ~VideoStreamSubWindow();
 
   void resetWindowName() override;
@@ -78,12 +61,11 @@ public:
   void advanceOneFrame() override { goToNextFrame( true ); }
   auto getFrameNum() -> std::uint64_t override { return m_pCurrStream->getFrameNum(); }
 
-  void setResourceManaget( ResourceHandle* resourceManager ) { m_pcResourceManager = resourceManager; }
-
   bool supportsFormatConfiguration() const { return m_pCurrStream->supportsFormatConfiguration(); };
 
-  bool loadFile( QString cFilename, bool bForceDialog = false );
-  bool loadFile( CalypFileInfo streamInfo );
+  void setResource( std::size_t id );
+  // bool loadFile( QString cFilename, bool bForceDialog = false );
+  // bool loadFile( CalypFileInfo streamInfo );
   void loadAll();
   bool saveStream( const QString& filename );
 
@@ -107,15 +89,12 @@ public:
 private:
   bool goToNextFrame( bool bThreaded );
 
-  static bool guessFormat( const QString& filename, unsigned int& rWidth, unsigned int& rHeight, ClpPixelFormats& rInputFormat, unsigned int& rBitsPerPixel,
-                           int& rEndianness, unsigned int& rFrameRate );
-
 private:  // NO_LINT
   ResourceHandle* m_pcResourceManager;
+  std::size_t m_uiResourceId;
 
   QString m_cFilename;
   CalypFileInfo m_sStreamInfo;
-  std::size_t m_uiResourceId;
   CalypStream* m_pCurrStream;
   QString m_cCurrFileName;
 
@@ -128,8 +107,5 @@ private:  // NO_LINT
   QFuture<void> m_cRefreshResult;
   QFuture<void> m_cReadResult;
 };
-
-Q_DECLARE_METATYPE( CalypFileInfo )        // NOLINT
-Q_DECLARE_METATYPE( CalypFileInfoVector )  // NOLINT
 
 #endif  // __VIDEOSTREAMSUBWINDOW_H__

@@ -122,11 +122,11 @@ private:
   QLabel* m_pcVideoFormatLabel;
   QLabel* m_pcResolutionLabel;
 
-  QPointer<VideoSubWindow> m_pcCurrentVideoSubWindow;
+  QPointer<VideoSubWindow> m_pcCurrentVideoSubWindow{ nullptr };
   QVector<VideoStreamSubWindow*> m_acPlayingSubWindows;
 
   QTimer* m_pcPlayingTimer;
-  bool m_bIsPlaying;
+  bool m_bIsPlaying{ false };
 
   unsigned int m_uiNumberPlayedFrames{ 0 };
   unsigned int m_uiRealAverageFrameRate{ 0 };

@@ -129,7 +129,7 @@ IF(BUILD_TESTS)
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v2.13.1
+    GIT_TAG v2.13.7
   )
 
   SET_PACKAGE_PROPERTIES(

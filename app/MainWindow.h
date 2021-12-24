@@ -49,6 +49,7 @@
 #include "DBusAppAdaptor.h"
 #endif
 #include "ResourceHandle.h"
+#include "VideostreamResource.h"
 
 class QCloseEvent;
 class QDragEnterEvent;
@@ -132,6 +133,9 @@ private:
   VideoSubWindow* m_pcCurrentVideoSubWindow;
 
   QString m_cLastOpenPath;
+  unsigned int m_cLastWidth;
+  unsigned int m_cLastHeight;
+  unsigned int m_cLastBitPerPixel;
   QStringList showFileDialog( bool bRead );
 
   static VideoStreamSubWindow* findVideoStreamSubWindow( const SubWindowHandle* windowManager,

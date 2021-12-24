@@ -26,11 +26,13 @@
 #define __RESOURCEHANDLE_H__
 
 #include <QMutex>
+#include <QMutexLocker>
 #include <QThread>
 #include <QVector>
 #include <QWaitCondition>
 #include <atomic>
 
+#include "CalypResource.h"
 #include "CommonDefs.h"
 #include "lib/CalypStream.h"
 
@@ -39,35 +41,72 @@ class ResourceWorker : public QThread
 private:
   QMutex m_Mutex;
   QWaitCondition m_ResourceIdle;
-  std::shared_ptr<CalypStream> m_pcStream;
+  std::shared_ptr<CalypResource> m_resource;
   std::atomic<bool> m_bStop{ false };
+  std::atomic<bool> m_bStarted{ false };
+  std::atomic<bool> m_bStarting{ false };
 
 public:
-  ResourceWorker( std::shared_ptr<CalypStream> stream );
+  ResourceWorker( std::shared_ptr<CalypResource> resource ) : m_resource{ std::move( resource ) } {}
+  ResourceWorker( ResourceWorker&& other ) noexcept = delete;
+  ResourceWorker& operator=( ResourceWorker&& other ) noexcept = delete;
+  ResourceWorker( const ResourceWorker& other ) = delete;
+  ResourceWorker& operator=( const ResourceWorker& other ) = delete;
+  ~ResourceWorker();
   void stop();
   void wake();
-  void run();
+  void start();
+  void run() override;
+  auto mutex() -> QMutex* { return &m_Mutex; }
 };
 
-class ResourceHandle
+class ResourceWorker;
+
+class ResourceHandle : public QObject
 {
+  Q_OBJECT
 public:
-  ResourceHandle();
-  ~ResourceHandle() = default;
+  ResourceHandle( QObject* parent );
+  ResourceHandle( ResourceHandle&& other ) noexcept = delete;
+  ResourceHandle& operator=( ResourceHandle&& other ) noexcept = delete;
+  ResourceHandle( const ResourceHandle& other ) = delete;
+  ResourceHandle& operator=( const ResourceHandle& other ) = delete;
+  ~ResourceHandle();
 
   auto getResource( CalypStream* ptr ) -> std::size_t;
   auto getResourceAsset( std::size_t id ) -> CalypStream*;
+  auto appendResource( std::unique_ptr<CalypResource>&& resource ) -> std::size_t;
+
   void removeResource( std::size_t id );
   void stopResourceWorker( std::size_t id );
   void startResourceWorker( std::size_t id );
   void wakeResourceWorker( std::size_t id );
+
+  template <typename T>
+  auto executeResourceAction( std::size_t id, const std::function<bool( T* )>& action ) -> bool
+  {
+    static_assert( std::is_base_of<CalypResource, T>::value, "T must inherit from CalypResource" );
+    if( !m_apcStreamResourcesList.count( id ) )
+    {
+      assert( false );
+      return false;
+    }
+    bool result{ false };
+    if( auto resource = dynamic_cast<T*>( m_apcStreamResourcesList[id].get() ) )
+    {
+      QMutexLocker locker( m_apcStreamResourcesWorkersList[id]->mutex() );
+      result = action( resource );
+    }
+    m_apcStreamResourcesWorkersList[id]->wake();
+    return result;
+  }
 
 private:
   auto addResource() -> std::size_t;
 
 private:
   std::size_t unique_id{ 0 };
-  std::map<std::size_t, std::shared_ptr<CalypStream>> m_apcStreamResourcesList;
+  std::map<std::size_t, std::shared_ptr<CalypResource>> m_apcStreamResourcesList;
   std::map<std::size_t, std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;
 };
 

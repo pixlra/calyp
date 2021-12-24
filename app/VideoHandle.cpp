@@ -32,6 +32,7 @@
 #include <QTimer>
 #include <QToolBar>
 #include <QtGui>
+#include <limits>
 #include <memory>
 
 #include "FrameNumberWidget.h"
@@ -45,15 +46,13 @@
 #include "lib/CalypFrame.h"
 
 VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
-    : m_pcParent( parent ), m_pcMainWindowManager( windowManager )
+    : m_pcParent{ parent }
+    , m_pcMainWindowManager{ windowManager }
+    , m_pcPlayingTimer{ new QTimer{ this } }
+    , m_pcFrameRateFeedbackTimer{ std::make_unique<QElapsedTimer>() }
 {
-  m_pcCurrentVideoSubWindow = NULL;
-  m_bIsPlaying = false;
-  m_pcPlayingTimer = new QTimer( this );
-  m_pcFrameRateFeedbackTimer = std::make_unique<QElapsedTimer>();
   m_pcPlayingTimer->setTimerType( Qt::PreciseTimer );
-  connect( m_pcPlayingTimer, &QTimer::timeout,
-           this, &VideoHandle::playEvent );
+  connect( m_pcPlayingTimer, &QTimer::timeout, this, &VideoHandle::playEvent );
   m_acPlayingSubWindows.clear();
 }
 
@@ -61,6 +60,10 @@ VideoHandle::~VideoHandle() = default;
 
 void VideoHandle::createActions()
 {
+  if( m_pcParent == nullptr )
+  {
+    return;
+  }
   m_arrayActions.resize( TOTAL_ACT );
   m_arrayActions[PLAY_ACT] = new QAction( "Play", this );
   m_arrayActions[PLAY_ACT]->setStatusTip( "Play/Pause" );
@@ -199,6 +202,10 @@ void VideoHandle::createActions()
 
 QMenu* VideoHandle::createVideoMenu()
 {
+  if( m_pcParent == nullptr )
+  {
+    return nullptr;
+  }
   m_pcMenuVideo = new QMenu( "Video", m_pcParent );
   m_pcMenuVideo->addAction( m_arrayActions[PLAY_ACT] );
   m_pcMenuVideo->addAction( m_arrayActions[STOP_ACT] );
@@ -214,6 +221,10 @@ QMenu* VideoHandle::createVideoMenu()
 
 QMenu* VideoHandle::createImageMenu()
 {
+  if( m_pcParent == nullptr )
+  {
+    return nullptr;
+  }
   m_pcMenuImage = new QMenu( "Image", m_pcParent );
   m_menuComponent = m_pcMenuImage->addMenu( "Component" );
   m_menuComponent->addActions( m_actionGroupComponent->actions() );
@@ -229,6 +240,10 @@ QMenu* VideoHandle::createImageMenu()
 
 QToolBar* VideoHandle::createToolBar()
 {
+  if( m_pcParent == nullptr )
+  {
+    return nullptr;
+  }
   m_toolbarVideo = new QToolBar( tr( "Video" ) );
   m_toolbarVideo->setAllowedAreas( Qt::TopToolBarArea | Qt::BottomToolBarArea );
   m_toolbarVideo->addAction( m_arrayActions[PLAY_ACT] );
@@ -251,6 +266,10 @@ QToolBar* VideoHandle::createToolBar()
 
 QDockWidget* VideoHandle::createDock()
 {
+  if( m_pcParent == nullptr )
+  {
+    return nullptr;
+  }
   m_pcFramePropertiesSideBar = new FramePropertiesDock( m_pcParent, &m_bIsPlaying );
   m_pcFramePropertiesDock = new QDockWidget( tr( "Frame Information" ), m_pcParent );
   m_pcFramePropertiesDock->setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
@@ -262,6 +281,10 @@ QDockWidget* VideoHandle::createDock()
 
 QWidget* VideoHandle::createStatusBarMessage()
 {
+  if( m_pcParent == nullptr )
+  {
+    return nullptr;
+  }
   QWidget* pcStatusBarWidget = new QWidget;
   QHBoxLayout* mainlayout = new QHBoxLayout;
 
@@ -507,14 +530,11 @@ void VideoHandle::addSubWindow( VideoSubWindow* window )
   window->getViewArea()->setTool( m_uiViewTool );
   window->getViewArea()->setGridVisible( m_arrayActions[SHOW_GRID_ACT]->isChecked() );
 
-  connect( window, &SubWindowAbstract::aboutToClose,
-           this, &VideoHandle::closeSubWindow );
+  connect( window, &SubWindowAbstract::aboutToClose, this, &VideoHandle::closeSubWindow );
 
-  connect( window, &SubWindowAbstract::zoomFactorChanged,
-           this, &VideoHandle::zoomToFactorAll );
+  connect( window, &SubWindowAbstract::zoomFactorChanged, this, &VideoHandle::zoomToFactorAll );
 
-  connect( window, &SubWindowAbstract::scrollBarMoved,
-           this, &VideoHandle::moveAllScrollBars );
+  connect( window, &SubWindowAbstract::scrollBarMoved, this, &VideoHandle::moveAllScrollBars );
 
   connect( window->getViewArea(), SIGNAL( selectionChanged( QRect ) ), this, SLOT( updateSelectionArea( QRect ) ) );
 }
@@ -540,18 +560,15 @@ void VideoHandle::closeSubWindow( SubWindowAbstract* subWindow )
 
 void VideoHandle::zoomToFactorAll( const double scale, const QPoint center )
 {
-  double factor;
-
   if( m_arrayActions[VIDEO_ZOOM_LOCK_ACT]->isChecked() )
   {
-    factor = m_pcCurrentVideoSubWindow->getScaleFactor();
+    double factor = m_pcCurrentVideoSubWindow->getScaleFactor();
 
-    SubWindowAbstract* subWindow;
     QList<SubWindowAbstract*> subWindowList =
         m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
     for( int i = 0; i < subWindowList.size(); i++ )
     {
-      subWindow = subWindowList.at( i );
+      SubWindowAbstract* subWindow = subWindowList.at( i );
       if( m_pcCurrentVideoSubWindow == subWindow )
         continue;
       else
@@ -605,12 +622,12 @@ void VideoHandle::moveAllScrollBars( const double& horRatio, const double& verRa
 {
   if( m_arrayActions[VIDEO_ZOOM_LOCK_ACT]->isChecked() && m_pcCurrentVideoSubWindow )
   {
-    VideoSubWindow* videoSubWindow;
-    QList<SubWindowAbstract*> subWindowList = m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
+    QList<SubWindowAbstract*> subWindowList =
+        m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
 
     for( int i = 0; i < subWindowList.size(); i++ )
     {
-      videoSubWindow = qobject_cast<VideoSubWindow*>( subWindowList.at( i ) );
+      VideoSubWindow* videoSubWindow = qobject_cast<VideoSubWindow*>( subWindowList.at( i ) );
       if( m_pcCurrentVideoSubWindow == videoSubWindow )
         continue;
       else
@@ -624,15 +641,14 @@ void VideoHandle::moveAllScrollBars( const double& horRatio, const double& verRa
 
 unsigned long VideoHandle::getMaxFrameNumber()
 {
-  unsigned long currFrames;
-  unsigned long maxFrames = INT_MAX;
+  std::uint64_t maxFrames = std::numeric_limits<std::uint64_t>::max();
   if( m_pcCurrentVideoSubWindow )
   {
     if( m_acPlayingSubWindows.contains( qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) ) )
     {
       for( int i = 0; i < m_acPlayingSubWindows.size(); i++ )
       {
-        currFrames = m_acPlayingSubWindows.at( i )->getFrameNum();
+        auto currFrames = m_acPlayingSubWindows.at( i )->getFrameNum();
         if( currFrames < maxFrames )
           maxFrames = currFrames;
       }
@@ -751,9 +767,12 @@ void VideoHandle::stop()
 void VideoHandle::calculateRealFrameRate()
 {
   double average_time_between_frames_ms = m_uiNumberPlayedFrames > 0 ? 1000.0 / m_uiRealAverageFrameRate : 0;
-  double time_elapsed_since_last_frame_ms = m_pcFrameRateFeedbackTimer->elapsed();
-  average_time_between_frames_ms = double( average_time_between_frames_ms * m_uiNumberPlayedFrames + time_elapsed_since_last_frame_ms ) / double( m_uiNumberPlayedFrames + 1 );
-  m_uiRealAverageFrameRate = 1000.0 / average_time_between_frames_ms;
+  auto time_elapsed_since_last_frame_ms = static_cast<double>( m_pcFrameRateFeedbackTimer->elapsed() );
+  average_time_between_frames_ms =
+      double( average_time_between_frames_ms * m_uiNumberPlayedFrames + time_elapsed_since_last_frame_ms ) /
+      double( m_uiNumberPlayedFrames + 1 );
+  m_uiRealAverageFrameRate =
+      std::round<unsigned int>( static_cast<unsigned int>( 1000.0 / average_time_between_frames_ms ) );
   m_uiNumberPlayedFrames++;
   m_pcFrameRateFeedbackTimer->restart();
 }
@@ -796,7 +815,8 @@ void VideoHandle::playEvent()
   }
   catch( const char* msg )
   {
-    QString warningMsg = "Error while playing " + m_pcCurrentVideoSubWindow->getWindowName() + " with the following error: \n" + msg;
+    QString warningMsg =
+        "Error while playing " + m_pcCurrentVideoSubWindow->getWindowName() + " with the following error: \n" + msg;
     QMessageBox::warning( m_pcParent, QApplication::applicationName(), warningMsg );
     qDebug() << warningMsg;
     stop();

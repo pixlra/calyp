@@ -35,16 +35,21 @@
 #include <memory>
 #include <optional>
 
-ResourceWorker::ResourceWorker( std::shared_ptr<CalypStream> stream )
-    : m_pcStream{ stream }
+ResourceWorker::~ResourceWorker()
 {
+  stop();
 }
 
 void ResourceWorker::stop()
 {
+  while( m_bStarting ) {}
   m_bStop = true;
-  wake();
-  wait();
+  if( m_bStarted )
+  {
+    wake();
+    wait();
+  }
+  m_bStarted = false;
 }
 
 void ResourceWorker::wake()
@@ -54,39 +59,71 @@ void ResourceWorker::wake()
   m_Mutex.unlock();
 }
 
+void ResourceWorker::start()
+{
+  m_bStarting = true;
+  QThread::start();
+}
+
 void ResourceWorker::run()
 {
   m_bStop = false;
+  m_bStarted = true;
+  m_bStarting = false;
 
   // Loop forever
-  while( !m_bStop )
+  for( ;; )
   {
-    // auto start = std::chrono::steady_clock::now();
-    m_pcStream->readNextFrameFillRGBBuffer();
-    // auto end = std::chrono::steady_clock::now();
-    // std::cout << "Elapsed time reading and processing a frame: "
-    //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
-    //           << " ms" << std::endl;
-
-    while( !m_bStop && !m_pcStream->hasWritingSlot() )
+    while( !m_bStop && !m_resource->isReady() )
     {
       // Wait here
       m_Mutex.lock();
       m_ResourceIdle.wait( &m_Mutex );
       m_Mutex.unlock();
     }
+
+    // auto start = std::chrono::steady_clock::now();
+    if( m_bStop || !m_resource->iteration() )
+    {
+      break;
+    }
+    // auto end = std::chrono::steady_clock::now();
+    // std::cout << "Elapsed time reading and processing a frame: "
+    //           << std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count()
+    //           << " ms" << std::endl;
   }
+  m_bStarted = false;
+  m_bStop = false;
 }
 
-ResourceHandle::ResourceHandle()
+class OldStreamResource : public CalypResource
 {
-}
+public:
+  OldStreamResource() = default;
+  CalypStream m_stream;
+  auto getResourceName() -> std::string override { return m_stream.getFileName(); };
+  auto getResource() -> CalypStream* override { return &m_stream; };
+
+  auto iteration() -> bool override
+  {
+    if( m_stream.getFrameNum() < 2 )
+    {
+      return false;
+    }
+    m_stream.readNextFrameFillRGBBuffer();
+    return true;
+  }
+  auto isReady() -> bool override { return m_stream.hasWritingSlot(); }
+};
+
+ResourceHandle::ResourceHandle( QObject* parent ) : QObject{ parent } {}
+ResourceHandle::~ResourceHandle() = default;
 
 auto ResourceHandle::addResource() -> std::size_t
 {
   auto resource_id = unique_id;
   unique_id++;
-  auto newStreamResource = std::make_shared<CalypStream>();
+  auto newStreamResource = std::make_shared<OldStreamResource>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
   m_apcStreamResourcesList[resource_id] = newStreamResource;
   m_apcStreamResourcesWorkersList[resource_id] = std::move( newStreamResourceWorker );
@@ -99,8 +136,11 @@ auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
   {
     for( std::size_t i = 0; i < m_apcStreamResourcesList.size(); i++ )
     {
-      if( m_apcStreamResourcesList[i].get() == ptr )
-        return i;
+      if( auto* resource = dynamic_cast<OldStreamResource*>( m_apcStreamResourcesList[i].get() ) )
+      {
+        if( &resource->m_stream == ptr )
+          return i;
+      }
     }
   }
   return addResource();
@@ -110,14 +150,24 @@ auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 {
   if( m_apcStreamResourcesWorkersList.count( id ) )
   {
-    return m_apcStreamResourcesList[id].get();
+    return m_apcStreamResourcesList[id]->getResource();
   }
   return nullptr;
 }
 
+auto ResourceHandle::appendResource( std::unique_ptr<CalypResource>&& resource ) -> std::size_t
+{
+  auto resource_id = unique_id;
+  unique_id++;
+  m_apcStreamResourcesList[resource_id] = std::move( resource );
+  m_apcStreamResourcesWorkersList[resource_id] =
+      std::make_unique<ResourceWorker>( m_apcStreamResourcesList[resource_id] );
+  return resource_id;
+}
+
 void ResourceHandle::removeResource( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.count( id ) )
+  if( !m_apcStreamResourcesList.count( id ) )
   {
     assert( false );
     return;
@@ -148,13 +198,9 @@ void ResourceHandle::startResourceWorker( std::size_t id )
     assert( false );
     return;
   }
-  if( m_apcStreamResourcesList[id]->getFrameNum() < 2 )
-  {
-    return;  // No work to be done!
-  }
   m_apcStreamResourcesWorkersList[id]->setObjectName(
       "RW-" +
-      QFileInfo( QString::fromStdString( m_apcStreamResourcesList[id]->getFileName() ) ).completeBaseName() );
+      QFileInfo( QString::fromStdString( m_apcStreamResourcesList[id]->getResourceName() ) ).completeBaseName() );
   m_apcStreamResourcesWorkersList[id]->start();
 }
 

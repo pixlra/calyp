@@ -69,6 +69,7 @@ public:
 
   auto loadFile( const QString& cFilename ) -> bool;
   auto loadFile( const CalypFileInfo& streamInfo, bool optimistic = true ) -> bool;
+  auto getStreamInfo() const -> CalypFileInfo { return m_sStreamInfo; }
 
   auto getResource() -> CalypStream* override { return &m_currStream; };
   auto getStream() const -> const CalypStream& { return m_currStream; };

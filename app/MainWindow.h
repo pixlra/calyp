@@ -132,10 +132,10 @@ private:
   SubWindowAbstract* m_pcCurrentSubWindow;  //!< General always set
   VideoSubWindow* m_pcCurrentVideoSubWindow;
 
-  QString m_cLastOpenPath;
-  unsigned int m_cLastWidth;
-  unsigned int m_cLastHeight;
-  unsigned int m_cLastBitPerPixel;
+  QString m_lastOpenPath;
+  unsigned int m_lastOpenWidth;
+  unsigned int m_lastOpenHeight;
+  unsigned int m_lastOpenBitPerPixel;
   QStringList showFileDialog( bool bRead );
 
   static VideoStreamSubWindow* findVideoStreamSubWindow( const SubWindowHandle* windowManager,

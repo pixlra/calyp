@@ -212,7 +212,7 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
       streamInfoOpt = m_aRecentFileStreamInfo.at( idx );
   }
 
-  auto streamInfo = streamInfoOpt.has_value() ? *streamInfoOpt : CalypFileInfo{ .m_cFilename = fileName };
+  auto streamInfo = streamInfoOpt.has_value() ? *streamInfoOpt : CalypFileInfo{ .m_cFilename = std::move( fileName ) };
 
   auto videoResource = std::make_unique<VideostreamResource>();
 
@@ -232,19 +232,20 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
         ConfigureFormatDialog formatDialog( this );
         if( streamInfo.m_uiWidth == 0 )
         {
-          streamInfo.m_uiWidth = m_cLastWidth;
+          streamInfo.m_uiWidth = m_lastOpenWidth;
         }
         if( streamInfo.m_uiHeight == 0 )
         {
-          streamInfo.m_uiHeight = m_cLastHeight;
+          streamInfo.m_uiHeight = m_lastOpenHeight;
         }
         if( streamInfo.m_uiBitsPelPixel == 0 )
         {
-          streamInfo.m_uiBitsPelPixel = m_cLastBitPerPixel;
+          streamInfo.m_uiBitsPelPixel = m_lastOpenBitPerPixel;
         }
-        if( formatDialog.runConfigureFormatDialog(
-                QFileInfo( fileName ).fileName(), streamInfo.m_uiWidth, streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
-                streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness, streamInfo.m_uiFrameRate ) != QDialog::Accepted )
+        if( formatDialog.runConfigureFormatDialog( QFileInfo( streamInfo.m_cFilename ).fileName(), streamInfo.m_uiWidth,
+                                                   streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
+                                                   streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
+                                                   streamInfo.m_uiFrameRate ) != QDialog::Accepted )
         {
           return;
         }
@@ -254,6 +255,7 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
 
     if( opened )
     {
+      const auto openedStreamInfo = videoResource->getStreamInfo();
       auto resource_id = m_appResourceHandle->appendResource( std::move( videoResource ) );
 
       auto* videoSubWindow = new VideoStreamSubWindow( m_appResourceHandle.get() );  // createSubWindow();
@@ -267,10 +269,13 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
 
       updateZoomFactorSBox();
 
-      addStreamInfoToRecentList( std::move( streamInfo ) );
+      addStreamInfoToRecentList( std::move( openedStreamInfo ) );
 
       printMessage( "File loaded", CLP_LOG_INFO );
-      m_cLastOpenPath = QFileInfo( fileName ).path();
+      m_lastOpenPath = QFileInfo( streamInfo.m_cFilename ).path();
+      m_lastOpenWidth = streamInfo.m_uiWidth;
+      m_lastOpenHeight = streamInfo.m_uiHeight;
+      m_lastOpenBitPerPixel = streamInfo.m_uiBitsPelPixel;
     }
   }
   catch( CalypFailure& e )
@@ -322,11 +327,11 @@ QStringList MainWindow::showFileDialog( bool bRead )
   fileNameList.clear();
   if( bRead )
   {
-    fileNameList = QFileDialog::getOpenFileNames( this, tr( "Open File" ), m_cLastOpenPath, filter.join( ";;" ) );
+    fileNameList = QFileDialog::getOpenFileNames( this, tr( "Open File" ), m_lastOpenPath, filter.join( ";;" ) );
   }
   else
   {
-    QString fileName = QFileDialog::getSaveFileName( this, tr( "Save File" ), m_cLastOpenPath, filter.join( ";;" ) );
+    QString fileName = QFileDialog::getSaveFileName( this, tr( "Save File" ), m_lastOpenPath, filter.join( ";;" ) );
     if( !fileName.isEmpty() )
       fileNameList.append( fileName );
   }
@@ -369,7 +374,7 @@ void MainWindow::saveFrame()
     if( fileNameList.size() == 1 )
     {
       QString fileName = fileNameList[0];
-      m_cLastOpenPath = QFileInfo( fileName ).path();
+      m_lastOpenPath = QFileInfo( fileName ).path();
       try
       {
         saveWindow->save( fileName );
@@ -397,7 +402,7 @@ void MainWindow::saveStream()
     if( fileNameList.size() == 1 )
     {
       QString fileName = fileNameList[0];
-      m_cLastOpenPath = QFileInfo( fileName ).path();
+      m_lastOpenPath = QFileInfo( fileName ).path();
       try
       {
         saveWindow->save( fileName );
@@ -557,7 +562,7 @@ void MainWindow::dropEvent( QDropEvent* event )
   if( urlList.size() == 1 )
   {
     QString fileName = urlList.at( 0 ).toLocalFile();
-    m_cLastOpenPath = QFileInfo( fileName ).path();
+    m_lastOpenPath = QFileInfo( fileName ).path();
     loadFile( fileName );
   }
 }
@@ -964,6 +969,7 @@ void MainWindow::checkRecentFileActions()
     else
     {
       unsigned long long int fileSize = QFileInfo( m_aRecentFileStreamInfo.at( i ).m_cFilename ).size();
+      std::cout << m_aRecentFileStreamInfo.at( i ).m_uiFileSize << std::endl;
       if( m_aRecentFileStreamInfo.at( i ).m_uiFileSize != fileSize )
       {
         m_aRecentFileStreamInfo.remove( i );
@@ -983,10 +989,10 @@ void MainWindow::readSettings()
   move( pos );
   resize( size );
 
-  m_cLastOpenPath = appSettings.value( "MainWindow/LastOpenPath", QDir::homePath() ).toString();
-  m_cLastWidth = appSettings.value( "MainWindow/LastWidth" ).value<unsigned int>();
-  m_cLastHeight = appSettings.value( "MainWindow/LastHeight" ).value<unsigned int>();
-  m_cLastBitPerPixel = appSettings.value( "MainWindow/LastBitsPerPixel" ).value<unsigned int>();
+  m_lastOpenPath = appSettings.value( "MainWindow/LastOpenPath", QDir::homePath() ).toString();
+  m_lastOpenWidth = appSettings.value( "MainWindow/LastWidth" ).value<unsigned int>();
+  m_lastOpenHeight = appSettings.value( "MainWindow/LastHeight" ).value<unsigned int>();
+  m_lastOpenBitPerPixel = appSettings.value( "MainWindow/LastBitsPerPixel" ).value<unsigned int>();
 
   QVariant value = appSettings.value( "MainWindow/RecentFileList" );
   m_aRecentFileStreamInfo = value.value<CalypFileInfoVector>();
@@ -1005,10 +1011,10 @@ void MainWindow::writeSettings()
 
   appSettings.setValue( "MainWindow/Position", pos() );
   appSettings.setValue( "MainWindow/Size", size() );
-  appSettings.setValue( "MainWindow/LastOpenPath", m_cLastOpenPath );
-  appSettings.setValue( "MainWindow/LastWidth", m_cLastWidth );
-  appSettings.setValue( "MainWindow/LastHeight", m_cLastHeight );
-  appSettings.setValue( "MainWindow/LastBitsPerPixel", m_cLastBitPerPixel );
+  appSettings.setValue( "MainWindow/LastOpenPath", m_lastOpenPath );
+  appSettings.setValue( "MainWindow/LastWidth", m_lastOpenWidth );
+  appSettings.setValue( "MainWindow/LastHeight", m_lastOpenHeight );
+  appSettings.setValue( "MainWindow/LastBitsPerPixel", m_lastOpenBitPerPixel );
 
   QVariant var;
   var.setValue<CalypFileInfoVector>( m_aRecentFileStreamInfo );

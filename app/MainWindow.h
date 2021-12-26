@@ -129,8 +129,8 @@ private:
   /**
    * Save the current subwindow for every category
    */
-  SubWindowAbstract* m_pcCurrentSubWindow;  //!< General always set
-  VideoSubWindow* m_pcCurrentVideoSubWindow;
+  // SubWindowAbstract* m_pcCurrentSubWindow;  //!< General always set
+  // VideoSubWindow* m_pcCurrentVideoSubWindow;
 
   QString m_lastOpenPath;
   unsigned int m_lastOpenWidth;
@@ -247,7 +247,7 @@ private:
   QVector<QAction*> m_arrayRecentFilesActions;
   CalypFileInfoVector m_aRecentFileStreamInfo;
 
-  AboutDialog* m_pcAboutDialog;
+  AboutDialog* m_pcAboutDialog{ nullptr };
 };
 
 #endif  // __MAINWINDOW_H__

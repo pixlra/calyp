@@ -49,7 +49,7 @@
 #include "fvupdater.h"
 #endif
 
-MainWindow::MainWindow() : m_pcCurrentSubWindow( NULL ), m_pcCurrentVideoSubWindow( NULL ), m_pcAboutDialog( NULL )
+MainWindow::MainWindow()
 {
   setWindowModality( Qt::ApplicationModal );
   setWindowModality( Qt::NonModal );
@@ -367,10 +367,9 @@ void MainWindow::openRecent()
 
 void MainWindow::saveFrame()
 {
-  if( m_pcCurrentVideoSubWindow )
+  auto* pcVideoSubWindow = m_pcWindowHandle->activeSubWindow<VideoStreamSubWindow>();
+  if( pcVideoSubWindow != nullptr )
   {
-    VideoSubWindow* saveWindow = m_pcCurrentVideoSubWindow;
-
     QStringList fileNameList = showFileDialog( false );
     if( fileNameList.size() == 1 )
     {
@@ -378,7 +377,7 @@ void MainWindow::saveFrame()
       m_lastOpenPath = QFileInfo( fileName ).path();
       try
       {
-        saveWindow->save( fileName );
+        pcVideoSubWindow->save( fileName );
       }
       catch( CalypFailure& e )
       {
@@ -395,10 +394,9 @@ void MainWindow::saveFrame()
 
 void MainWindow::saveStream()
 {
-  if( m_pcCurrentVideoSubWindow )
+  auto* pcVideoSubWindow = m_pcWindowHandle->activeSubWindow<VideoStreamSubWindow>();
+  if( pcVideoSubWindow != nullptr )
   {
-    VideoSubWindow* saveWindow = m_pcCurrentVideoSubWindow;
-
     QStringList fileNameList = showFileDialog( false );
     if( fileNameList.size() == 1 )
     {
@@ -406,7 +404,7 @@ void MainWindow::saveStream()
       m_lastOpenPath = QFileInfo( fileName ).path();
       try
       {
-        saveWindow->save( fileName );
+        pcVideoSubWindow->save( fileName );
       }
       catch( CalypFailure& e )
       {
@@ -423,8 +421,8 @@ void MainWindow::saveStream()
 
 void MainWindow::format()
 {
-  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
-  if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( activeSubWindow ) )
+  auto* pcVideoSubWindow = m_pcWindowHandle->activeSubWindow<VideoStreamSubWindow>();
+  if( pcVideoSubWindow )
   {
     try
     {
@@ -434,7 +432,7 @@ void MainWindow::format()
         streamInfo = resource->getStreamInfo();
         return true;
       } );
-      m_pcWindowHandle->removeSubWindow( activeSubWindow );
+      m_pcWindowHandle->removeSubWindow( pcVideoSubWindow );
       loadFile( streamInfo.m_cFilename, streamInfo, true );
     }
     catch( CalypFailure& e )
@@ -451,10 +449,10 @@ void MainWindow::format()
 
 void MainWindow::reload()
 {
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow<SubWindowAbstract>();
+  if( activeSubWindow != nullptr )
   {
-    m_pcCurrentSubWindow->refreshSubWindow();
-    m_pcCurrentSubWindow = NULL;
+    activeSubWindow->refreshSubWindow();
     updateMainWindow();
   }
 }
@@ -475,16 +473,16 @@ void MainWindow::reloadAll()
       subWindowList.at( i )->refreshSubWindow();
     }
   }
-  m_pcCurrentSubWindow = NULL;
   updateMainWindow();
 }
 
 void MainWindow::loadAll()
 {
-  if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow<VideoStreamSubWindow>();
+  if( activeSubWindow != nullptr )
   {
     printMessage( "Loading file into memory...", CLP_LOG_INFO );
-    pcVideoSubWindow->loadAll();
+    activeSubWindow->loadAll();
     printMessage( "File loaded", CLP_LOG_INFO );
   }
 }
@@ -493,18 +491,20 @@ void MainWindow::loadAll()
 
 void MainWindow::normalSize()
 {
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( activeSubWindow != nullptr )
   {
-    m_pcCurrentSubWindow->normalSize();
+    activeSubWindow->normalSize();
     updateZoomFactorSBox();
   }
 }
 
 void MainWindow::zoomToFit()
 {
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( activeSubWindow != nullptr )
   {
-    m_pcCurrentSubWindow->zoomToFit();
+    activeSubWindow->zoomToFit();
     updateZoomFactorSBox();
   }
 }
@@ -517,15 +517,19 @@ void MainWindow::zoomToFitAll()
     auto* videoSubWindow = qobject_cast<VideoSubWindow*>( subWindowList.at( i ) );
     videoSubWindow->zoomToFit();
   }
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( activeSubWindow != nullptr )
+  {
     updateZoomFactorSBox();
+  }
 }
 
 void MainWindow::scaleFrame( int ratio )
 {
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( activeSubWindow != nullptr )
   {
-    m_pcCurrentSubWindow->scaleView( (double)( ratio ) / 100.0 );
+    activeSubWindow->scaleView( (double)( ratio ) / 100.0 );
     updateZoomFactorSBox();
   }
 }
@@ -542,9 +546,10 @@ void MainWindow::zoomFromSBox( double zoom )
 
 void MainWindow::updateZoomFactorSBox()
 {
-  if( m_pcCurrentSubWindow )
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( activeSubWindow != nullptr )
   {
-    double factor = m_pcCurrentSubWindow->getScaleFactor();
+    auto factor = activeSubWindow->getScaleFactor();
     m_pcZoomFactorSBox->setValue( factor * 100 );
   }
 }
@@ -590,34 +595,24 @@ VideoStreamSubWindow* MainWindow::findVideoStreamSubWindow( const SubWindowHandl
 
 void MainWindow::updateMainWindow()
 {
-  SubWindowAbstract* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  auto* activeVideoSubWindow = qobject_cast<VideoSubWindow*>( activeSubWindow );
   QCoreApplication::processEvents();
   // if( activeSubWindow() != m_pcCurrentSubWindow )
   {
-    m_pcCurrentSubWindow = NULL;
-    m_pcCurrentVideoSubWindow = NULL;
     if( activeSubWindow )
     {
-      m_pcCurrentSubWindow = activeSubWindow;
-
-      if( m_pcCurrentSubWindow->getCategory() & SubWindowAbstract::VIDEO_SUBWINDOW )
+      if( activeVideoSubWindow != nullptr &&
+          !m_pcWindowHandle->findSubWindow( activeVideoSubWindow->getRefSubWindow() ) )
       {
-        m_pcCurrentVideoSubWindow = qobject_cast<VideoSubWindow*>( m_pcCurrentSubWindow );
-      }
-
-      if( m_pcCurrentVideoSubWindow )
-      {
-        if( !m_pcWindowHandle->findSubWindow( m_pcCurrentVideoSubWindow->getRefSubWindow() ) )
-        {
-          m_pcCurrentVideoSubWindow->setRefSubWindow( NULL );
-        }
+        activeVideoSubWindow->setRefSubWindow( nullptr );
       }
       updateZoomFactorSBox();
     }
   }
   //! Check this - these two function should swap order
-  m_appModuleQuality->update( m_pcCurrentVideoSubWindow );
-  m_appModuleVideo->update( m_pcCurrentVideoSubWindow );
+  m_appModuleQuality->update( activeVideoSubWindow );
+  m_appModuleVideo->update( activeVideoSubWindow );
   updateMenus();
 }
 
@@ -644,14 +639,11 @@ void MainWindow::updateMenus()
 
   bool hasVideoStreamSubWindow{ false };
   bool supportsFormat{ false };
-  if( m_pcCurrentSubWindow && m_pcCurrentSubWindow->getCategory() & SubWindowAbstract::VIDEO_STREAM_SUBWINDOW )
+  auto* pcVideoSubWindow = m_pcWindowHandle->activeSubWindow<VideoStreamSubWindow>();
+  if( pcVideoSubWindow != nullptr && pcVideoSubWindow->getCategory() & SubWindowAbstract::VIDEO_STREAM_SUBWINDOW )
   {
     hasVideoStreamSubWindow = true;
-
-    if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
-    {
-      supportsFormat = pcVideoSubWindow->supportsFormatConfiguration();
-    }
+    supportsFormat = pcVideoSubWindow->supportsFormatConfiguration();
   }
 
   m_arrayMenu[RECENT_MENU]->setEnabled( m_aRecentFileStreamInfo.size() > 0 ? true : false );

@@ -78,8 +78,8 @@ class MainWindow : public QMainWindow
 public:
   MainWindow();
   bool parseArgs( int argc, char* argv[] );
-  void loadFile( CalypFileInfo pStreamInfo );
-  void loadFile( QString fileName, std::optional<CalypFileInfo> pStreamInfo = {} );
+  void loadFile( const CalypFileInfo& pStreamInfo );
+  void loadFile( const QString& fileName, std::optional<CalypFileInfo> streamInfoOpt = {}, bool forceDialog = false );
 
 public Q_SLOTS:
   void printMessage( const QString& msg );

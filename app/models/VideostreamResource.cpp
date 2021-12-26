@@ -97,27 +97,6 @@ auto VideostreamResource::isReady() -> bool
   return m_currStream.hasWritingSlot();
 }
 
-bool VideostreamResource::loadFile( const QString& cFilename )
-{
-  CalypFileInfo streamInfo;
-
-  m_currStream.getFormat( streamInfo.m_uiWidth, streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
-                          streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness, streamInfo.m_uiFrameRate );
-
-  [[maybe_unused]] auto guessed =
-      video_resource_guess_format( cFilename, streamInfo.m_uiWidth, streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
-                                   streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness, streamInfo.m_uiFrameRate );
-
-  if( streamInfo.m_iPelFormat == ClpPixelFormats::Invalid )
-  {
-    streamInfo.m_iPelFormat = ClpPixelFormats::YUV420p;
-  }
-
-  streamInfo.m_cFilename = cFilename;
-
-  return loadFile( streamInfo );
-}
-
 bool VideostreamResource::loadFile( const CalypFileInfo& streamInfo, bool optimistic )
 {
   m_sStreamInfo = streamInfo;

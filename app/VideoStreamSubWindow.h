@@ -64,6 +64,7 @@ public:
   bool supportsFormatConfiguration() const { return m_pCurrStream->supportsFormatConfiguration(); };
 
   void setResource( std::size_t id );
+  auto getResourceId() const -> std::size_t { return m_uiResourceId; };
   // bool loadFile( QString cFilename, bool bForceDialog = false );
   // bool loadFile( CalypFileInfo streamInfo );
   void loadAll();

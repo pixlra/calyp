@@ -185,14 +185,14 @@ void MainWindow::closeAll()
   m_pcWindowHandle->removeAllSubWindow();
 }
 
-void MainWindow::loadFile( CalypFileInfo pStreamInfo )
+void MainWindow::loadFile( const CalypFileInfo& pStreamInfo )
 {
-  QString filename{ pStreamInfo.m_cFilename };
-  loadFile( std::move( filename ), std::move( pStreamInfo ) );
+  loadFile( pStreamInfo.m_cFilename, pStreamInfo );
 }
 
-void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> streamInfoOpt )
+void MainWindow::loadFile( const QString& fileName, std::optional<CalypFileInfo> streamInfoOpt, bool forceDialog )
 {
+  qDebug() << fileName;
   if( !QFileInfo( fileName ).exists() )
   {
     printMessage( "File " + fileName + " do not exist!", CLP_LOG_ERROR );
@@ -212,44 +212,45 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
       streamInfoOpt = m_aRecentFileStreamInfo.at( idx );
   }
 
-  auto streamInfo = streamInfoOpt.has_value() ? *streamInfoOpt : CalypFileInfo{ .m_cFilename = std::move( fileName ) };
+  auto streamInfo = streamInfoOpt.has_value() ? *streamInfoOpt : CalypFileInfo{ .m_cFilename = fileName };
 
   auto videoResource = std::make_unique<VideostreamResource>();
 
   bool opened = false;
   try
   {
-    opened = videoResource->loadFile( streamInfo, false );
+    [[maybe_unused]] auto guessed = video_resource_guess_format(
+        streamInfo.m_cFilename, streamInfo.m_uiWidth, streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
+        streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness, streamInfo.m_uiFrameRate );
+
+    if( !forceDialog )
+    {
+      opened = videoResource->loadFile( streamInfo, false );
+    }
 
     if( !opened )
     {
-      auto guessed = video_resource_guess_format( streamInfo.m_cFilename, streamInfo.m_uiWidth, streamInfo.m_uiHeight,
-                                                  streamInfo.m_iPelFormat, streamInfo.m_uiBitsPelPixel,
-                                                  streamInfo.m_iEndianness, streamInfo.m_uiFrameRate );
-
-      if( !guessed )
+      ConfigureFormatDialog formatDialog( this );
+      if( streamInfo.m_uiWidth == 0 )
       {
-        ConfigureFormatDialog formatDialog( this );
-        if( streamInfo.m_uiWidth == 0 )
-        {
-          streamInfo.m_uiWidth = m_lastOpenWidth;
-        }
-        if( streamInfo.m_uiHeight == 0 )
-        {
-          streamInfo.m_uiHeight = m_lastOpenHeight;
-        }
-        if( streamInfo.m_uiBitsPelPixel == 0 )
-        {
-          streamInfo.m_uiBitsPelPixel = m_lastOpenBitPerPixel;
-        }
-        if( formatDialog.runConfigureFormatDialog( QFileInfo( streamInfo.m_cFilename ).fileName(), streamInfo.m_uiWidth,
-                                                   streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
-                                                   streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
-                                                   streamInfo.m_uiFrameRate ) != QDialog::Accepted )
-        {
-          return;
-        }
+        streamInfo.m_uiWidth = m_lastOpenWidth;
       }
+      if( streamInfo.m_uiHeight == 0 )
+      {
+        streamInfo.m_uiHeight = m_lastOpenHeight;
+      }
+      if( streamInfo.m_uiBitsPelPixel == 0 )
+      {
+        streamInfo.m_uiBitsPelPixel = m_lastOpenBitPerPixel;
+      }
+      if( formatDialog.runConfigureFormatDialog( QFileInfo( streamInfo.m_cFilename ).fileName(), streamInfo.m_uiWidth,
+                                                 streamInfo.m_uiHeight, streamInfo.m_iPelFormat,
+                                                 streamInfo.m_uiBitsPelPixel, streamInfo.m_iEndianness,
+                                                 streamInfo.m_uiFrameRate ) != QDialog::Accepted )
+      {
+        return;
+      }
+
       opened = videoResource->loadFile( streamInfo, false );
     }
 
@@ -269,13 +270,13 @@ void MainWindow::loadFile( QString fileName, std::optional<CalypFileInfo> stream
 
       updateZoomFactorSBox();
 
+      m_lastOpenPath = QFileInfo( openedStreamInfo.m_cFilename ).path();
+      m_lastOpenWidth = openedStreamInfo.m_uiWidth;
+      m_lastOpenHeight = openedStreamInfo.m_uiHeight;
+      m_lastOpenBitPerPixel = openedStreamInfo.m_uiBitsPelPixel;
       addStreamInfoToRecentList( std::move( openedStreamInfo ) );
 
       printMessage( "File loaded", CLP_LOG_INFO );
-      m_lastOpenPath = QFileInfo( streamInfo.m_cFilename ).path();
-      m_lastOpenWidth = streamInfo.m_uiWidth;
-      m_lastOpenHeight = streamInfo.m_uiHeight;
-      m_lastOpenBitPerPixel = streamInfo.m_uiBitsPelPixel;
     }
   }
   catch( CalypFailure& e )
@@ -422,28 +423,30 @@ void MainWindow::saveStream()
 
 void MainWindow::format()
 {
-  // if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( m_pcCurrentVideoSubWindow ) )
-  // {
-  //   try
-  //   {
-  //     if( pcVideoSubWindow->loadFile( pcVideoSubWindow->getCurrentFileName(), true ) )
-  //     {
-  //       addStreamInfoToRecentList( pcVideoSubWindow->getStreamInfo() );
-  //     }
-  //   }
-  //   catch( CalypFailure& e )
-  //   {
-  //     QString warningMsg = "Cannot change format of " + QFileInfo( pcVideoSubWindow->getCurrentFileName()
-  //     ).fileName() +
-  //                          " with the following error: \n" + e.what();
-  //     QMessageBox::warning( this, QApplication::applicationName(), warningMsg );
-  //     printMessage( warningMsg, CLP_LOG_ERROR );
-  //     qDebug() << warningMsg;
-  //     m_pcCurrentSubWindow->close();
-  //   }
-  //   m_pcCurrentSubWindow = NULL;
-  //   updateMainWindow();
-  // }
+  auto* activeSubWindow = m_pcWindowHandle->activeSubWindow();
+  if( auto* pcVideoSubWindow = qobject_cast<VideoStreamSubWindow*>( activeSubWindow ) )
+  {
+    try
+    {
+      auto resourceId = pcVideoSubWindow->getResourceId();
+      CalypFileInfo streamInfo;
+      m_appResourceHandle->executeResourceAction<VideostreamResource>( resourceId, [&streamInfo]( auto* resource ) {
+        streamInfo = resource->getStreamInfo();
+        return true;
+      } );
+      m_pcWindowHandle->removeSubWindow( activeSubWindow );
+      loadFile( streamInfo.m_cFilename, streamInfo, true );
+    }
+    catch( CalypFailure& e )
+    {
+      QString warningMsg = "Cannot change format of " + QFileInfo( pcVideoSubWindow->getCurrentFileName() ).fileName() +
+                           " with the following error: \n" + e.what();
+      QMessageBox::warning( this, QApplication::applicationName(), warningMsg );
+      printMessage( warningMsg, CLP_LOG_ERROR );
+      qDebug() << warningMsg;
+    }
+    updateMainWindow();
+  }
 }
 
 void MainWindow::reload()

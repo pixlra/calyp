@@ -67,7 +67,6 @@ public:
   auto iteration() -> bool override;
   auto isReady() -> bool override;
 
-  auto loadFile( const QString& cFilename ) -> bool;
   auto loadFile( const CalypFileInfo& streamInfo, bool optimistic = true ) -> bool;
   auto getStreamInfo() const -> CalypFileInfo { return m_sStreamInfo; }
 

@@ -35,6 +35,12 @@
 #include <memory>
 #include <optional>
 
+auto get_new_resource_id() -> std::size_t
+{
+  static std::size_t unique_id{ 0 };
+  return unique_id++;
+}
+
 ResourceWorker::~ResourceWorker()
 {
   stop();
@@ -116,13 +122,27 @@ public:
   auto isReady() -> bool override { return m_stream.hasWritingSlot(); }
 };
 
-ResourceHandle::ResourceHandle( QObject* parent ) : QObject{ parent } {}
-ResourceHandle::~ResourceHandle() = default;
+ResourceHandle::ResourceHandle() : m_thread{ std::make_unique<QThread>() }
+{
+  moveToThread( m_thread.get() );
+  m_thread->start();
+};
+
+ResourceHandle::~ResourceHandle()
+{
+  QMetaObject::invokeMethod( this, "cleanup" );
+  m_thread->wait();
+};
+
+void ResourceHandle::cleanup()
+{
+  m_thread->quit();
+};
 
 auto ResourceHandle::addResource() -> std::size_t
 {
-  auto resource_id = unique_id;
-  unique_id++;
+  auto resource_id = get_new_resource_id();
+  ;
   auto newStreamResource = std::make_shared<OldStreamResource>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
   m_apcStreamResourcesList[resource_id] = newStreamResource;
@@ -157,8 +177,7 @@ auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 
 auto ResourceHandle::appendResource( std::unique_ptr<CalypResource>&& resource ) -> std::size_t
 {
-  auto resource_id = unique_id;
-  unique_id++;
+  auto resource_id = get_new_resource_id();
   m_apcStreamResourcesList[resource_id] = std::move( resource );
   m_apcStreamResourcesWorkersList[resource_id] =
       std::make_unique<ResourceWorker>( m_apcStreamResourcesList[resource_id] );

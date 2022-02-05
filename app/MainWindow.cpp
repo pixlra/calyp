@@ -59,7 +59,7 @@ MainWindow::MainWindow()
   m_pDBusAdaptor = new DBusAppAdaptor( this );
 #endif
 
-  m_appResourceHandle = std::make_unique<ResourceHandle>( this );
+  m_appResourceHandle = std::make_unique<ResourceHandle>();
 
   m_pcWindowHandle = new SubWindowHandle( this );
 

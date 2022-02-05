@@ -61,7 +61,7 @@ TEST_CASE( "Can load a YUV file", "VideoResource" )
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
-  auto resourceHandle = std::make_unique<ResourceHandle>( nullptr );
+  auto resourceHandle = std::make_unique<ResourceHandle>();
 
   auto videoResource = std::make_unique<VideostreamResource>();
 
@@ -106,7 +106,7 @@ TEST_CASE( "Can load a MKV file", "VideoResource" )
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
-  auto resourceHandle = std::make_unique<ResourceHandle>( nullptr );
+  auto resourceHandle = std::make_unique<ResourceHandle>();
 
   auto videoResource = std::make_unique<VideostreamResource>( nullptr );
 
@@ -137,7 +137,7 @@ TEST_CASE( "Can load a PNG file", "VideoResource" )
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
-  auto resourceHandle = std::make_unique<ResourceHandle>( nullptr );
+  auto resourceHandle = std::make_unique<ResourceHandle>();
 
   auto videoResource = std::make_unique<VideostreamResource>( nullptr );
 
@@ -171,7 +171,7 @@ TEST_CASE( "Resource handle can store a video resource", "VideoResource" )
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
-  auto resourceHandle = std::make_unique<ResourceHandle>( nullptr );
+  auto resourceHandle = std::make_unique<ResourceHandle>();
 
   CalypFileInfo streamInfo{ .m_cFilename = QString::fromStdString( kFilename ),
                             .m_uiWidth = kWidth,
@@ -223,7 +223,7 @@ TEST_CASE( "Resource handle can play a video resource", "VideoResource" )
 
   REQUIRE( std::filesystem::exists( std::filesystem::path( kFilename ) ) );
 
-  auto resourceHandle = std::make_unique<ResourceHandle>( nullptr );
+  auto resourceHandle = std::make_unique<ResourceHandle>();
 
   CalypFileInfo streamInfo{ .m_cFilename = QString::fromStdString( kFilename ),
                             .m_uiWidth = kWidth,

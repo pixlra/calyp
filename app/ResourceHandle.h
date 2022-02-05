@@ -66,7 +66,7 @@ class ResourceHandle : public QObject
 {
   Q_OBJECT
 public:
-  ResourceHandle( QObject* parent );
+  ResourceHandle();
   ResourceHandle( ResourceHandle&& other ) noexcept = delete;
   ResourceHandle& operator=( ResourceHandle&& other ) noexcept = delete;
   ResourceHandle( const ResourceHandle& other ) = delete;
@@ -92,7 +92,7 @@ public:
       return false;
     }
     bool result{ false };
-    if( auto resource = dynamic_cast<T*>( m_apcStreamResourcesList[id].get() ) )
+    if( auto* resource = dynamic_cast<T*>( m_apcStreamResourcesList[id].get() ) )
     {
       QMutexLocker locker( m_apcStreamResourcesWorkersList[id]->mutex() );
       result = action( resource );
@@ -101,11 +101,13 @@ public:
     return result;
   }
 
+  void cleanup();
+
 private:
   auto addResource() -> std::size_t;
 
 private:
-  std::size_t unique_id{ 0 };
+  std::unique_ptr<QThread> m_thread;
   std::map<std::size_t, std::shared_ptr<CalypResource>> m_apcStreamResourcesList;
   std::map<std::size_t, std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;
 };

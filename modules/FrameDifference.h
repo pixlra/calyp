@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameDifference : public CalypModuleIf
+class FrameDifference : public CalypModuleIf, public CalypModuleInstance<FrameDifference>
 {
-  REGISTER_CLASS_FACTORY( FrameDifference )
-
 private:
   unsigned int m_uiBitsPixel;
   unsigned int m_uiSumOperation;

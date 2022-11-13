@@ -27,10 +27,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class ThreeSixtyFaceExtraction : public CalypModuleIf
+class ThreeSixtyFaceExtraction : public CalypModuleIf, public CalypModuleInstance<ThreeSixtyFaceExtraction>
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtyFaceExtraction )
-
 private:
   std::unique_ptr<CalypFrame> m_pcFrameExtractionFrame;
   std::unique_ptr<CalypFrame> m_pcTmpFrame;

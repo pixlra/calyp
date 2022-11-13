@@ -36,9 +36,8 @@
  * @}
  */
 
-class FrameResampling : public CalypModuleIf
+class FrameResampling : public CalypModuleIf, public CalypModuleInstance<FrameResampling>
 {
-  REGISTER_CLASS_FACTORY( FrameResampling )
 private:
   int m_iWidth;
   int m_iHeight;

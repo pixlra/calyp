@@ -31,8 +31,7 @@
 // OpenCV
 #include <opencv2/core/core.hpp>
 
-class ShapeDetection : public CalypOpenCVModuleIf,
-                       public CalypModuleInstace<ShapeDetection>
+class ShapeDetection : public CalypOpenCVModuleIf, public CalypModuleInstance<ShapeDetection>
 {
   using Mat = cv::Mat;
 

@@ -43,10 +43,8 @@ struct ClpVideoFPStruct
   ClpFaceProperty faces[60];
 };
 
-class ThreeSixtyDynamicDownsampling : public CalypModuleIf
+class ThreeSixtyDynamicDownsampling : public CalypModuleIf, public CalypModuleInstance<ThreeSixtyDynamicDownsampling>
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtyDynamicDownsampling )
-
 private:
   std::string m_arrayInputDefinitionString;
   std::string m_arrayOutputDefinitionString;

@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameRotate : public CalypModuleIf
+class FrameRotate : public CalypModuleIf, public CalypModuleInstance<FrameRotate>
 {
-  REGISTER_CLASS_FACTORY( FrameRotate )
-
 private:
   int m_iAngle;
   CalypFrame* m_pcFrameProcessed;

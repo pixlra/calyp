@@ -40,18 +40,6 @@
 #include "CalypFrame.h"
 #include "CalypOptions.h"
 
-#define REGISTER_CLASS_MAKER( X ) \
-  extern "C" CalypModulePtr Maker() { return std::make_unique<X>(); }
-#define REGISTER_CLASS_FACTORY( X )                   \
-public:                                               \
-  X( const X& buffer )                                \
-  noexcept = delete;                                  \
-  X( X&& buffer )                                     \
-  noexcept = delete;                                  \
-  auto operator=( const X& buffer )->X& = delete;     \
-  auto operator=( X&& buffer ) noexcept->X& = delete; \
-  static CalypModulePtr Create() { return std::make_unique<X>(); }
-
 #define _BASIC_MODULE_API_2_CHECK_                        \
   if( apcFrameList.size() != m_uiNumberOfFrames )         \
     return false;                                         \
@@ -204,10 +192,7 @@ public:
   void destroy();
 
   // API using OpenCV
-  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList )
-  {
-    return nullptr;
-  };
+  virtual cv::Mat* create_using_opencv( const std::vector<Mat>& apcFrameList ) { return nullptr; };
   virtual Mat* process_using_opencv( const std::vector<Mat>& apcFrameList ) = 0;
   virtual void destroy_using_opencv(){};
 
@@ -220,7 +205,7 @@ protected:
 using CalypModulePtr = std::unique_ptr<CalypModuleIf>;
 
 template <typename T>
-class CalypModuleInstace
+class CalypModuleInstance
 {
 public:
   static CalypModulePtr Create() { return std::make_unique<T>(); }

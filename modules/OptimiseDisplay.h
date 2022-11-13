@@ -29,10 +29,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class OptimiseDisplay : public CalypModuleIf
+class OptimiseDisplay : public CalypModuleIf, public CalypModuleInstance<OptimiseDisplay>
 {
-  REGISTER_CLASS_FACTORY( OptimiseDisplay )
-
 private:
   std::unique_ptr<CalypFrame> m_pcOptimisedFrame;
 

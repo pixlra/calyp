@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class ThreeSixtySpatialtoTemporal : public CalypModuleIf
+class ThreeSixtySpatialtoTemporal : public CalypModuleIf, public CalypModuleInstance<ThreeSixtySpatialtoTemporal>
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtySpatialtoTemporal )
-
 private:
   std::unique_ptr<CalypFrame> m_pcTempSpatialFrame;
   std::unique_ptr<CalypFrame> m_pcTmpInputFrame;

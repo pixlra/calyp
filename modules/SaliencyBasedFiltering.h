@@ -26,10 +26,8 @@
 
 #include "lib/CalypModuleIf.h"
 
-class SaliencyBasedFiltering : public CalypModuleIf
+class SaliencyBasedFiltering : public CalypModuleIf, public CalypModuleInstance<SaliencyBasedFiltering>
 {
-  REGISTER_CLASS_FACTORY( SaliencyBasedFiltering )
-
 private:
   std::unique_ptr<CalypFrame> m_pcProcessedFrame;
 

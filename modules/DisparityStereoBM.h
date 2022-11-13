@@ -32,10 +32,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class DisparityStereoBM : public CalypModuleIf
+class DisparityStereoBM : public CalypModuleIf, public CalypModuleInstance<DisparityStereoBM>
 {
-  REGISTER_CLASS_FACTORY( DisparityStereoBM )
-
 private:
   CalypFrame* m_pcDisparityFrame;
   int m_uiNumberOfDisparities;

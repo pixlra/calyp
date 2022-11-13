@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class EightBitsSampling : public CalypModuleIf
+class EightBitsSampling : public CalypModuleIf, public CalypModuleInstance<EightBitsSampling>
 {
-  REGISTER_CLASS_FACTORY( EightBitsSampling )
-
 private:
   int m_iNumberOfBits;
   int m_iBitSifting;

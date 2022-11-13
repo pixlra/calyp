@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameCrop : public CalypModuleIf
+class FrameCrop : public CalypModuleIf, public CalypModuleInstance<FrameCrop>
 {
-  REGISTER_CLASS_FACTORY( FrameCrop )
-
 private:
   CalypFrame* m_pcCropedFrame;
   unsigned int m_uiXPosition;

@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameBinarization : public CalypModuleIf
+class FrameBinarization : public CalypModuleIf, public CalypModuleInstance<FrameBinarization>
 {
-  REGISTER_CLASS_FACTORY( FrameBinarization )
-
 private:
   CalypFrame* m_pcBinFrame;
   unsigned int m_uiThreshold;

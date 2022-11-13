@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class SetChromaHalfScale : public CalypModuleIf
+class SetChromaHalfScale : public CalypModuleIf, public CalypModuleInstance<SetChromaHalfScale>
 {
-  REGISTER_CLASS_FACTORY( SetChromaHalfScale )
-
 private:
   CalypFrame* m_pcProcessedFrame;
 

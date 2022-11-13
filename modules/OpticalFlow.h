@@ -53,36 +53,32 @@ public:
   void destroy();
 };
 
-class OpticalFlowDualTVL1 : public OpticalFlowModule
+class OpticalFlowDualTVL1 : public OpticalFlowModule, public CalypModuleInstance<OpticalFlowDualTVL1>
 {
-  REGISTER_CLASS_FACTORY( OpticalFlowDualTVL1 )
 public:
   OpticalFlowDualTVL1();
   virtual ~OpticalFlowDualTVL1() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
 };
 
-class OpticalFlowSparseToDense : public OpticalFlowModule
+class OpticalFlowSparseToDense : public OpticalFlowModule, public CalypModuleInstance<OpticalFlowSparseToDense>
 {
-  REGISTER_CLASS_FACTORY( OpticalFlowSparseToDense )
 public:
   OpticalFlowSparseToDense();
   virtual ~OpticalFlowSparseToDense() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
 };
 
-class OpticalFlowFarneback : public OpticalFlowModule
+class OpticalFlowFarneback : public OpticalFlowModule, public CalypModuleInstance<OpticalFlowFarneback>
 {
-  REGISTER_CLASS_FACTORY( OpticalFlowFarneback )
 public:
   OpticalFlowFarneback();
   virtual ~OpticalFlowFarneback() {}
   bool create( std::vector<CalypFrame*> apcFrameList );
 };
 
-class OpticalDeepFlow : public OpticalFlowModule
+class OpticalDeepFlow : public OpticalFlowModule, public CalypModuleInstance<OpticalDeepFlow>
 {
-  REGISTER_CLASS_FACTORY( OpticalDeepFlow )
 public:
   OpticalDeepFlow();
   virtual ~OpticalDeepFlow() {}

@@ -2,7 +2,14 @@
 # CMakeLists for qcustomplot
 #
 
+if(${USE_QT6})
+FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+IF (NOT Qt6_FOUND)
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+ENDIF()
+ELSE()
+FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+ENDIF()
 
 SET(qcustomplot_SRCS qcustomplot.cpp qcustomplot.h)
 
@@ -13,5 +20,5 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 ENDIF()
 
 ADD_LIBRARY(QCustomPlotLib STATIC ${qcustomplot_SRCS})
-TARGET_LINK_LIBRARIES(QCustomPlotLib Qt5::Core Qt5::Gui Qt5::Widgets Qt5::PrintSupport)
+TARGET_LINK_LIBRARIES(QCustomPlotLib Qt::Core Qt::Gui Qt::Widgets Qt::PrintSupport)
 TARGET_INCLUDE_DIRECTORIES(QCustomPlotLib PUBLIC .)

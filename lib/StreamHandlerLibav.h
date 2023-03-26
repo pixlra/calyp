@@ -88,7 +88,7 @@ private:
   int m_ffPixFmt;
   AVFrame* m_cFrame;
   AVPacket m_cOrgPacket;
-  AVPacket m_cPacket;
+  AVPacket* m_cPacket;
 
   bool m_bHasStream;
 

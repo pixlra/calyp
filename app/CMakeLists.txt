@@ -7,15 +7,24 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}/docks ${CMAKE_CURRENT_SOURCE_DIR}/widgets
 )
 
-OPTION(USE_QTDBUS "Build with QtDBus" ON)
+OPTION(USE_QT6 "Build with Qt6" ON)
+OPTION(USE_QTDBUS "Build with QtDBus" OFF)
 OPTION(USE_FERVOR "Add Fervor support" OFF)
 OPTION(CALYP_MANAGED_RESOURCES "Handle streams in separate threads" ON)
 OPTION(CALYP_THREADED_MODULES "Use threads for modules" ON)
 
+if(${USE_QT6})
+FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+IF (NOT Qt6_FOUND)
+FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+ENDIF()
+ELSE()
+FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+ENDIF()
+
 ADD_SUBDIRECTORY(external)
 
-FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
-LIST(APPEND QT_LINKER_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Concurrent)
+LIST(APPEND QT_LINKER_LIBS Qt::Core Qt::Gui Qt::Widgets Qt::Concurrent)
 LIST(APPEND QT_MODULES Core Gui Widgets Concurrent)
 
 IF(USE_QTDBUS)
@@ -31,10 +40,11 @@ IF(USE_QTDBUS)
         ${Qt5DBus_FOUND}
         PARENT_SCOPE
     )
-    LIST(APPEND QT_LINKER_LIBS Qt5::DBus)
+    LIST(APPEND QT_LINKER_LIBS Qt::DBus)
     LIST(APPEND QT_MODULES DBus)
   ENDIF()
 ENDIF()
+
 
 ADD_DEFINITIONS(
   -DQT_NO_CAST_TO_ASCII
@@ -107,7 +117,7 @@ IF(USE_FERVOR)
 
     FIND_PACKAGE(Qt5 REQUIRED Network WebKit WebKitWidgets)
 
-    LIST(APPEND QT_LINKER_LIBS Qt5::Network Qt5::WebKit Qt5::WebKitWidgets)
+    LIST(APPEND QT_LINKER_LIBS Qt::Network Qt::WebKit Qt::WebKitWidgets)
     LIST(APPEND QT_MODULES Network WebKit WebKitWidgets)
 
     # LIST(APPEND APP_LINKER_LIBS ${FERVOR_DEPENDENCIES} )
@@ -130,8 +140,8 @@ SET_PACKAGE_PROPERTIES(
 )
 ADD_FEATURE_INFO(Fervor USE_FERVOR "Fervor lib includes check for updates feature.")
 
-QT5_WRAP_UI(Calyp_App_UI_Wrap ${Calyp_App_UI})
-QT5_ADD_RESOURCES(Calyp_App_RCC ${Calyp_App_RCC})
+QT_WRAP_UI(Calyp_App_UI_Wrap ${Calyp_App_UI})
+QT_ADD_RESOURCES(Calyp_App_RCC ${Calyp_App_RCC})
 
 # Instruct CMake to run moc automatically when needed.
 SET(CMAKE_AUTOMOC ON)

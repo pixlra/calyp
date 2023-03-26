@@ -63,6 +63,15 @@ void CalypToolsCmdParser::log( unsigned int level, const char* fmt, ... )
   }
 }
 
+void CalypToolsCmdParser::log( unsigned int level, std::string log_msg )
+{
+  if( level < m_uiLogLevel )
+  {
+    return;
+  }
+  std::cout << log_msg;
+}
+
 int CalypToolsCmdParser::parseToolsArgs( int argc, char* argv[] )
 {
   int iRet = 0;

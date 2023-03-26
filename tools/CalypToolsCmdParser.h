@@ -51,6 +51,7 @@ public:
    * @note this function might not be safe in C++ (try to upgrade it)
    */
   void log( unsigned int level, const char* fmt, ... );
+  void log( unsigned int level, std::string log_msg );
 
   int parseToolsArgs( int argc, char* argv[] );
 

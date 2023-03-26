@@ -73,8 +73,7 @@ QDataStream& operator>>( QDataStream& in, CalypStandardResolutionVector& array )
 class AddCustomFormat : public QDialog
 {
 public:
-  AddCustomFormat( QWidget* parent = NULL )
-      : QDialog( parent, Qt::Dialog | Qt::WindowTitleHint )
+  AddCustomFormat( QWidget* parent = NULL ) : QDialog( parent, Qt::Dialog | Qt::WindowTitleHint )
   {
     setWindowModality( Qt::ApplicationModal );
     setWindowTitle( "Add custom resolution" );
@@ -137,8 +136,7 @@ private:
   QSpinBox* m_spinHeight;
 };
 
-ConfigureFormatDialog::ConfigureFormatDialog( QWidget* parent )
-    : QDialog( parent )
+ConfigureFormatDialog::ConfigureFormatDialog( QWidget* parent ) : QDialog( parent )
 {
   QString Name;
   unsigned int uiWidth, uiHeight;
@@ -175,12 +173,18 @@ ConfigureFormatDialog::ConfigureFormatDialog( QWidget* parent )
 
   QFont titleFont, menusFont, normalFont;
 
+#if QT_VERSION > QT_VERSION_CHECK( 6, 0, 0 )
+  auto fontWeight = QFont::Weight::Bold;
+#else
+  auto fontWeight = 75;
+#endif
+
   titleFont.setPointSize( 12 );
   titleFont.setBold( true );
-  titleFont.setWeight( 75 );
+  titleFont.setWeight( fontWeight );
 
   menusFont.setBold( true );
-  titleFont.setWeight( 75 );
+  titleFont.setWeight( fontWeight );
 
   normalFont.setBold( false );
   // menusFont.setPointSize( 12 );
@@ -402,8 +406,9 @@ auto findPelFormatColorSpace( ClpPixelFormats rInputFormat ) -> std::pair<int, s
   return std::make_pair( 0, 0 );
 }
 
-int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, unsigned int& rWidth, unsigned int& rHeight,
-                                                     ClpPixelFormats& rInputFormat, unsigned int& rBits, int& rEndianess, unsigned int& rFrameRate )
+int ConfigureFormatDialog::runConfigureFormatDialog( const QString& Filename, unsigned int& rWidth,
+                                                     unsigned int& rHeight, ClpPixelFormats& rInputFormat,
+                                                     unsigned int& rBits, int& rEndianess, unsigned int& rFrameRate )
 {
   // Set default values
   // setWindowTitle( "Configure resolution for " + Filename );
@@ -539,6 +544,6 @@ void ConfigureFormatDialog::writeSettings()
 {
   QSettings appSettings;
   QVariant var;
-  var.setValue<CalypStandardResolutionVector>( aRCustomFileFormats );
+  var.setValue( aRCustomFileFormats );
   appSettings.setValue( "ConfigureFormatDialog/CustomFormats", var );
 }

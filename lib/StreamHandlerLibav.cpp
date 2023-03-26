@@ -298,10 +298,10 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   m_uiFrameBufferSize = av_image_get_buffer_size( AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
 
   /* initialize packet, set data to NULL, let the demuxer fill it */
-  av_init_packet( &m_cPacket );
-  m_cPacket.data = NULL;
-  m_cPacket.size = 0;
-  m_cOrgPacket = m_cPacket;
+  m_cPacket = av_packet_alloc();
+  m_cPacket->data = NULL;
+  m_cPacket->size = 0;
+  m_cOrgPacket = *m_cPacket;
 
   m_bHasStream = true;
   return true;
@@ -318,6 +318,7 @@ void StreamHandlerLibav::closeHandler()
       avformat_close_input( &m_cFmtCtx );
 
     av_free( m_cFrame );
+    av_packet_free( &m_cPacket );
   }
   m_bHasStream = false;
 }
@@ -375,13 +376,13 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
       bGotFrame = 1;
     }
 #else
-    if( m_cPacket.stream_index == m_iStreamIdx )
+    if( m_cPacket->stream_index == m_iStreamIdx )
     {
-      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, &m_cPacket ) ) < 0 )
+      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, m_cPacket ) ) < 0 )
         return false;
-      m_cPacket.data += iRet;
-      m_cPacket.size -= iRet;
-      if( m_cPacket.size <= 0 )
+      m_cPacket->data += iRet;
+      m_cPacket->size -= iRet;
+      if( m_cPacket->size <= 0 )
       {
         bReadPkt = true;
         av_packet_unref( &m_cOrgPacket );
@@ -394,7 +395,7 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
     {
       bReadPkt = false;
       av_packet_unref( &m_cOrgPacket );
-      if( ( iRet = av_read_frame( m_cFmtCtx, &m_cPacket ) ) < 0 )
+      if( ( iRet = av_read_frame( m_cFmtCtx, m_cPacket ) ) < 0 )
       {
         if( iRet == AVERROR_EOF )
         {
@@ -403,10 +404,10 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
         }
         return false;
       }
-      m_cOrgPacket = m_cPacket;
+      m_cOrgPacket = *m_cPacket;
 #ifdef FF_SEND_RECEIVE_API
-      if( m_cPacket.stream_index == m_iStreamIdx )
-        if( ( iRet = avcodec_send_packet( m_cCodedCtx, &m_cPacket ) ) < 0 )
+      if( m_cPacket->stream_index == m_iStreamIdx )
+        if( ( iRet = avcodec_send_packet( m_cCodedCtx, m_cPacket ) ) < 0 )
           return false;
 #endif
     }

@@ -36,7 +36,6 @@ class ShapeDetection : public CalypOpenCVModuleIf, public CalypModuleInstance<Sh
   using Mat = cv::Mat;
 
 private:
-  bool m_bBinaryMap;
   std::unique_ptr<Mat> m_resultImage;
   cv::RNG m_rng;
 

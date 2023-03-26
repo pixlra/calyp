@@ -48,8 +48,7 @@
 #include "fvupdater.h"
 #endif
 
-MainWindow::MainWindow()
-    : m_pcCurrentSubWindow( NULL ), m_pcCurrentVideoSubWindow( NULL ), m_pcAboutDialog( NULL )
+MainWindow::MainWindow() : m_pcCurrentSubWindow( NULL ), m_pcCurrentVideoSubWindow( NULL ), m_pcAboutDialog( NULL )
 {
   setWindowModality( Qt::ApplicationModal );
   setWindowModality( Qt::NonModal );
@@ -690,19 +689,19 @@ void MainWindow::createActions()
 
   m_arrayActions[FORMAT_ACT] = new QAction( tr( "&Format" ), this );
   m_arrayActions[FORMAT_ACT]->setIcon( QIcon::fromTheme( "transform-scale" ) );
-  m_arrayActions[FORMAT_ACT]->setShortcut( Qt::CTRL + Qt::Key_F );
+  m_arrayActions[FORMAT_ACT]->setShortcut( Qt::CTRL | Qt::Key_F );
   m_arrayActions[FORMAT_ACT]->setStatusTip( tr( "Open format dialog" ) );
   connect( m_arrayActions[FORMAT_ACT], SIGNAL( triggered() ), this, SLOT( format() ) );
 
   m_arrayActions[RELOAD_ACT] = new QAction( tr( "&Reload" ), this );
   m_arrayActions[RELOAD_ACT]->setIcon( style()->standardIcon( QStyle::SP_BrowserReload ) );
-  m_arrayActions[RELOAD_ACT]->setShortcut( Qt::CTRL + Qt::Key_R );
+  m_arrayActions[RELOAD_ACT]->setShortcut( Qt::CTRL | Qt::Key_R );
   m_arrayActions[RELOAD_ACT]->setShortcut( Qt::Key_F5 );
   m_arrayActions[RELOAD_ACT]->setStatusTip( tr( "Reload current sequence" ) );
   connect( m_arrayActions[RELOAD_ACT], SIGNAL( triggered() ), this, SLOT( reload() ) );
 
   m_arrayActions[RELOAD_ALL_ACT] = new QAction( tr( "Reload All" ), this );
-  m_arrayActions[RELOAD_ALL_ACT]->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_R );
+  m_arrayActions[RELOAD_ALL_ACT]->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_R );
   m_arrayActions[RELOAD_ALL_ACT]->setStatusTip( tr( "Reload all sequences" ) );
   connect( m_arrayActions[RELOAD_ALL_ACT], SIGNAL( triggered() ), this, SLOT( reloadAll() ) );
 
@@ -982,7 +981,7 @@ void MainWindow::writeSettings()
   appSettings.setValue( "MainWindow/LastOpenPath", m_cLastOpenPath );
 
   QVariant var;
-  var.setValue<CalypFileInfoVector>( m_aRecentFileStreamInfo );
+  var.setValue( m_aRecentFileStreamInfo );
   appSettings.setValue( "MainWindow/RecentFileList", var );
 
   m_appModuleVideo->writeSettings();

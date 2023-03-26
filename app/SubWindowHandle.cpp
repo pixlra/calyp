@@ -28,7 +28,6 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QMdiArea>

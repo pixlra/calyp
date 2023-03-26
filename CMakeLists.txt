@@ -106,6 +106,20 @@ INCLUDE(FetchContent)
 
 SET(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/deps")
 
+FETCHCONTENT_DECLARE(
+    fmtformat
+    GIT_REPOSITORY https://github.com/fmtlib/fmt
+    GIT_TAG 9.1.0
+  )
+
+SET_PACKAGE_PROPERTIES(
+  fmtformat PROPERTIES
+    URL "https://github.com/fmtlib/fmt"
+    DESCRIPTION "A modern formatting library"
+    TYPE REQUIRED
+  )
+  FETCHCONTENT_MAKEAVAILABLE(fmtformat)
+
 # Doxygen
 IF(BUILD_DOC)
   FIND_PACKAGE(Doxygen)
@@ -241,7 +255,7 @@ IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE "Release")
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -funroll-loops")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -funroll-loops -Wno-unused-function")
 
 # if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic") endif()
 

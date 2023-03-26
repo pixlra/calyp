@@ -24,6 +24,8 @@
 
 #include "CalypTools.h"
 
+#include <fmt/format.h>
+
 #include <climits>
 #include <cstring>
 #include <iostream>
@@ -52,8 +54,10 @@ CalypTools::~CalypTools() = default;
 void CalypTools::reportStreamInfo( const CalypStream* stream, std::string strPrefix )
 {
   log( CLP_LOG_INFO, "%sStream name: %s \n", strPrefix.c_str(), stream->getFileName().c_str() );
-  log( CLP_LOG_INFO, "%sResolution: %dx%d@%d \n", strPrefix.c_str(), stream->getWidth(), stream->getHeight(), stream->getFrameRate() );
-  log( CLP_LOG_INFO, "%sBits/pel: %d (%s)\n", strPrefix.c_str(), stream->getBitsPerPixel(), stream->getEndianess() == CLP_BIG_ENDIAN ? "BE" : "LE" );
+  log( CLP_LOG_INFO, "%sResolution: %dx%d@%d \n", strPrefix.c_str(), stream->getWidth(), stream->getHeight(),
+       stream->getFrameRate() );
+  log( CLP_LOG_INFO, "%sBits/pel: %d (%s)\n", strPrefix.c_str(), stream->getBitsPerPixel(),
+       stream->getEndianess() == CLP_BIG_ENDIAN ? "BE" : "LE" );
 }
 
 int CalypTools::openInputs()
@@ -104,7 +108,8 @@ int CalypTools::openInputs()
       pcStream = new CalypStream;
       try
       {
-        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness, hasNegativeValues, 1, CalypStream::Type::Input ) )
+        if( !pcStream->open( inputFileNames[i], resolutionString, fmtString, uiBitsPerPixel, uiEndianness,
+                             hasNegativeValues, 1, CalypStream::Type::Input ) )
         {
           log( CLP_LOG_ERROR, "Cannot open input stream %s! ", inputFileNames[i].c_str() );
           return -1;
@@ -115,7 +120,8 @@ int CalypTools::openInputs()
       }
       catch( const char* msg )
       {
-        log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(), msg );
+        log( CLP_LOG_ERROR, "Cannot open input stream %s with the following error: \n%s\n", inputFileNames[i].c_str(),
+             msg );
         return -1;
       }
     }
@@ -374,7 +380,8 @@ int CalypTools::Open( int argc, char* argv[] )
         try
         {
           pcModStream->open( outputFileNames[0], pcModFrame->getWidth(), pcModFrame->getHeight(),
-                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1, CalypStream::Type::Output );
+                             pcModFrame->getPelFormat(), pcModFrame->getBitsPel(), m_uiOutEndianness, 1,
+                             CalypStream::Type::Output );
           log( CLP_LOG_INFO, "Output stream from module!\n" );
           reportStreamInfo( pcModStream, "Module Output " );
         }
@@ -680,7 +687,8 @@ int CalypTools::ListStatistics()
   {
     log( CLP_LOG_RESULT, "\x1B[32mInput:\t\t\t%d\x1B[0m\n", input );
     log( CLP_LOG_RESULT, "No. Frames:\t\t%d\n", m_apcInputStreams[input]->getFrameNum() );
-    log( CLP_LOG_RESULT, "Pixels:\t\t\t%d\n", m_apcInputStreams[input]->getHeight() * m_apcInputStreams[input]->getWidth() );
+    log( CLP_LOG_RESULT, "Pixels:\t\t\t%d\n",
+         m_apcInputStreams[input]->getHeight() * m_apcInputStreams[input]->getWidth() );
 
     for( unsigned int frame = 0; frame < m_apcInputStreams[input]->getFrameNum(); frame++ )
     {
@@ -714,10 +722,7 @@ int CalypTools::ListStatistics()
       log( CLP_LOG_RESULT, "    Range:          " );
       for( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ )
       {
-        char buffer[14];
-        sprintf( buffer, "[%d:%d]", min[channel], max[channel] );
-
-        log( CLP_LOG_RESULT, "| %13s ", buffer );
+        log( CLP_LOG_RESULT, fmt::format( "[{}:{}]", min[channel], max[channel] ) );
       }
       log( CLP_LOG_RESULT, "|\n" );
 

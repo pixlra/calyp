@@ -229,11 +229,11 @@ bool VideoStreamSubWindow::loadFile( QString cFilename, bool bForceDialog )
   m_sStreamInfo.m_bForceRaw = forceRaw;
 
   QVariant var;
-  var.setValue<unsigned int>( Width );
+  var.setValue( Width );
   appSettings.setValue( "VideoStreamSubWindow/LastWidth", var );
-  var.setValue<unsigned int>( Height );
+  var.setValue( Height );
   appSettings.setValue( "VideoStreamSubWindow/LastHeight", var );
-  var.setValue<unsigned int>( BitsPel );
+  var.setValue( BitsPel );
   appSettings.setValue( "VideoStreamSubWindow/LastBitsPerPixel", var );
 
 #ifdef CALYP_MANAGED_RESOURCES

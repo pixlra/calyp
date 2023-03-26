@@ -22,6 +22,10 @@
  * \brief    main file
  */
 
+#include <QApplication>
+#include <QMetaType>
+#include <QStyleFactory>
+
 #include "CommonDefs.h"
 #include "ConfigureFormatDialog.h"
 #include "MainWindow.h"
@@ -30,8 +34,7 @@
 #ifdef USE_QTDBUS
 #include "DBusAppAdaptor.h"
 #endif
-#include <QApplication>
-#include <QStyleFactory>
+
 #ifdef USE_FERVOR
 #include "fvupdater.h"
 #endif
@@ -43,10 +46,11 @@
 int main( int argc, char* argv[] )
 {
   qRegisterMetaType<CalypFileInfoVector>();
-  qRegisterMetaTypeStreamOperators<CalypFileInfoVector>();
   qRegisterMetaType<CalypStandardResolutionVector>();
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+  qRegisterMetaTypeStreamOperators<CalypFileInfoVector>();
   qRegisterMetaTypeStreamOperators<CalypStandardResolutionVector>();
-
+#endif
   QApplication application( argc, argv );
   QApplication::setApplicationName( QStringLiteral( "Calyp" ) );
   QApplication::setApplicationVersion( QStringLiteral( CALYP_VERSION_STRING ) );

@@ -25,7 +25,6 @@
 #include "ProgressBar.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QLabel>
 #include <QProgressBar>
 #include <QVBoxLayout>

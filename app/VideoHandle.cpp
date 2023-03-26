@@ -52,8 +52,7 @@ VideoHandle::VideoHandle( QWidget* parent, SubWindowHandle* windowManager )
   m_pcPlayingTimer = new QTimer( this );
   m_pcFrameRateFeedbackTimer = std::make_unique<QElapsedTimer>();
   m_pcPlayingTimer->setTimerType( Qt::PreciseTimer );
-  connect( m_pcPlayingTimer, &QTimer::timeout,
-           this, &VideoHandle::playEvent );
+  connect( m_pcPlayingTimer, &QTimer::timeout, this, &VideoHandle::playEvent );
   m_acPlayingSubWindows.clear();
 }
 
@@ -153,7 +152,7 @@ void VideoHandle::createActions()
   m_arrayActions[NAVIGATION_TOOL_ACT] = new QAction( tr( "Navigation Tool" ), this );
   m_arrayActions[NAVIGATION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[NAVIGATION_TOOL_ACT]->setChecked( true );
-  m_arrayActions[NAVIGATION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_1 );
+  m_arrayActions[NAVIGATION_TOOL_ACT]->setShortcut( Qt::CTRL | Qt::Key_1 );
   m_actionGroupTools->addAction( m_arrayActions[NAVIGATION_TOOL_ACT] );
   connect( m_arrayActions[NAVIGATION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[NAVIGATION_TOOL_ACT], ViewArea::NavigationView );
@@ -161,7 +160,7 @@ void VideoHandle::createActions()
   m_arrayActions[SELECTION_TOOL_ACT] = new QAction( "Selection Tool", this );
   m_arrayActions[SELECTION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[SELECTION_TOOL_ACT]->setChecked( false );
-  m_arrayActions[SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_2 );
+  m_arrayActions[SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL | Qt::Key_2 );
   m_actionGroupTools->addAction( m_arrayActions[SELECTION_TOOL_ACT] );
   connect( m_arrayActions[SELECTION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[SELECTION_TOOL_ACT], ViewArea::NormalSelectionView );
@@ -169,7 +168,7 @@ void VideoHandle::createActions()
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT] = new QAction( "Block Selection Tool", this );
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setCheckable( true );
   m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setChecked( false );
-  m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL + Qt::Key_3 );
+  m_arrayActions[BLOCK_SELECTION_TOOL_ACT]->setShortcut( Qt::CTRL | Qt::Key_3 );
   m_actionGroupTools->addAction( m_arrayActions[BLOCK_SELECTION_TOOL_ACT] );
   connect( m_arrayActions[BLOCK_SELECTION_TOOL_ACT], SIGNAL( triggered() ), m_mapperTools, SLOT( map() ) );
   m_mapperTools->setMapping( m_arrayActions[BLOCK_SELECTION_TOOL_ACT], ViewArea::BlockSelectionView );
@@ -507,14 +506,11 @@ void VideoHandle::addSubWindow( VideoSubWindow* window )
   window->getViewArea()->setTool( m_uiViewTool );
   window->getViewArea()->setGridVisible( m_arrayActions[SHOW_GRID_ACT]->isChecked() );
 
-  connect( window, &SubWindowAbstract::aboutToClose,
-           this, &VideoHandle::closeSubWindow );
+  connect( window, &SubWindowAbstract::aboutToClose, this, &VideoHandle::closeSubWindow );
 
-  connect( window, &SubWindowAbstract::zoomFactorChanged,
-           this, &VideoHandle::zoomToFactorAll );
+  connect( window, &SubWindowAbstract::zoomFactorChanged, this, &VideoHandle::zoomToFactorAll );
 
-  connect( window, &SubWindowAbstract::scrollBarMoved,
-           this, &VideoHandle::moveAllScrollBars );
+  connect( window, &SubWindowAbstract::scrollBarMoved, this, &VideoHandle::moveAllScrollBars );
 
   connect( window->getViewArea(), SIGNAL( selectionChanged( QRect ) ), this, SLOT( updateSelectionArea( QRect ) ) );
 }
@@ -606,7 +602,8 @@ void VideoHandle::moveAllScrollBars( const double& horRatio, const double& verRa
   if( m_arrayActions[VIDEO_ZOOM_LOCK_ACT]->isChecked() && m_pcCurrentVideoSubWindow )
   {
     VideoSubWindow* videoSubWindow;
-    QList<SubWindowAbstract*> subWindowList = m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
+    QList<SubWindowAbstract*> subWindowList =
+        m_pcMainWindowManager->findSubWindow( SubWindowAbstract::VIDEO_SUBWINDOW );
 
     for( int i = 0; i < subWindowList.size(); i++ )
     {
@@ -752,7 +749,9 @@ void VideoHandle::calculateRealFrameRate()
 {
   double average_time_between_frames_ms = m_uiNumberPlayedFrames > 0 ? 1000.0 / m_uiRealAverageFrameRate : 0;
   double time_elapsed_since_last_frame_ms = m_pcFrameRateFeedbackTimer->elapsed();
-  average_time_between_frames_ms = double( average_time_between_frames_ms * m_uiNumberPlayedFrames + time_elapsed_since_last_frame_ms ) / double( m_uiNumberPlayedFrames + 1 );
+  average_time_between_frames_ms =
+      double( average_time_between_frames_ms * m_uiNumberPlayedFrames + time_elapsed_since_last_frame_ms ) /
+      double( m_uiNumberPlayedFrames + 1 );
   m_uiRealAverageFrameRate = 1000.0 / average_time_between_frames_ms;
   m_uiNumberPlayedFrames++;
   m_pcFrameRateFeedbackTimer->restart();
@@ -796,7 +795,8 @@ void VideoHandle::playEvent()
   }
   catch( const char* msg )
   {
-    QString warningMsg = "Error while playing " + m_pcCurrentVideoSubWindow->getWindowName() + " with the following error: \n" + msg;
+    QString warningMsg =
+        "Error while playing " + m_pcCurrentVideoSubWindow->getWindowName() + " with the following error: \n" + msg;
     QMessageBox::warning( m_pcParent, QApplication::applicationName(), warningMsg );
     qDebug() << warningMsg;
     stop();

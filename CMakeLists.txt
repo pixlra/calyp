@@ -143,7 +143,7 @@ IF(BUILD_TESTS)
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v2.13.1
+    GIT_TAG v3.3.2
   )
 
   SET_PACKAGE_PROPERTIES(
@@ -161,8 +161,9 @@ IF(BUILD_TESTS)
   )
   FETCHCONTENT_MAKEAVAILABLE(googletest Catch2)
 
-  INCLUDE(${CMAKE_BINARY_DIR}/deps/catch2-src/contrib/Catch.cmake)
+  LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/deps/catch2-src/extras)
   INCLUDE(CTest)
+  INCLUDE(Catch)
   ENABLE_TESTING()
 
   SET(CALYP_TEST_DATA_DIR

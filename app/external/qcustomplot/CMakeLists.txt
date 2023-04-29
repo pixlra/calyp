@@ -2,14 +2,15 @@
 # CMakeLists for qcustomplot
 #
 
-if(${USE_QT6})
-FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-IF (NOT Qt6_FOUND)
-FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-ENDIF()
+IF(${USE_QT6})
+  FIND_PACKAGE(Qt6 QUIET COMPONENTS Core Gui Widgets PrintSupport)
+  IF (NOT Qt6_FOUND)
+    FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+  ENDIF()
 ELSE()
-FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
 ENDIF()
+
 
 SET(qcustomplot_SRCS qcustomplot.cpp qcustomplot.h)
 

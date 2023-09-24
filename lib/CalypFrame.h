@@ -27,6 +27,7 @@
 #define __CALYPFRAME_H__
 
 #include <array>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
@@ -247,7 +248,8 @@ public:
    *
    * @note this function might misbehave if the pixel format enum is not correct
    */
-  CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel, bool has_negative_values );
+  CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel,
+              bool has_negative_values );
 
   /**
    * Move contructor
@@ -406,7 +408,8 @@ public:
    * Get number of bytes per frame of a specific pixel format
    * @return number of bytes per frame
    */
-  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat, unsigned int bitsPixel );
+  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat,
+                                         unsigned int bitsPixel );
 
   /**
    * Reset frame pixels to zero
@@ -488,9 +491,9 @@ public:
   void copyTo( const CalypFrame& other, unsigned x, unsigned y ) const;
   void copyTo( const CalypFrame* other, unsigned x, unsigned y ) const;
 
-  void frameFromBuffer( const std::vector<ClpByte>&, int, unsigned long );
-  void frameFromBuffer( const std::vector<ClpByte>&, int );
-  void frameToBuffer( std::vector<ClpByte>&, int ) const;
+  void frameFromBuffer( std::span<const ClpByte>, int iEndianness, unsigned long uiBuffSize );
+  void frameFromBuffer( std::span<const ClpByte>, int iEndianness );
+  void frameToBuffer( std::span<ClpByte>, int iEndianness ) const;
 
   void fillRGBBuffer( std::optional<std::size_t> channel ) const;
   void fillRGBBuffer() const;

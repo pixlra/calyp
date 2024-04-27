@@ -8,6 +8,8 @@ EXPORT(PACKAGE MyLib)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-deprecated-declarations")
+
 SET(Calyp_Lib_Frame_SRCS CalypPixel.cpp PixelFormats.h PixelFormats.cpp CalypFrame.h CalypFrame.cpp)
 
 SET(Calyp_Lib_Stream_SRCS

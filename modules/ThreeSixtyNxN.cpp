@@ -43,8 +43,7 @@ ThreeSixtyNxN::ThreeSixtyNxN()
   m_pchModuleLongName = "ERP to NxN";
   m_pchModuleTooltip = "Downsampling ERP to NxN";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying |
-                           ClpModuleFeature::Options;
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::Options;
 
   m_cModuleOptions.addOptions()                                                                     /**/
       ( "Downsampling", m_uiDownsampling, "ERP to NxN (0 for up, 1 for down and 2 for recon) [1]" ) /**/
@@ -60,11 +59,13 @@ bool ThreeSixtyNxN::create( std::vector<CalypFrame*> apcFrameList )
   m_uiDownsampling = m_uiDownsampling > 2 ? 1 : m_uiDownsampling;
   if( m_uiDownsampling == 0 )
   {
-    m_pcOutputFrame = new CalypFrame( 2 * apcFrameList[0]->getHeight(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
+    m_pcOutputFrame = new CalypFrame( 2 * apcFrameList[0]->getHeight(), apcFrameList[0]->getHeight(),
+                                      apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
   }
   else
   {
-    m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getHeight(), apcFrameList[0]->getHeight(), apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
+    m_pcOutputFrame = new CalypFrame( apcFrameList[0]->getHeight(), apcFrameList[0]->getHeight(),
+                                      apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
   }
 
   return true;
@@ -73,23 +74,18 @@ bool ThreeSixtyNxN::create( std::vector<CalypFrame*> apcFrameList )
 #define WIDTH_TRIM_START_POINT 0.0
 #define WIDTH_FINAL 1.0
 
-//#define CLAMP8BITS( in ) ( uint8_t )( ( in > 255 ? 255 : in < 0 ? 0 : in ) + 0.5 )
+// #define CLAMP8BITS( in ) ( uint8_t )( ( in > 255 ? 255 : in < 0 ? 0 : in ) + 0.5 )
 #define CLAMP_RANGE( X, MIN, MAX ) ( ( X ) < MIN ? MIN : ( ( X ) > MAX ? MAX : X ) )
 #define CIRCULAR( a, b ) ( ( ( a < 0 ? b : 0 ) + ( a % b ) ) % b )
 #define PI 3.14159265358979323846264338327950288419716939937510
 #define s60 0.8660254037844386467637231707529361834714026269051
 #define s45 0.7071067811865475244008443621048490392848359376884
 
-//interpolação Lanczos3 360
+// interpolação Lanczos3 360
 static inline ClpPel interpol_lanczos3( ClpPel* image, double x, int N, int max_value )
 {
   static const double cs[][2] = {
-      { 1, 0 },
-      { -0.5, -s60 },
-      { -0.5, s60 },
-      { 1, 0 },
-      { -0.5, -s60 },
-      { -0.5, s60 },
+      { 1, 0 }, { -0.5, -s60 }, { -0.5, s60 }, { 1, 0 }, { -0.5, -s60 }, { -0.5, s60 },
   };
 
   double sum_coeffs = 0, sum = 0, coeffs[6];
@@ -115,23 +111,6 @@ static inline ClpPel interpol_lanczos3( ClpPel* image, double x, int N, int max_
     sum += xx[i] * coeffs[i] / sum_coeffs;
 
   return CLAMP_RANGE( sum, 0, max_value );
-}
-
-//interpolação cúbica 360
-static inline ClpPel interpol_cub( ClpPel* image, double x, int N, int max_value )
-{
-  int x_int = floor( x );
-  x -= x_int;
-  bool n0 = x > 0;
-  ClpPel x1 = *( image + CIRCULAR( x_int, N ) );
-  if( !n0 )
-    return x1;
-  ClpPel x2 = *( image + CIRCULAR( x_int + n0, N ) );
-  ClpPel x0 = *( image + CIRCULAR( x_int - 1, N ) );
-  ClpPel x3 = *( image + CIRCULAR( x_int + n0 + 1, N ) );
-
-  ClpPel out = CLAMP_RANGE( x1 - x * ( x0 - x2 + x * ( 2 * x1 - 2 * x0 - x2 + x3 + x * ( x0 - x1 + x2 - x3 ) ) ), 0, max_value );  //cubic
-  return out;
 }
 
 void ThreeSixtyNxN::downsamplingOperation( const CalypFrame* pcInputFrame )

@@ -106,21 +106,6 @@ INCLUDE(FetchContent)
 
 SET(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/deps")
 
-FETCHCONTENT_DECLARE(
-  fmtformat
-  GIT_REPOSITORY https://github.com/fmtlib/fmt
-  GIT_TAG 9.1.0
-)
-
-SET_PACKAGE_PROPERTIES(
-  fmtformat PROPERTIES
-  URL "https://github.com/fmtlib/fmt"
-  DESCRIPTION "A modern formatting library"
-  TYPE REQUIRED
-)
-FETCHCONTENT_MAKEAVAILABLE(fmtformat)
-FIND_PACKAGE(fmt)
-
 # Doxygen
 IF(BUILD_DOC)
   FIND_PACKAGE(Doxygen)

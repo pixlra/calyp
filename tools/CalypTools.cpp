@@ -24,10 +24,9 @@
 
 #include "CalypTools.h"
 
-#include <fmt/format.h>
-
 #include <climits>
 #include <cstring>
+#include <format>
 #include <iostream>
 
 #include "config.h"
@@ -722,7 +721,7 @@ int CalypTools::ListStatistics()
       log( CLP_LOG_RESULT, "    Range:          " );
       for( unsigned channel = 0; channel < currFrame->getNumberChannels(); channel++ )
       {
-        log( CLP_LOG_RESULT, fmt::format( "[{}:{}]", min[channel], max[channel] ) );
+        log( CLP_LOG_RESULT, std::format( "[{}:{}]", min[channel], max[channel] ) );
       }
       log( CLP_LOG_RESULT, "|\n" );
 

@@ -38,7 +38,7 @@
 namespace cv
 {
 class Mat;
-}
+}  // namespace cv
 
 using ClpPel = std::uint16_t;
 using ClpByte = std::uint8_t;
@@ -100,7 +100,10 @@ enum CLP_Endianness
   CLP_LITTLE_ENDIAN = 1,
 };
 
-#define CHROMASHIFT( SIZE, SHIFT ) (unsigned int)( -( ( -( (int)( SIZE ) ) ) >> ( SHIFT ) ) )
+constexpr auto CHROMASHIFT( unsigned int size, unsigned int shift ) -> unsigned int
+{
+  return -( ( -( static_cast<int>( size ) ) ) >> ( shift ) );  // NOLINT
+}
 
 /**
  * \class    CalypPixel
@@ -118,9 +121,9 @@ public:
   static constexpr std::size_t getMaxNumberOfComponents() { return kMaxNumberOfComponents; }
 
   CalypPixel() = default;
-  CalypPixel( const int CalypColorSpace, const ClpPel c0 = 0 );
-  CalypPixel( const int CalypColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2 );
-  CalypPixel( const int CalypColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2, const ClpPel c3 );
+  explicit CalypPixel( int calypColorSpace, ClpPel c0 = 0 );
+  CalypPixel( int calypColorSpace, ClpPel c0, ClpPel c1, ClpPel c2 );
+  CalypPixel( int calypColorSpace, ClpPel c0, ClpPel c1, ClpPel c2, ClpPel c3 );
   CalypPixel( const CalypPixel& other ) noexcept = default;
   CalypPixel( CalypPixel&& other ) noexcept = default;
   auto operator=( const CalypPixel& other ) -> CalypPixel& = default;
@@ -132,20 +135,20 @@ public:
   auto components() const -> const std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
   auto components() -> std::array<ClpPel, kMaxNumberOfComponents>& { return m_pelComp; };
 
-  ClpPel operator[]( const std::size_t channel ) const { return m_pelComp[channel]; }
-  ClpPel& operator[]( const std::size_t channel ) { return m_pelComp[channel]; }
+  auto operator[]( const std::size_t channel ) const -> ClpPel { return m_pelComp[channel]; }
+  auto operator[]( const std::size_t channel ) -> ClpPel& { return m_pelComp[channel]; }
 
-  CalypPixel& operator+=( const CalypPixel& );
-  CalypPixel& operator-=( const CalypPixel& );
-  CalypPixel& operator*=( const double );
+  auto operator+=( const CalypPixel& ) -> CalypPixel&;
+  auto operator-=( const CalypPixel& ) -> CalypPixel&;
+  auto operator*=( double ) -> CalypPixel&;
 
-  CalypPixel operator+( const CalypPixel& ) const;
-  CalypPixel operator-( const CalypPixel& ) const;
-  CalypPixel operator*( const double ) const;
+  auto operator+( const CalypPixel& ) const -> CalypPixel;
+  auto operator-( const CalypPixel& ) const -> CalypPixel;
+  auto operator*( double ) const -> CalypPixel;
 
   auto operator==( const CalypPixel& other ) const -> bool;
 
-  friend std::ostream& operator<<( std::ostream& os, const CalypPixel& p );
+  friend auto operator<<( std::ostream& os, const CalypPixel& p ) -> std::ostream&;
 
   /**
    * Convert a Pixel to a new color space
@@ -153,10 +156,10 @@ public:
    * @param eOutputSpace output color space
    * @return converted pixel
    */
-  CalypPixel convertPixel( CalypColorSpace eOutputSpace ) const;
+  auto convertPixel( CalypColorSpace eOutputSpace ) const -> CalypPixel;
 };
 
-std::ostream& operator<<( std::ostream& os, const CalypPixel& p );
+auto operator<<( std::ostream& stream, const CalypPixel& pixel ) -> std::ostream&;
 
 /**
  * \class    CalypPlane
@@ -222,11 +225,11 @@ public:
    */
   static constexpr auto numberOfFormats() -> std::size_t;
   static auto findPixelFormat( const std::string& name ) -> std::optional<ClpPixelFormats>;
-  static auto findPixelFormat( const std::string_view name ) -> std::optional<ClpPixelFormats>;
+  static auto findPixelFormat( std::string_view name ) -> std::optional<ClpPixelFormats>;
   static auto pelFormatColorSpace( ClpPixelFormats idx ) -> int;
   static auto supportedPixelFormatListNames() -> std::map<ClpPixelFormats, std::string_view>;
   static auto supportedPixelFormatListNames( int colorSpace ) -> std::map<ClpPixelFormats, std::string_view>;
-  static auto pixelFormatName( ClpPixelFormats idx ) -> const std::string_view;
+  static auto pixelFormatName( ClpPixelFormats idx ) -> std::string_view;
 
   /**
    * Creates a new frame using the following configuration
@@ -249,21 +252,21 @@ public:
    * @note this function might misbehave if the pixel format enum is not correct
    */
   CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel,
-              bool has_negative_values );
+              bool hasNegativeValues );
 
   /**
    * Move contructor
    *
    * @param other existing frame to copy from
    */
-  CalypFrame( CalypFrame&& other ) noexcept;
+  CalypFrame( CalypFrame&& other ) noexcept = default;
 
   /**
    * Move assignement contructor
    *
    * @param other existing frame to copy from
    */
-  CalypFrame& operator=( CalypFrame&& other ) noexcept;
+  auto operator=( CalypFrame&& other ) noexcept -> CalypFrame& = default;
 
   /**
    * Copy contructor
@@ -277,7 +280,7 @@ public:
    *
    * @param other existing frame to copy from
    */
-  CalypFrame& operator=( const CalypFrame& other );
+  auto operator=( const CalypFrame& other ) -> CalypFrame&;
 
   /**
    * Creates and new frame with the configuration of an existing one and copy
@@ -314,14 +317,14 @@ public:
    * @param match matching conditions (use enum FormatMatching)
    * @return true if format matches
    */
-  bool haveSameFmt( const CalypFrame& other, unsigned int match = MATCH_ALL ) const;
-  bool haveSameFmt( const CalypFrame* other, unsigned int match = MATCH_ALL ) const;
+  auto haveSameFmt( const CalypFrame& other, unsigned int match = MATCH_ALL ) const -> bool;
+  auto haveSameFmt( const CalypFrame* other, unsigned int match = MATCH_ALL ) const -> bool;
 
   /**
    * Get pixel format information
    * @return pixel format index
    */
-  ClpPixelFormats getPelFormat() const;
+  auto getPelFormat() const -> ClpPixelFormats;
 
   /**
    * Get pixel format information
@@ -333,91 +336,91 @@ public:
    * Get color space information
    * @return get color space index
    */
-  int getColorSpace() const;
+  auto getColorSpace() const -> int;
 
   /**
    * Get the number of channels
    * @return number of channels
    */
-  unsigned getNumberChannels() const;
+  auto getNumberChannels() const -> unsigned;
 
   /**
    * Get width of the frame
    * @param channel/component
    * @return number of pixels
    */
-  unsigned int getWidth( unsigned channel = 0 ) const;
+  auto getWidth( unsigned channel = 0 ) const -> unsigned int;
 
   /**
    * Get height of the frame
    * @param channel/component
    * @return number of pixels
    */
-  unsigned int getHeight( unsigned channel = 0 ) const;
+  auto getHeight( unsigned channel = 0 ) const -> unsigned int;
 
   /**
    * Check if frame has negative values
    * @return Boolean with the flag value
    */
-  bool getHasNegativeValues() const;
+  auto getHasNegativeValues() const -> bool;
 
   /**
    * Get number of pixels of the frame
    * @param channel/component
    * @return number of pixels
    */
-  std::uint64_t getPixels( unsigned channel = 0 ) const;
+  auto getPixels( unsigned channel = 0 ) const -> std::uint64_t;
 
   /**
    * Get the total number of pixels of the frame
    * @return number of pixels
    */
-  std::uint64_t getTotalNumberOfPixels() const;
+  auto getTotalNumberOfPixels() const -> std::uint64_t;
 
   /**
    * Get chroma width ratio
    * @return ratio multiple of 2
    */
-  unsigned getChromaWidthRatio() const;
+  auto getChromaWidthRatio() const -> unsigned;
 
   /**
    * Get chroma height ratio
    * @return ratio multiple of 2
    */
-  unsigned getChromaHeightRatio() const;
+  auto getChromaHeightRatio() const -> unsigned;
 
   /**
    * Get number of pixels in each chroma channel
    * @return number of pixels
    */
-  std::uint64_t getChromaLength() const;
+  auto getChromaLength() const -> std::uint64_t;
 
   /**
    * Get number of bits per pixel
    * @return number of bits
    */
-  unsigned int getBitsPel() const;
+  auto getBitsPel() const -> unsigned int;
 
   /**
    * Get number of bytes per frame of an existing frame
    * @return number of bytes per frame
    */
-  std::uint64_t getBytesPerFrame() const;
+  auto getBytesPerFrame() const -> std::uint64_t;
 
   /**
    * Get number of bytes per frame of a specific pixel format
    * @return number of bytes per frame
    */
-  static std::uint64_t getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat,
-                                         unsigned int bitsPixel );
+  static auto getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat,
+                                unsigned int bitsPixel ) -> std::uint64_t;
 
   /**
    * Reset frame pixels to zero
    */
   void reset();
 
-  ClpPel*** getPelBufferYUV() const;
-  ClpPel*** getPelBufferYUV();
+  auto getPelBufferYUV() const -> ClpPel***;
+  auto getPelBufferYUV() -> ClpPel***;
 
   auto getRGBBuffer() const -> std::optional<std::span<const std::uint8_t>>;
 
@@ -429,7 +432,7 @@ public:
    * @param absolute whether it should return positive/negative values
    * @return pixel value
    */
-  ClpPel operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute = true ) const;
+  auto operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute = true ) const -> ClpPel;
 
   /**
    * Get pixel value at coordinates
@@ -437,7 +440,7 @@ public:
    * @param yPos position in Y axis
    * @return pixel value
    */
-  CalypPixel operator()( unsigned int xPos, unsigned int yPos ) const;
+  auto operator()( unsigned int xPos, unsigned int yPos ) const -> CalypPixel;
 
   /**
    * Get pixel value at coordinates
@@ -445,7 +448,7 @@ public:
    * @param yPos position in Y axis
    * @return pixel value
    */
-  CalypPixel getPixel( unsigned int xPos, unsigned int yPos ) const;
+  auto getPixel( unsigned int xPos, unsigned int yPos ) const -> CalypPixel;
 
   /**
    * Get pixel value at coordinates
@@ -455,7 +458,7 @@ public:
    * @param eColorSpace desired color space
    * @return pixel value
    */
-  CalypPixel getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace ) const;
+  auto getPixel( unsigned int xPos, unsigned int yPos, CalypColorSpace eColorSpace ) const -> CalypPixel;
 
   /**
    * Set pixel value at coordinates to a given value
@@ -491,7 +494,7 @@ public:
   void copyTo( const CalypFrame& other, unsigned x, unsigned y ) const;
   void copyTo( const CalypFrame* other, unsigned x, unsigned y ) const;
 
-  void frameFromBuffer( std::span<const ClpByte>, int iEndianness, unsigned long uiBuffSize );
+  void frameFromBuffer( std::span<const ClpByte>, int iEndianness, std::uint64_t uiBuffSize );
   void frameFromBuffer( std::span<const ClpByte>, int iEndianness );
   void frameToBuffer( std::span<ClpByte>, int iEndianness ) const;
 
@@ -519,24 +522,24 @@ public:
   };
   void calcHistogram();
 
-  unsigned int getMinimumPelValue( unsigned channel ) const;
-  unsigned int getMaximumPelValue( unsigned channel ) const;
+  auto getMinimumPelValue( unsigned channel ) const -> unsigned int;
+  auto getMaximumPelValue( unsigned channel ) const -> unsigned int;
 
-  unsigned int getMaximum( unsigned channel ) const;
-  unsigned int getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end ) const;
-  double getMean( unsigned channel, unsigned int start, unsigned int end ) const;
-  int getMedian( unsigned channel, unsigned int start, unsigned int end ) const;
-  double getStdDev( unsigned channel, unsigned int start, unsigned int end ) const;
-  double getHistogramValue( unsigned channel, unsigned int bin ) const;
-  unsigned int getNEBins( unsigned channel ) const;
-  int getNumHistogramSegment() const;
-  double getEntropy( unsigned channel, unsigned int start, unsigned int end ) const;
+  auto getMaximum( unsigned channel ) const -> unsigned int;
+  auto getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end ) const -> unsigned int;
+  auto getMean( unsigned channel, unsigned int start, unsigned int end ) const -> double;
+  auto getMedian( unsigned channel, unsigned int start, unsigned int end ) const -> int;
+  auto getStdDev( unsigned channel, unsigned int start, unsigned int end ) const -> double;
+  auto getHistogramValue( unsigned channel, unsigned int bin ) const -> double;
+  auto getNEBins( unsigned channel ) const -> unsigned int;
+  auto getNumHistogramSegment() const -> int;
+  auto getEntropy( unsigned channel, unsigned int start, unsigned int end ) const -> double;
 
   /**
    * interface with OpenCV lib
    */
-  bool toMat( cv::Mat& cvMat, bool convertToGray = false, bool scale = true, unsigned channel = 0 ) const;
-  bool fromMat( cv::Mat& cvMat, int iChannel = -1 );
+  auto toMat( cv::Mat& cvMat, bool convertToGray = false, bool scale = true, unsigned channel = 0 ) const -> bool;
+  auto fromMat( cv::Mat& cvMat, int iChannel = -1 ) -> bool;
 
   /**
    * \ingroup	 CalypFrameGrp
@@ -556,18 +559,18 @@ public:
     NUMBER_METRICS,
   };
 
-  static std::vector<std::string> supportedQualityMetricsList();
-  static std::vector<std::string> supportedQualityMetricsUnitsList();
-  double getQuality( int Metric, CalypFrame* Org, unsigned int component );
-  double getMSE( CalypFrame* Org, unsigned int component );
-  double getPSNR( CalypFrame* Org, unsigned int component );
-  double getSSIM( CalypFrame* Org, unsigned int component );
-  double getWSPNR( CalypFrame* Org, unsigned int component );
+  static auto supportedQualityMetricsList() -> std::vector<std::string>;
+  static auto supportedQualityMetricsUnitsList() -> std::vector<std::string>;
+  auto getQuality( int metric, CalypFrame* org, unsigned int component ) -> double;
+  auto getMSE( CalypFrame* org, unsigned int component ) -> double;
+  auto getPSNR( CalypFrame* org, unsigned int component ) -> double;
+  auto getSSIM( CalypFrame* org, unsigned int component ) -> double;
+  auto getWSPNR( CalypFrame* org, unsigned int component ) -> double;
   /** @} */
 
 private:
-  class CalypFramePrivate;
-  std::unique_ptr<CalypFramePrivate> d;
+  struct CalypFramePrivate;
+  std::unique_ptr<CalypFramePrivate> m_d;
 };
 
 #endif  // __CALYPFRAME_H__

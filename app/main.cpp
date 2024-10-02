@@ -51,6 +51,7 @@ int main( int argc, char* argv[] )
   qRegisterMetaTypeStreamOperators<CalypFileInfoVector>();
   qRegisterMetaTypeStreamOperators<CalypStandardResolutionVector>();
 #endif
+  QApplication::setStyle( "macOS" );
   QApplication application( argc, argv );
   QApplication::setApplicationName( QStringLiteral( "Calyp" ) );
   QApplication::setApplicationVersion( QStringLiteral( CALYP_VERSION_STRING ) );

@@ -59,7 +59,7 @@ public:
   void createActions();
   QMenu* createVideoMenu();
   QMenu* createImageMenu();
-  QToolBar* createToolBar();
+  QPointer<QToolBar> createToolBar();
   QDockWidget* createDock();
   QWidget* createStatusBarMessage();
   void updateMenus();
@@ -113,7 +113,7 @@ private:
 
   QMenu* m_pcMenuVideo;
   QMenu* m_pcMenuImage;
-  QToolBar* m_toolbarVideo;
+  // QToolBar* m_toolbarVideo;
 
   QDockWidget* m_pcFramePropertiesDock;
   FramePropertiesDock* m_pcFramePropertiesSideBar;

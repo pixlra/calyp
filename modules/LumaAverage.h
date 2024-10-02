@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class LumaAverage : public CalypModuleIf
+class LumaAverage : public CalypModuleIf, public CalypModuleInstance<LumaAverage>
 {
-  REGISTER_CLASS_FACTORY( LumaAverage )
-
 private:
 public:
   LumaAverage();

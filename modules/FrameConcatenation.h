@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameConcatenation : public CalypModuleIf
+class FrameConcatenation : public CalypModuleIf, public CalypModuleInstance<FrameConcatenation>
 {
-  REGISTER_CLASS_FACTORY( FrameConcatenation )
-
 private:
   CalypFrame* m_pcProcessedFrame;
   int m_iShiftHor;

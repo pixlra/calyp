@@ -35,7 +35,7 @@ class QLabel;
 class FrameNumberWidget : public QWidget
 {
 public:
-  FrameNumberWidget( QWidget* parent = 0 );
+  explicit FrameNumberWidget( QWidget* parent = 0 );
   void setCurrFrameNum( int number );
   void setTotalFrameNum( int number );
   void clear();

@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameShift : public CalypModuleIf
+class FrameShift : public CalypModuleIf, public CalypModuleInstance<FrameShift>
 {
-  REGISTER_CLASS_FACTORY( FrameShift )
-
 private:
   CalypFrame* m_pcProcessedFrame;
   int m_iShiftHor;

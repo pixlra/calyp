@@ -27,10 +27,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class ThreeSixtyFaceConcatenation : public CalypModuleIf
+class ThreeSixtyFaceConcatenation : public CalypModuleIf, public CalypModuleInstance<ThreeSixtyFaceConcatenation>
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtyFaceConcatenation )
-
 private:
   std::unique_ptr<CalypFrame> m_pcConcatenatedFaces;
   unsigned m_uiProjectionType;

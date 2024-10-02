@@ -29,10 +29,8 @@
 
 #include "CalypModuleIf.h"
 
-class AbsoluteFrameDifferenceExample : public CalypModuleIf
+class AbsoluteFrameDifferenceExample : public CalypModuleIf, public CalypModuleInstance<AbsoluteFrameDifferenceExample>
 {
-  REGISTER_CLASS_FACTORY( AbsoluteFrameDifferenceExample )
-
 private:
   CalypFrame* m_pcFrameDifference;
 

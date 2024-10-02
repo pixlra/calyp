@@ -158,7 +158,6 @@ private:
 
   QDoubleSpinBox* m_pcZoomFactorSBox;
 
-  QSignalMapper* mapperZoom;
   QSignalMapper* mapperWindow;
 
   /**
@@ -202,18 +201,6 @@ private:
     TOTAL_DOCK,
   };
   QVector<QDockWidget*> m_arraySideBars;
-
-  /**
-   * Array of tool bars for the main app
-   */
-  enum TOOLBAR_LIST
-  {
-    FILE_TOOLBAR = 0,
-    VIEW_TOOLBAR,
-    VIDEO_TOOLBAR,
-    TOTAL_TOOLBAR,
-  };
-  QVector<QToolBar*> m_arrayToolBars;
 
   /**
    * Array of actions for the main app

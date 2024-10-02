@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class HEVCIntraPrediction : public CalypModuleIf
+class HEVCIntraPrediction : public CalypModuleIf, public CalypModuleInstance<HEVCIntraPrediction>
 {
-  REGISTER_CLASS_FACTORY( HEVCIntraPrediction )
-
 private:
   CalypFrame* m_pcPredBlock;
   unsigned int m_uiMode;

@@ -134,8 +134,7 @@ bool MainWindow::parseArgs( int argc, char* argv[] )
 
 void MainWindow::about()
 {
-  if( !m_pcAboutDialog )
-    m_pcAboutDialog = new AboutDialog( this );
+  if( !m_pcAboutDialog ) m_pcAboutDialog = new AboutDialog( this );
   m_pcAboutDialog->exec();
 }
 
@@ -208,8 +207,7 @@ void MainWindow::loadFile( const QString& fileName, std::optional<CalypFileInfo>
   if( !streamInfoOpt.has_value() )
   {
     auto idx = findCalypStreamInfo( m_aRecentFileStreamInfo, fileName );
-    if( idx >= 0 )
-      streamInfoOpt = m_aRecentFileStreamInfo.at( idx );
+    if( idx >= 0 ) streamInfoOpt = m_aRecentFileStreamInfo.at( idx );
   }
 
   auto streamInfo = streamInfoOpt.has_value() ? *streamInfoOpt : CalypFileInfo{ .m_cFilename = fileName };
@@ -333,8 +331,7 @@ QStringList MainWindow::showFileDialog( bool bRead )
   else
   {
     QString fileName = QFileDialog::getSaveFileName( this, tr( "Save File" ), m_lastOpenPath, filter.join( ";;" ) );
-    if( !fileName.isEmpty() )
-      fileNameList.append( fileName );
+    if( !fileName.isEmpty() ) fileNameList.append( fileName );
   }
   return fileNameList;
 }
@@ -585,8 +582,7 @@ VideoStreamSubWindow* MainWindow::findVideoStreamSubWindow( const SubWindowHandl
   for( int i = 0; i < subWindowList.size(); i++ )
   {
     auto* pcSubWindow = qobject_cast<VideoStreamSubWindow*>( subWindowList.at( i ) );
-    if( pcSubWindow->getCurrentFileName() == canonicalFilePath )
-      return pcSubWindow;
+    if( pcSubWindow->getCurrentFileName() == canonicalFilePath ) return pcSubWindow;
   }
   return nullptr;
 }
@@ -709,19 +705,19 @@ void MainWindow::createActions()
 
   m_arrayActions[FORMAT_ACT] = new QAction( tr( "&Format" ), this );
   m_arrayActions[FORMAT_ACT]->setIcon( QIcon::fromTheme( "transform-scale" ) );
-  m_arrayActions[FORMAT_ACT]->setShortcut( Qt::CTRL + Qt::Key_F );
+  m_arrayActions[FORMAT_ACT]->setShortcut( Qt::CTRL | Qt::Key_F );
   m_arrayActions[FORMAT_ACT]->setStatusTip( tr( "Open format dialog" ) );
   connect( m_arrayActions[FORMAT_ACT], SIGNAL( triggered() ), this, SLOT( format() ) );
 
   m_arrayActions[RELOAD_ACT] = new QAction( tr( "&Reload" ), this );
   m_arrayActions[RELOAD_ACT]->setIcon( style()->standardIcon( QStyle::SP_BrowserReload ) );
-  m_arrayActions[RELOAD_ACT]->setShortcut( Qt::CTRL + Qt::Key_R );
+  m_arrayActions[RELOAD_ACT]->setShortcut( Qt::CTRL | Qt::Key_R );
   m_arrayActions[RELOAD_ACT]->setShortcut( Qt::Key_F5 );
   m_arrayActions[RELOAD_ACT]->setStatusTip( tr( "Reload current sequence" ) );
   connect( m_arrayActions[RELOAD_ACT], SIGNAL( triggered() ), this, SLOT( reload() ) );
 
   m_arrayActions[RELOAD_ALL_ACT] = new QAction( tr( "Reload All" ), this );
-  m_arrayActions[RELOAD_ALL_ACT]->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_R );
+  m_arrayActions[RELOAD_ALL_ACT]->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_R );
   m_arrayActions[RELOAD_ALL_ACT]->setStatusTip( tr( "Reload all sequences" ) );
   connect( m_arrayActions[RELOAD_ALL_ACT], SIGNAL( triggered() ), this, SLOT( reloadAll() ) );
 
@@ -744,22 +740,17 @@ void MainWindow::createActions()
   connect( m_arrayActions[EXIT_ACT], SIGNAL( triggered() ), qApp, SLOT( closeAllWindows() ) );
 
   // ------------ View ------------
-  mapperZoom = new QSignalMapper( this );
-  connect( mapperZoom, SIGNAL( mapped( int ) ), this, SLOT( scaleFrame( int ) ) );
-
   m_arrayActions[ZOOM_IN_ACT] = new QAction( tr( "Zoom &In (+25%)" ), this );
   m_arrayActions[ZOOM_IN_ACT]->setIcon( QIcon::fromTheme( "zoom-in" ) );
   m_arrayActions[ZOOM_IN_ACT]->setShortcut( tr( "Ctrl++" ) );
   m_arrayActions[ZOOM_IN_ACT]->setStatusTip( tr( "Scale the image up by 25%" ) );
-  connect( m_arrayActions[ZOOM_IN_ACT], SIGNAL( triggered() ), mapperZoom, SLOT( map() ) );
-  mapperZoom->setMapping( m_arrayActions[ZOOM_IN_ACT], 125 );
+  connect( m_arrayActions[ZOOM_IN_ACT], &QAction::triggered, [this] { scaleFrame( 125 ); } );
 
   m_arrayActions[ZOOM_OUT_ACT] = new QAction( tr( "Zoom &Out (-25%)" ), this );
   m_arrayActions[ZOOM_OUT_ACT]->setIcon( QIcon::fromTheme( "zoom-out" ) );
   m_arrayActions[ZOOM_OUT_ACT]->setShortcut( tr( "Ctrl+-" ) );
   m_arrayActions[ZOOM_OUT_ACT]->setStatusTip( tr( "Scale the image down by 25%" ) );
-  connect( m_arrayActions[ZOOM_OUT_ACT], SIGNAL( triggered() ), mapperZoom, SLOT( map() ) );
-  mapperZoom->setMapping( m_arrayActions[ZOOM_OUT_ACT], 80 );
+  connect( m_arrayActions[ZOOM_OUT_ACT], &QAction::triggered, [this] { scaleFrame( 80 ); } );
 
   m_arrayActions[ZOOM_NORMAL_ACT] = new QAction( tr( "&Normal Size" ), this );
   m_arrayActions[ZOOM_NORMAL_ACT]->setIcon( QIcon::fromTheme( "zoom-original" ) );
@@ -865,19 +856,17 @@ void MainWindow::createMenus()
 
 void MainWindow::createToolBars()
 {
-  m_arrayToolBars.resize( TOTAL_TOOLBAR );
+  auto* fileToolbar = addToolBar( tr( "File" ) );
+  fileToolbar->addAction( m_arrayActions[OPEN_ACT] );
+  fileToolbar->addAction( m_arrayActions[SAVE_ACT] );
+  fileToolbar->addAction( m_arrayActions[FORMAT_ACT] );
+  fileToolbar->addAction( m_arrayActions[RELOAD_ACT] );
+  fileToolbar->addAction( m_arrayActions[CLOSE_ACT] );
+  fileToolbar->setMovable( false );
+  addToolBar( Qt::TopToolBarArea, fileToolbar );
 
-  m_arrayToolBars[FILE_TOOLBAR] = new QToolBar( tr( "File" ) );
-  m_arrayToolBars[FILE_TOOLBAR]->addAction( m_arrayActions[OPEN_ACT] );
-  m_arrayToolBars[FILE_TOOLBAR]->addAction( m_arrayActions[SAVE_ACT] );
-  m_arrayToolBars[FILE_TOOLBAR]->addAction( m_arrayActions[FORMAT_ACT] );
-  m_arrayToolBars[FILE_TOOLBAR]->addAction( m_arrayActions[RELOAD_ACT] );
-  m_arrayToolBars[FILE_TOOLBAR]->addAction( m_arrayActions[CLOSE_ACT] );
+  auto* viewToolBar = addToolBar( tr( "View" ) );
 
-  m_arrayToolBars[FILE_TOOLBAR]->setMovable( false );
-  addToolBar( Qt::TopToolBarArea, m_arrayToolBars[FILE_TOOLBAR] );
-
-  m_arrayToolBars[VIEW_TOOLBAR] = new QToolBar( tr( "View" ) );
   m_pcZoomFactorSBox = new QDoubleSpinBox;
   m_pcZoomFactorSBox->setRange( 1.0, 10000.0 );
   m_pcZoomFactorSBox->setDecimals( 0 );
@@ -885,14 +874,15 @@ void MainWindow::createToolBars()
   m_pcZoomFactorSBox->setValue( 100.0 );
   m_pcZoomFactorSBox->setSuffix( "%" );
   connect( m_pcZoomFactorSBox, SIGNAL( valueChanged( double ) ), this, SLOT( zoomFromSBox( double ) ) );
-  m_arrayToolBars[VIEW_TOOLBAR]->addWidget( m_pcZoomFactorSBox );
-  m_arrayToolBars[VIEW_TOOLBAR]->addAction( m_arrayActions[ZOOM_IN_ACT] );
-  m_arrayToolBars[VIEW_TOOLBAR]->addAction( m_arrayActions[ZOOM_OUT_ACT] );
-  m_arrayToolBars[VIEW_TOOLBAR]->addAction( m_arrayActions[ZOOM_NORMAL_ACT] );
-  m_arrayToolBars[VIEW_TOOLBAR]->addAction( m_arrayActions[ZOOM_FIT_ACT] );
 
-  m_arrayToolBars[FILE_TOOLBAR]->setMovable( false );
-  addToolBar( Qt::TopToolBarArea, m_arrayToolBars[VIEW_TOOLBAR] );
+  viewToolBar->addWidget( m_pcZoomFactorSBox );
+  viewToolBar->addAction( m_arrayActions[ZOOM_IN_ACT] );
+  viewToolBar->addAction( m_arrayActions[ZOOM_OUT_ACT] );
+  viewToolBar->addAction( m_arrayActions[ZOOM_NORMAL_ACT] );
+  viewToolBar->addAction( m_arrayActions[ZOOM_FIT_ACT] );
+
+  viewToolBar->setMovable( false );
+  addToolBar( Qt::TopToolBarArea, viewToolBar );
 
   addToolBar( Qt::TopToolBarArea, m_appModuleVideo->createToolBar() );
 }
@@ -915,8 +905,7 @@ void MainWindow::createStatusBar()
 void MainWindow::addStreamInfoToRecentList( CalypFileInfo streamInfo )
 {
   int idx = findCalypStreamInfo( m_aRecentFileStreamInfo, streamInfo.m_cFilename );
-  if( idx >= 0 )
-    m_aRecentFileStreamInfo.remove( idx );
+  if( idx >= 0 ) m_aRecentFileStreamInfo.remove( idx );
   m_aRecentFileStreamInfo.prepend( streamInfo );
   while( m_aRecentFileStreamInfo.size() > MAX_RECENT_FILES )
     m_aRecentFileStreamInfo.remove( m_aRecentFileStreamInfo.size() - 1 );
@@ -1012,7 +1001,7 @@ void MainWindow::writeSettings()
   appSettings.setValue( "MainWindow/LastBitsPerPixel", m_lastOpenBitPerPixel );
 
   QVariant var;
-  var.setValue<CalypFileInfoVector>( m_aRecentFileStreamInfo );
+  var.setValue( m_aRecentFileStreamInfo );
   appSettings.setValue( "MainWindow/RecentFileList", var );
 
   m_appModuleVideo->writeSettings();

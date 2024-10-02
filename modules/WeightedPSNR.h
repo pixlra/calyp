@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class WeightedPSNR : public CalypModuleIf
+class WeightedPSNR : public CalypModuleIf, public CalypModuleInstance<WeightedPSNR>
 {
-  REGISTER_CLASS_FACTORY( WeightedPSNR )
-
 private:
   unsigned int m_uiComponent;
 

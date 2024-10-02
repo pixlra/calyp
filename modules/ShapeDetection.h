@@ -31,13 +31,11 @@
 // OpenCV
 #include <opencv2/core/core.hpp>
 
-class ShapeDetection : public CalypOpenCVModuleIf,
-                       public CalypModuleInstace<ShapeDetection>
+class ShapeDetection : public CalypOpenCVModuleIf, public CalypModuleInstance<ShapeDetection>
 {
   using Mat = cv::Mat;
 
 private:
-  bool m_bBinaryMap;
   std::unique_ptr<Mat> m_resultImage;
   cv::RNG m_rng;
 

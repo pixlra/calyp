@@ -47,8 +47,7 @@ VideoStreamSubWindow::VideoStreamSubWindow( ResourceHandle* resourceManager, QWi
 
 VideoStreamSubWindow::~VideoStreamSubWindow()
 {
-  if( m_pcResourceManager )
-    m_pcResourceManager->removeResource( m_uiResourceId );
+  if( m_pcResourceManager ) m_pcResourceManager->removeResource( m_uiResourceId );
 }
 
 void VideoStreamSubWindow::resetWindowName()
@@ -94,8 +93,7 @@ void VideoStreamSubWindow::updateVideoWindowInfo()
   {
     QString m_cPelFmtName = QString::fromStdString( m_pcCurrFrameAsset->getPelFmtName() );
     if( m_pCurrStream )
-      if( !m_pCurrStream->isNative() )
-        m_cPelFmtName += "*";
+      if( !m_pCurrStream->isNative() ) m_cPelFmtName += "*";
     m_cStreamInformation += " | " + m_cPelFmtName;
   }
   if( m_cStreamInformation.isEmpty() )
@@ -116,7 +114,6 @@ void VideoStreamSubWindow::setResource( std::size_t id )
 {
   m_uiResourceId = id;
   m_pCurrStream = m_pcResourceManager->getResourceAsset( m_uiResourceId );
-
 #ifdef CALYP_MANAGED_RESOURCES
   m_pcResourceManager->startResourceWorker( m_uiResourceId );
 #endif
@@ -286,8 +283,7 @@ void VideoStreamSubWindow::refreshFrame()
     m_pcDisplayModule->apply( m_bIsPlaying, true );
     bSetFrame = false;
   }
-  if( bSetFrame )
-    VideoSubWindow::refreshFrame();
+  if( bSetFrame ) VideoSubWindow::refreshFrame();
 }
 
 void VideoStreamSubWindow::refreshFrame( bool bThreaded )
@@ -312,7 +308,9 @@ bool VideoStreamSubWindow::goToNextFrame( bool bThreaded )
   m_cReadResult.waitForFinished();
 #endif
 #ifdef CALYP_MANAGED_RESOURCES
-  while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() ) {}
+  while( !m_pCurrStream->hasNextFrame() && !m_pCurrStream->isEof() )
+  {
+  }
 #endif
   bool bEndOfSeq = m_pCurrStream->setNextFrame();
 #ifdef CALYP_MANAGED_RESOURCES
@@ -386,8 +384,7 @@ void VideoStreamSubWindow::seekAbsoluteEvent( unsigned int new_frame_num )
 {
   if( m_pCurrStream )
   {
-    if( m_pCurrStream->seekInput( new_frame_num ) )
-      refreshFrame();
+    if( m_pCurrStream->seekInput( new_frame_num ) ) refreshFrame();
 
 #ifdef CALYP_MANAGED_RESOURCES
     m_pcResourceManager->wakeResourceWorker( m_uiResourceId );

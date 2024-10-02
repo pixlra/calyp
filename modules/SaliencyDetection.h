@@ -65,8 +65,7 @@ public:
  * approach. In Computer Vision and Pattern Recognition, 2007.
  * CVPR'07. IEEE Conference on, pages 1–8. IEEE, 2007.
  */
-class SaliencyDetectionSpectral : public SaliencyDetectionModule,
-                                  public CalypModuleInstace<SaliencyDetectionSpectral>
+class SaliencyDetectionSpectral : public SaliencyDetectionModule, public CalypModuleInstance<SaliencyDetectionSpectral>
 {
   using Mat = cv::Mat;
 
@@ -91,7 +90,7 @@ public:
  * In Image and Vision Computing, Vol. 28 Issue 3, pages 391–402. Elsevier, 2010.
  */
 class SaliencyDetectionFineGrained : public SaliencyDetectionModule,
-                                     public CalypModuleInstace<SaliencyDetectionFineGrained>
+                                     public CalypModuleInstance<SaliencyDetectionFineGrained>
 {
   using Mat = cv::Mat;
 
@@ -110,7 +109,7 @@ public:
  *					 in proc of IEEE Workshop on Change Detection, 2014
  */
 class SaliencyDetectionBinWangApr2014 : public SaliencyDetectionModule,
-                                        public CalypModuleInstace<SaliencyDetectionBinWangApr2014>
+                                        public CalypModuleInstance<SaliencyDetectionBinWangApr2014>
 {
   using Mat = cv::Mat;
 

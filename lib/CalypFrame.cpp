@@ -31,9 +31,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <thread>
 #include <vector>
 
 #include "CalypDefs.h"
+#include "PixelFormats.h"
 #include "config.h"
 
 #ifdef USE_OPENCV
@@ -41,9 +43,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #endif
-
-#include "PixelFormats.h"
-#include "config.h"
 
 #define DATA_ALIGN 1  ///< use 32-bit aligned malloc/free
 #if DATA_ALIGN && _WIN32 && ( _MSC_VER > 1300 )
@@ -75,24 +74,15 @@ constexpr auto CalypFrame::numberOfFormats() -> std::size_t
 
 auto CalypFrame::findPixelFormat( const std::string& name ) -> std::optional<ClpPixelFormats>
 {
-  for( const auto& [key, fmt] : g_CalypPixFmtDescriptorsMap )
-  {
-    if( fmt.name.size() == name.size() &&
-        std::equal( fmt.name.begin(), fmt.name.end(), name.begin(),
-                    []( auto a, auto b ) { return std::tolower( a ) == std::tolower( b ); } ) )
-      return key;
-  }
-  return {};
+  return findPixelFormat( std::string_view{ name } );
 }
 
-auto CalypFrame::findPixelFormat( const std::string_view name ) -> std::optional<ClpPixelFormats>
+auto CalypFrame::findPixelFormat( std::string_view name ) -> std::optional<ClpPixelFormats>
 {
+  auto ichar_equals = []( char lhs, char rhs ) { return std::tolower( lhs ) == std::tolower( rhs ); };
   for( const auto& [key, fmt] : g_CalypPixFmtDescriptorsMap )
   {
-    if( fmt.name.size() == name.size() &&
-        std::equal( fmt.name.begin(), fmt.name.end(), name.begin(),
-                    []( auto a, auto b ) { return std::tolower( a ) == std::tolower( b ); } ) )
-      return key;
+    if( std::ranges::equal( fmt.name, name, ichar_equals ) ) return key;
   }
   return {};
 }
@@ -125,29 +115,30 @@ auto CalypFrame::supportedPixelFormatListNames( int colorSpace ) -> std::map<Clp
   return formatsList;
 }
 
-auto CalypFrame::pixelFormatName( ClpPixelFormats idx ) -> const std::string_view
+auto CalypFrame::pixelFormatName( ClpPixelFormats idx ) -> std::string_view
 {
   return g_CalypPixFmtDescriptorsMap.at( idx ).name;
 }
 
-class CalypFrame::CalypFramePrivate
+struct CalypFrame::CalypFramePrivate
 {
-public:
   bool m_bInit{ false };
 
   //! Struct with the pixel format description.
   const CalypPixelFormatDescriptor* m_pcPelFormat{ nullptr };
 
-  unsigned int m_uiWidth{ 0 };                                 //!< Width of the frame
-  unsigned int m_uiHeight{ 0 };                                //!< Height of the frame
-  ClpPixelFormats m_iPixelFormat{ ClpPixelFormats::Invalid };  //!< Pixel format number (it follows the list of supported pixel formats)
-  unsigned int m_uiBitsPel{ 0 };                               //!< Bits per pixel/channel
-  unsigned int m_uiHalfPelValue{ 0 };                          //!< Bits per pixel/channel
-  bool m_bHasNegativeValues{ false };                          //!< Half of the scale correspond to negative values
+  unsigned int m_uiWidth{ 0 };   //!< Width of the frame
+  unsigned int m_uiHeight{ 0 };  //!< Height of the frame
+  ClpPixelFormats m_iPixelFormat{
+      ClpPixelFormats::Invalid };      //!< Pixel format number (it follows the list of supported pixel formats)
+  unsigned int m_uiBitsPel{ 0 };       //!< Bits per pixel/channel
+  unsigned int m_uiHalfPelValue{ 0 };  //!< Bits per pixel/channel
+  bool m_bHasNegativeValues{ false };  //!< Half of the scale correspond to negative values
 
   ClpPel*** m_pppcInputPel{ nullptr };
 
   bool m_bHasRGBPel{ false };            //!< Flag indicating that the ARGB buffer was computed
+  bool bHasRGBPel{ false };              //!< Flag indicating that the ARGB buffer was computed
   std::vector<std::uint8_t> m_pcARGB32;  //!< Buffer with the ARGB pixels used in Qt libs
 
   /** Histogram control variables **/
@@ -171,16 +162,18 @@ public:
     init( width, height, pelFormat, bitsPixel, false );
   }
 
-  void init( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel, bool has_negative_values )
+  void init( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel,
+             bool hasNegativeValues )
   {
     m_uiWidth = width;
     m_uiHeight = height;
     m_iPixelFormat = pelFormat;
     m_uiBitsPel = bitsPixel < kMinBitsPerPixel ? kMinBitsPerPixel : bitsPixel;
-    m_uiHalfPelValue = 1 << ( m_uiBitsPel - 1 );
-    m_bHasNegativeValues = has_negative_values;
+    m_uiHalfPelValue = 1UL << ( m_uiBitsPel - 1 );
+    m_bHasNegativeValues = hasNegativeValues;
 
-    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == ClpPixelFormats::Invalid || bitsPixel > kMaxBitsPerPixel )
+    if( m_uiWidth == 0 || m_uiHeight == 0 || m_iPixelFormat == ClpPixelFormats::Invalid ||
+        bitsPixel > kMaxBitsPerPixel )
     {
       throw CalypFailure( "CalypFrame", "Cannot create a CalypFrame of this type" );
     }
@@ -224,20 +217,23 @@ public:
     m_bHasHistogram = false;
     m_bHistogramRunning = false;
 
-    m_uiHistoSegments = 1 << m_uiBitsPel;
+    m_uiHistoSegments = 1UL << m_uiBitsPel;
 
-    if( m_pcPelFormat->colorSpace == CLP_COLOR_RGB ||
-        m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
+    if( m_pcPelFormat->colorSpace == CLP_COLOR_RGB || m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
+    {
       m_uiHistoChannels = m_pcPelFormat->numberChannels + 1;
+    }
     else
+    {
       m_uiHistoChannels = m_pcPelFormat->numberChannels;
+    }
 
     m_puiHistogram.resize( m_uiHistoSegments * m_uiHistoChannels );
 
     m_bInit = true;
   }
 
-  int getRealHistogramChannel( int channel )
+  auto getRealHistogramChannel( int channel ) const -> int
   {
     if( channel < 0 )
     {
@@ -254,7 +250,8 @@ public:
       return channel - HistogramChannels::HIST_LUMA;
     }
 
-    if( m_pcPelFormat->colorSpace == CLP_COLOR_YUV && channel >= HistogramChannels::HIST_LUMA && channel < HistogramChannels::HIST_CHROMA_V )
+    if( m_pcPelFormat->colorSpace == CLP_COLOR_YUV && channel >= HistogramChannels::HIST_LUMA &&
+        channel < HistogramChannels::HIST_CHROMA_V )
     {
       return channel - HistogramChannels::HIST_LUMA;
     }
@@ -277,11 +274,12 @@ public:
   ~CalypFramePrivate()
   {
     while( m_bHistogramRunning )
-      ;
+    {
+      std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
+    }
     m_bHasHistogram = false;
 
-    if( m_pppcInputPel )
-      xFreeMem( m_pppcInputPel );  // NOLINT
+    if( m_pppcInputPel ) xFreeMem( m_pppcInputPel );  // NOLINT
   }
 };
 
@@ -289,105 +287,82 @@ public:
  * \brief Constructors
  */
 CalypFrame::CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel )
-    : d{ std::make_unique<CalypFramePrivate>() }
+    : m_d{ std::make_unique<CalypFramePrivate>() }
 {
-  d->init( width, height, pelFormat, bitsPixel );
+  m_d->init( width, height, pelFormat, bitsPixel );
 }
 
-CalypFrame::CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel, bool has_negative_values )
-    : d{ std::make_unique<CalypFramePrivate>() }
+CalypFrame::CalypFrame( unsigned int width, unsigned int height, ClpPixelFormats pelFormat, unsigned bitsPixel,
+                        bool hasNegativeValues )
+    : m_d{ std::make_unique<CalypFramePrivate>() }
 {
-  d->init( width, height, pelFormat, bitsPixel, has_negative_values );
+  m_d->init( width, height, pelFormat, bitsPixel, hasNegativeValues );
 }
 
-CalypFrame::CalypFrame( CalypFrame&& other ) noexcept
-    : d{ std::move( other.d ) }
+CalypFrame::CalypFrame( const CalypFrame& other ) : m_d{ std::make_unique<CalypFramePrivate>() }
 {
-}
-
-CalypFrame& CalypFrame::operator=( CalypFrame&& other ) noexcept
-{
-  // Self-assignment detection
-  if( &other == this )
-    return *this;
-
-  // Transfer ownership of a.m_ptr to m_ptr
-  d = std::move( other.d );
-
-  return *this;
-}
-
-CalypFrame::CalypFrame( const CalypFrame& other )
-    : d{ std::make_unique<CalypFramePrivate>() }
-{
-  d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(), other.getHasNegativeValues() );
+  m_d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(),
+             other.getHasNegativeValues() );
   copyFrom( &other );
 }
 
-CalypFrame& CalypFrame::operator=( const CalypFrame& other )
+auto CalypFrame::operator=( const CalypFrame& other ) -> CalypFrame&
 {
   // Self-assignment detection
-  if( &other == this )
-    return *this;
+  if( &other == this ) return *this;
 
   // Copy the resource
-  d = std::make_unique<CalypFramePrivate>();
-  d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(), other.getHasNegativeValues() );
+  m_d = std::make_unique<CalypFramePrivate>();
+  m_d->init( other.getWidth(), other.getHeight(), other.getPelFormat(), other.getBitsPel(),
+             other.getHasNegativeValues() );
   copyFrom( &other );
 
   return *this;
 }
 
-CalypFrame::CalypFrame( const CalypFrame& other, unsigned int x, unsigned int y, unsigned int width, unsigned int height )
-    : d{ std::make_unique<CalypFramePrivate>() }
+CalypFrame::CalypFrame( const CalypFrame& other, unsigned int x, unsigned int y, unsigned int width,
+                        unsigned int height )
+    : m_d{ std::make_unique<CalypFramePrivate>() }
 {
   const CalypPixelFormatDescriptor* pcPelFormat = &( g_CalypPixFmtDescriptorsMap.at( other.getPelFormat() ) );
-  if( pcPelFormat->log2ChromaWidth )
+  if( pcPelFormat->log2ChromaWidth > 0 )
   {
-    if( x % ( 1 << pcPelFormat->log2ChromaWidth ) )
-      x--;
-    if( ( x + width ) % ( 1 << pcPelFormat->log2ChromaWidth ) )
-      width++;
+    if( x % ( 1UL << pcPelFormat->log2ChromaWidth ) != 0 ) x--;
+    if( ( x + width ) % ( 1UL << pcPelFormat->log2ChromaWidth ) != 0 ) width++;
   }
 
-  if( pcPelFormat->log2ChromaHeight )
+  if( pcPelFormat->log2ChromaHeight > 0 )
   {
-    if( y % ( 1 << pcPelFormat->log2ChromaHeight ) )
-      y--;
+    if( y % ( 1UL << pcPelFormat->log2ChromaHeight ) != 0 ) y--;
 
-    if( ( y + height ) % ( 1 << pcPelFormat->log2ChromaHeight ) )
-      height++;
+    if( ( y + height ) % ( 1UL << pcPelFormat->log2ChromaHeight ) != 0 ) height++;
   }
 
-  d->init( width, height, other.getPelFormat(), other.getBitsPel() );
+  m_d->init( width, height, other.getPelFormat(), other.getBitsPel() );
   copyFrom( other, x, y );
 }
 
-CalypFrame::CalypFrame( const CalypFrame* other, unsigned int posX, unsigned int posY, unsigned int areaWidth, unsigned int areaHeight )
-    : d{ std::make_unique<CalypFramePrivate>() }
+CalypFrame::CalypFrame( const CalypFrame* other, unsigned int posX, unsigned int posY, unsigned int areaWidth,
+                        unsigned int areaHeight )
+    : m_d{ std::make_unique<CalypFramePrivate>() }
 {
-  if( !other )
-    return;
+  if( !other ) return;
 
   const CalypPixelFormatDescriptor* pcPelFormat = &( g_CalypPixFmtDescriptorsMap.at( other->getPelFormat() ) );
-  if( pcPelFormat->log2ChromaWidth )
+  if( pcPelFormat->log2ChromaWidth > 0 )
   {
-    if( posX % ( 1 << pcPelFormat->log2ChromaWidth ) )
-      posX--;
-    if( ( posX + areaWidth ) % ( 1 << pcPelFormat->log2ChromaWidth ) )
-      areaWidth++;
+    if( posX % ( 1UL << pcPelFormat->log2ChromaWidth ) != 0 ) posX--;
+    if( ( posX + areaWidth ) % ( 1UL << pcPelFormat->log2ChromaWidth ) != 0 ) areaWidth++;
   }
 
-  if( pcPelFormat->log2ChromaHeight )
+  if( pcPelFormat->log2ChromaHeight > 0 )
   {
-    if( posY % ( 1 << pcPelFormat->log2ChromaHeight ) )
-      posY--;
+    if( posY % ( 1UL << pcPelFormat->log2ChromaHeight ) != 0 ) posY--;
 
-    if( ( posY + areaHeight ) % ( 1 << pcPelFormat->log2ChromaHeight ) )
-      areaHeight++;
+    if( ( posY + areaHeight ) % ( 1UL << pcPelFormat->log2ChromaHeight ) != 0 ) areaHeight++;
   }
 
-  d->init( areaWidth, areaHeight, other->getPelFormat(), other->getBitsPel() );
+  m_d->init( areaWidth, areaHeight, other->getPelFormat(), other->getBitsPel() );
   copyFrom( other, posX, posY );
 }
 
@@ -396,63 +371,54 @@ CalypFrame::~CalypFrame() = default;
 bool CalypFrame::haveSameFmt( const CalypFrame& other, unsigned int match ) const
 {
   bool bRet = true;
-  if( match & MATCH_COLOR_SPACE )
-    bRet &= ( getColorSpace() == other.getColorSpace() );
-  if( match & MATCH_RESOLUTION )
-    bRet &= ( getWidth() == other.getWidth() ) && ( getHeight() == other.getHeight() );
-  if( match & MATCH_PEL_FMT )
-    bRet &= ( getPelFormat() == other.getPelFormat() );
-  if( match & MATCH_BITS )
-    bRet &= ( getBitsPel() == other.getBitsPel() );
+  if( match & MATCH_COLOR_SPACE ) bRet &= ( getColorSpace() == other.getColorSpace() );
+  if( match & MATCH_RESOLUTION ) bRet &= ( getWidth() == other.getWidth() ) && ( getHeight() == other.getHeight() );
+  if( match & MATCH_PEL_FMT ) bRet &= ( getPelFormat() == other.getPelFormat() );
+  if( match & MATCH_BITS ) bRet &= ( getBitsPel() == other.getBitsPel() );
   if( match & MATCH_COLOR_SPACE_IGNORE_GRAY )
     bRet &= ( getColorSpace() == CLP_COLOR_GRAY || getColorSpace() == other.getColorSpace() );
-  if( match & MATCH_BYTES_PER_FRAME )
-    bRet &= ( getBytesPerFrame() == other.getBytesPerFrame() );
+  if( match & MATCH_BYTES_PER_FRAME ) bRet &= ( getBytesPerFrame() == other.getBytesPerFrame() );
   return bRet;
 }
 
-bool CalypFrame::haveSameFmt( const CalypFrame* other, unsigned int match ) const
+auto CalypFrame::haveSameFmt( const CalypFrame* other, unsigned int match ) const -> bool
 {
-  bool bRet = false;
-  if( other )
-  {
-    bRet = haveSameFmt( *other, match );
-  }
-  return bRet;
+  if( other == nullptr ) return false;
+  return haveSameFmt( *other, match );
 }
 
 auto CalypFrame::getPelFormat() const -> ClpPixelFormats
 {
-  return d->m_iPixelFormat;
+  return m_d->m_iPixelFormat;
 }
 
 auto CalypFrame::getPelFmtName() const -> std::string
 {
-  return std::string( d->m_pcPelFormat->name );
+  return std::string( m_d->m_pcPelFormat->name );
 }
 
 int CalypFrame::getColorSpace() const
 {
-  return d->m_pcPelFormat->colorSpace;
+  return m_d->m_pcPelFormat->colorSpace;
 }
 
-unsigned int CalypFrame::getNumberChannels() const
+auto CalypFrame::getNumberChannels() const -> unsigned int
 {
-  return d->m_pcPelFormat->numberChannels;
+  return m_d->m_pcPelFormat->numberChannels;
 }
 
 unsigned CalypFrame::getWidth( unsigned channel ) const
 {
-  return CHROMASHIFT( d->m_uiWidth, channel > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0 );
+  return CHROMASHIFT( m_d->m_uiWidth, channel > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0 );
 }
 unsigned CalypFrame::getHeight( unsigned channel ) const
 {
-  return CHROMASHIFT( d->m_uiHeight, channel > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0 );
+  return CHROMASHIFT( m_d->m_uiHeight, channel > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0 );
 }
 
 bool CalypFrame::getHasNegativeValues() const
 {
-  return d->m_bHasNegativeValues;
+  return m_d->m_bHasNegativeValues;
 }
 
 std::uint64_t CalypFrame::getPixels( unsigned channel ) const
@@ -472,12 +438,12 @@ std::uint64_t CalypFrame::getTotalNumberOfPixels() const
 
 unsigned CalypFrame::getChromaWidthRatio() const
 {
-  return d->m_pcPelFormat->log2ChromaWidth;
+  return m_d->m_pcPelFormat->log2ChromaWidth;
 }
 
 unsigned CalypFrame::getChromaHeightRatio() const
 {
-  return d->m_pcPelFormat->log2ChromaHeight;
+  return m_d->m_pcPelFormat->log2ChromaHeight;
 }
 
 std::uint64_t CalypFrame::getChromaLength() const
@@ -487,15 +453,16 @@ std::uint64_t CalypFrame::getChromaLength() const
 
 unsigned int CalypFrame::getBitsPel() const
 {
-  return d->m_uiBitsPel;
+  return m_d->m_uiBitsPel;
 }
 
 std::uint64_t CalypFrame::getBytesPerFrame() const
 {
-  return getBytesPerFrame( d->m_uiWidth, d->m_uiHeight, d->m_iPixelFormat, d->m_uiBitsPel );
+  return getBytesPerFrame( m_d->m_uiWidth, m_d->m_uiHeight, m_d->m_iPixelFormat, m_d->m_uiBitsPel );
 }
 
-std::uint64_t CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat, unsigned int bitsPixel )
+std::uint64_t CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int uiHeight, ClpPixelFormats pelFormat,
+                                            unsigned int bitsPixel )
 {
   const auto& pcPelFormat = g_CalypPixFmtDescriptorsMap.at( pelFormat );
   unsigned int bytesPerPixel = ( bitsPixel - 1 ) / kNumBitsInByte + 1;
@@ -511,13 +478,13 @@ std::uint64_t CalypFrame::getBytesPerFrame( unsigned int uiWidth, unsigned int u
 
 void CalypFrame::reset()
 {
-  const ClpPel pelValue = 1 << ( d->m_uiBitsPel - 1 );
-  for( std::size_t ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  const ClpPel pelValue = 1UL << ( m_d->m_uiBitsPel - 1 );
+  for( std::size_t ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    ClpPel* pPel = d->m_pppcInputPel[ch][0];
-    for( std::size_t i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); i++ )
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    ClpPel* pPel = m_d->m_pppcInputPel[ch][0];
+    for( std::size_t i = 0; i < CHROMASHIFT( m_d->m_uiHeight, ratioH ) * CHROMASHIFT( m_d->m_uiWidth, ratioW ); i++ )
     {
       *pPel++ = pelValue;
     }
@@ -526,35 +493,35 @@ void CalypFrame::reset()
 
 ClpPel*** CalypFrame::getPelBufferYUV() const
 {
-  return d->m_pppcInputPel;
+  return m_d->m_pppcInputPel;
 }
 
 ClpPel*** CalypFrame::getPelBufferYUV()
 {
-  d->m_bHasHistogram = false;
-  d->m_bHasRGBPel = false;
-  return d->m_pppcInputPel;
+  m_d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
+  return m_d->m_pppcInputPel;
 }
 
 auto CalypFrame::getRGBBuffer() const -> std::optional<std::span<const std::uint8_t>>
 {
-  if( !d->m_bHasRGBPel )
+  if( !m_d->m_bHasRGBPel )
   {
     return std::nullopt;
   }
-  return std::span{ d->m_pcARGB32 };
+  return std::span{ m_d->m_pcARGB32 };
 }
 
 ClpPel CalypFrame::operator()( unsigned int ch, unsigned int xPos, unsigned int yPos, bool absolute ) const
 {
-  int retValue = 0;
-  if( ch < d->m_pcPelFormat->numberChannels )
+  if( ch >= m_d->m_pcPelFormat->numberChannels ) return 0;
+
+  int pixel = m_d->m_pppcInputPel[ch][yPos][xPos];
+  if( !absolute && m_d->m_bHasNegativeValues )
   {
-    retValue = d->m_pppcInputPel[ch][yPos][xPos];
-    if( !absolute && d->m_bHasNegativeValues )
-      retValue = retValue - int( d->m_uiHalfPelValue );
+    pixel = pixel - static_cast<int>( m_d->m_uiHalfPelValue );
   }
-  return ClpPel( retValue );
+  return pixel;
 }
 
 CalypPixel CalypFrame::operator()( unsigned int xPos, unsigned int yPos ) const
@@ -564,14 +531,14 @@ CalypPixel CalypFrame::operator()( unsigned int xPos, unsigned int yPos ) const
 
 CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos ) const
 {
-  assert( xPos < d->m_uiWidth );
-  assert( yPos < d->m_uiHeight );
-  CalypPixel PixelValue( d->m_pcPelFormat->colorSpace );
-  for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  assert( xPos < m_d->m_uiWidth );
+  assert( yPos < m_d->m_uiHeight );
+  CalypPixel PixelValue( m_d->m_pcPelFormat->colorSpace );
+  for( unsigned int ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    PixelValue[ch] = d->m_pppcInputPel[ch][( yPos >> ratioH )][( xPos >> ratioW )];
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    PixelValue[ch] = m_d->m_pppcInputPel[ch][( yPos >> ratioH )][( xPos >> ratioW )];
   }
   return PixelValue;
 }
@@ -583,100 +550,94 @@ CalypPixel CalypFrame::getPixel( unsigned int xPos, unsigned int yPos, CalypColo
 
 void CalypFrame::setPixel( unsigned int xPos, unsigned int yPos, CalypPixel pixel )
 {
-  for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  for( unsigned int ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    d->m_pppcInputPel[ch][( yPos >> ratioH )][( xPos >> ratioW )] = pixel[ch];
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    m_d->m_pppcInputPel[ch][( yPos >> ratioH )][( xPos >> ratioW )] = pixel[ch];
   }
-  d->m_bHasHistogram = false;
-  d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
 }
 
 void CalypFrame::copyFrom( const CalypFrame& other )
 {
-  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BYTES_PER_FRAME | MATCH_BITS ) )
-    return;
-  d->m_bHasRGBPel = false;
-  d->m_bHasHistogram = false;
-  memcpy( &( d->m_pppcInputPel[0][0][0] ), &( other.getPelBufferYUV()[0][0][0] ), getTotalNumberOfPixels() * sizeof( ClpPel ) );
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BYTES_PER_FRAME | MATCH_BITS ) ) return;
+  m_d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
+  memcpy( &( m_d->m_pppcInputPel[0][0][0] ), &( other.getPelBufferYUV()[0][0][0] ),
+          getTotalNumberOfPixels() * sizeof( ClpPel ) );
 }
 
 void CalypFrame::copyFrom( const CalypFrame* other )
 {
-  if( other )
-    copyFrom( *other );
+  if( other != nullptr ) copyFrom( *other );
 }
 
 void CalypFrame::copyFrom( const CalypFrame& other, unsigned x, unsigned y )
 {
-  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BITS ) )
-    return;
-  // TODO: Protect width and height
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_BITS ) ) return;
+  // TODO: @JC Protect width and height
   ClpPel*** pInput = other.getPelBufferYUV();
-  for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  for( unsigned int ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    for( unsigned int i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ); i++ )
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    for( unsigned int i = 0; i < CHROMASHIFT( m_d->m_uiHeight, ratioH ); i++ )
     {
-      memcpy( &( d->m_pppcInputPel[ch][i][0] ), &( pInput[ch][( y >> ratioH ) + i][( x >> ratioW )] ),
-              ( d->m_uiWidth >> ratioW ) * sizeof( ClpPel ) );
+      memcpy( &( m_d->m_pppcInputPel[ch][i][0] ), &( pInput[ch][( y >> ratioH ) + i][( x >> ratioW )] ),
+              ( m_d->m_uiWidth >> ratioW ) * sizeof( ClpPel ) );
     }
   }
-  d->m_bHasRGBPel = false;
-  d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
 }
 
 void CalypFrame::copyFrom( const CalypFrame* other, unsigned x, unsigned y )
 {
-  if( other )
-    copyFrom( *other, x, y );
+  if( other ) copyFrom( *other, x, y );
 }
 
 void CalypFrame::copyTo( const CalypFrame& other, unsigned x, unsigned y ) const
 {
-  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) )
-    return;
+  if( !haveSameFmt( other, MATCH_COLOR_SPACE | MATCH_PEL_FMT | MATCH_BITS ) ) return;
   ClpPel*** pInput = other.getPelBufferYUV();
   unsigned width = other.getWidth();
   // TODO: Protect width and height
-  for( unsigned int ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  for( unsigned int ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
     for( unsigned int i = 0; i < other.getHeight( ch ); i++ )
     {
-      memcpy( &( d->m_pppcInputPel[ch][( y >> ratioH ) + i][( x >> ratioW )] ), &( pInput[ch][i][0] ),
+      memcpy( &( m_d->m_pppcInputPel[ch][( y >> ratioH ) + i][( x >> ratioW )] ), &( pInput[ch][i][0] ),
               ( width >> ratioW ) * sizeof( ClpPel ) );
     }
   }
-  d->m_bHasRGBPel = false;
-  d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
 }
 
 void CalypFrame::copyTo( const CalypFrame* other, unsigned x, unsigned y ) const
 {
-  if( other )
-    copyTo( *other, x, y );
+  if( other != nullptr ) copyTo( *other, x, y );
 }
 
-void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndianness, unsigned long uiBuffSize )
+void CalypFrame::frameFromBuffer( std::span<const ClpByte> buff, int iEndianness, std::uint64_t uiBuffSize )
 {
-  if( uiBuffSize != getBytesPerFrame() )
-    return;
+  if( uiBuffSize != getBytesPerFrame() ) return;
 
-  frameFromBuffer( Buff, iEndianness );
+  frameFromBuffer( buff, iEndianness );
 }
 
-void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndianness )
+void CalypFrame::frameFromBuffer( std::span<const ClpByte> buff, int iEndianness )
 {
   std::array<const ClpByte*, CalypPixel::getMaxNumberOfComponents()> ppBuff{ nullptr };
-  int bytesPixel = ( d->m_uiBitsPel - 1 ) / kNumBitsInByte + 1;
+  int bytesPixel = ( m_d->m_uiBitsPel - 1 ) / kNumBitsInByte + 1;
   int startByte = 0;
   int endByte = bytesPixel;
   int incByte = 1;
-  int maxval = ( 1 << d->m_uiBitsPel ) - 1;
+  int maxval = ( 1UL << m_d->m_uiBitsPel ) - 1;
 
   if( iEndianness == CLP_BIG_ENDIAN )
   {
@@ -685,26 +646,28 @@ void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndiann
     incByte = -1;
   }
 
-  ppBuff[0] = Buff.data();
+  ppBuff[0] = buff.data();
   for( std::size_t i = 1; i < CalypPixel::getMaxNumberOfComponents(); i++ )
   {
-    int ratioW = i > 1 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioH = i > 1 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    ppBuff[i] = ppBuff[i - 1] + CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ) * bytesPixel;
+    int ratioW = i > 1 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = i > 1 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    ppBuff[i] =
+        ppBuff[i - 1] + CHROMASHIFT( m_d->m_uiHeight, ratioH ) * CHROMASHIFT( m_d->m_uiWidth, ratioW ) * bytesPixel;
   }
 
-  memset( d->m_pppcInputPel[0][0], 0, getTotalNumberOfPixels() * sizeof( ClpPel ) );
+  memset( m_d->m_pppcInputPel[0][0], 0, getTotalNumberOfPixels() * sizeof( ClpPel ) );
 
-  for( std::size_t ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  for( std::size_t ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    unsigned step = d->m_pcPelFormat->comp[ch].step_minus1 * bytesPixel;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    unsigned step = m_d->m_pcPelFormat->comp[ch].step_minus1 * bytesPixel;
 
-    ClpPel* pPel = d->m_pppcInputPel[ch][0];
-    const ClpByte* pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
+    ClpPel* pPel = m_d->m_pppcInputPel[ch][0];
+    const ClpByte* pTmpBuff =
+        ppBuff[m_d->m_pcPelFormat->comp[ch].plane] + ( m_d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
 
-    for( std::size_t p = 0; p < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); p++ )
+    for( std::size_t p = 0; p < CHROMASHIFT( m_d->m_uiHeight, ratioH ) * CHROMASHIFT( m_d->m_uiWidth, ratioW ); p++ )
     {
       for( int b = startByte; b != endByte; b += incByte )
       {
@@ -713,18 +676,17 @@ void CalypFrame::frameFromBuffer( const std::vector<ClpByte>& Buff, int iEndiann
       }
       // Check max value and bound it to "maxval" to prevent segfault when
       // calculating histogram
-      if( pPel[p] > maxval )
-        pPel[p] = 0;
+      if( pPel[p] > maxval ) pPel[p] = 0;
       pTmpBuff += step;
     }
   }
-  d->m_bHasRGBPel = false;
-  d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
 }
 
-void CalypFrame::frameToBuffer( std::vector<ClpByte>& output_buffer, int iEndianness ) const
+void CalypFrame::frameToBuffer( std::span<ClpByte> output, int iEndianness ) const
 {
-  const int bytesPixel = ( d->m_uiBitsPel - 1 ) / kNumBitsInByte + 1;
+  const int bytesPixel = ( m_d->m_uiBitsPel - 1 ) / kNumBitsInByte + 1;
   std::array<ClpByte*, CalypPixel::getMaxNumberOfComponents()> ppBuff{ nullptr };
 
   int startByte = 0;
@@ -738,24 +700,26 @@ void CalypFrame::frameToBuffer( std::vector<ClpByte>& output_buffer, int iEndian
     incByte = -1;
   }
 
-  ppBuff[0] = output_buffer.data();
+  ppBuff[0] = output.data();
   for( std::size_t i = 1; i < CalypPixel::getMaxNumberOfComponents(); i++ )
   {
-    int ratioW = i > 1 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioH = i > 1 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    ppBuff[i] = ppBuff[i - 1] + CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ) * bytesPixel;
+    int ratioW = i > 1 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = i > 1 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    ppBuff[i] =
+        ppBuff[i - 1] + CHROMASHIFT( m_d->m_uiHeight, ratioH ) * CHROMASHIFT( m_d->m_uiWidth, ratioW ) * bytesPixel;
   }
 
-  for( std::size_t ch = 0; ch < d->m_pcPelFormat->numberChannels; ch++ )
+  for( std::size_t ch = 0; ch < m_d->m_pcPelFormat->numberChannels; ch++ )
   {
-    int ratioW = ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0;
-    int ratioH = ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0;
-    int step = ( d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
+    int ratioW = ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0;
+    int ratioH = ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0;
+    int step = ( m_d->m_pcPelFormat->comp[ch].step_minus1 ) * bytesPixel;
 
-    ClpPel* pTmpPel = d->m_pppcInputPel[ch][0];
-    ClpByte* pTmpBuff = ppBuff[d->m_pcPelFormat->comp[ch].plane] + ( d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
+    ClpPel* pTmpPel = m_d->m_pppcInputPel[ch][0];
+    ClpByte* pTmpBuff =
+        ppBuff[m_d->m_pcPelFormat->comp[ch].plane] + ( m_d->m_pcPelFormat->comp[ch].offset_plus1 - 1 ) * bytesPixel;
 
-    for( std::size_t i = 0; i < CHROMASHIFT( d->m_uiHeight, ratioH ) * CHROMASHIFT( d->m_uiWidth, ratioW ); i++ )
+    for( std::size_t i = 0; i < CHROMASHIFT( m_d->m_uiHeight, ratioH ) * CHROMASHIFT( m_d->m_uiWidth, ratioW ); i++ )
     {
       for( int b = startByte; b != endByte; b += incByte )
       {
@@ -781,14 +745,12 @@ inline constexpr auto convert_to_pel_argb( const T r, const T g, const T b ) -> 
 }
 
 template <typename T>
-inline constexpr void convert_yuv_to_rgb( const T iY, const T iU, const T iV, T& iR, T& iG, T& iB )
+constexpr void convert_yuv_to_rgb( const T iY, const T iU, const T iV, T& iR, T& iG, T& iB )
 {
-  auto clamp_pel_value = []( auto X ) {
-    if( X < 0 )
-      return 0;
-    if( X > 255 )
-      return 255;
-    return X;
+  auto clamp_pel_value = []( auto x ) {
+    if( x < 0 ) return 0;
+    if( x > 255 ) return 255;
+    return x;
   };
 
   iR = iY + ( ( 1436 * ( iV - 128 ) ) >> 10 );
@@ -833,15 +795,15 @@ void fillRGBBufferYUV420p( ClpPel*** pppInputPel, uint32_t* pARGB, unsigned uiWi
 
 void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
 {
-  auto shiftBits = static_cast<int>( d->m_uiBitsPel ) - 8;
+  auto shiftBits = static_cast<int>( m_d->m_uiBitsPel ) - 8;
 
-  d->m_bHasRGBPel = true;
+  m_d->m_bHasRGBPel = true;
   // 4 bytes for A, R, G and B
-  uint32_t* pARGB = (uint32_t*)d->m_pcARGB32.data();
-  if( d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY || ( channel.has_value() && *channel == 0 ) )
+  auto* pARGB = reinterpret_cast<uint32_t*>( m_d->m_pcARGB32.data() );
+  if( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY || ( channel.has_value() && *channel == 0 ) )
   {
-    ClpPel* pY = d->m_pppcInputPel[0][0];
-    for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
+    ClpPel* pY = m_d->m_pppcInputPel[0][0];
+    for( unsigned int i = 0; i < m_d->m_uiHeight * m_d->m_uiWidth; i++ )
     {
       unsigned char finalPel = ( *pY++ ) >> shiftBits;
       *pARGB++ = convert_to_pel_argb( finalPel, finalPel, finalPel );
@@ -849,71 +811,72 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
   }
   else if( channel.has_value() && *channel > 0 )
   {
-    ClpPel* pLine = d->m_pppcInputPel[*channel][0];
-    for( unsigned y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
+    ClpPel* pLine = m_d->m_pppcInputPel[*channel][0];
+    for( unsigned y = 0; y < CHROMASHIFT( m_d->m_uiHeight, m_d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
-      for( int i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
+      for( int i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
         ClpPel* pPel = pLine;
-        for( unsigned x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
+        for( unsigned x = 0; x < CHROMASHIFT( m_d->m_uiWidth, m_d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
           unsigned char finalPel = ( *pPel++ ) >> shiftBits;
-          for( int j = 0; j < ( 1 << d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          for( int j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
           {
             *pARGB++ = convert_to_pel_argb( finalPel, finalPel, finalPel );
           }
         }
       }
-      pLine += CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth );
+      pLine += CHROMASHIFT( m_d->m_uiWidth, m_d->m_pcPelFormat->log2ChromaWidth );
     }
   }
-  else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB )
+  else if( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB )
   {
-    ClpPel* pR = d->m_pppcInputPel[CLP_COLOR_R][0];
-    ClpPel* pG = d->m_pppcInputPel[CLP_COLOR_G][0];
-    ClpPel* pB = d->m_pppcInputPel[CLP_COLOR_B][0];
-    for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
+    ClpPel* pR = m_d->m_pppcInputPel[CLP_COLOR_R][0];
+    ClpPel* pG = m_d->m_pppcInputPel[CLP_COLOR_G][0];
+    ClpPel* pB = m_d->m_pppcInputPel[CLP_COLOR_B][0];
+    for( unsigned int i = 0; i < m_d->m_uiHeight * m_d->m_uiWidth; i++ )
       *pARGB++ = convert_to_pel_argb( ( *pR++ ) >> shiftBits, ( *pG++ ) >> shiftBits, ( *pB++ ) >> shiftBits );
   }
-  else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
+  else if( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
   {
-    ClpPel* pR = d->m_pppcInputPel[CLP_COLOR_R][0];
-    ClpPel* pG = d->m_pppcInputPel[CLP_COLOR_G][0];
-    ClpPel* pB = d->m_pppcInputPel[CLP_COLOR_B][0];
-    ClpPel* pA = d->m_pppcInputPel[CLP_COLOR_A][0];
-    for( unsigned int i = 0; i < d->m_uiHeight * d->m_uiWidth; i++ )
-      *pARGB++ = convert_to_pel_argb( ( *pA++ ) >> shiftBits, ( *pR++ ) >> shiftBits, ( *pG++ ) >> shiftBits, ( *pB++ ) >> shiftBits );
+    ClpPel* pR = m_d->m_pppcInputPel[CLP_COLOR_R][0];
+    ClpPel* pG = m_d->m_pppcInputPel[CLP_COLOR_G][0];
+    ClpPel* pB = m_d->m_pppcInputPel[CLP_COLOR_B][0];
+    ClpPel* pA = m_d->m_pppcInputPel[CLP_COLOR_A][0];
+    for( unsigned int i = 0; i < m_d->m_uiHeight * m_d->m_uiWidth; i++ )
+      *pARGB++ = convert_to_pel_argb( ( *pA++ ) >> shiftBits, ( *pR++ ) >> shiftBits, ( *pG++ ) >> shiftBits,
+                                      ( *pB++ ) >> shiftBits );
   }
-  else if( d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV )
+  else if( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV )
   {
-    if( d->m_iPixelFormat == ClpPixelFormats::YUV420p )
+    if( m_d->m_iPixelFormat == ClpPixelFormats::YUV420p )
     {
-      fillRGBBufferYUV420p( d->m_pppcInputPel, pARGB, d->m_uiWidth, d->m_uiHeight, shiftBits );
+      fillRGBBufferYUV420p( m_d->m_pppcInputPel, pARGB, m_d->m_uiWidth, m_d->m_uiHeight, shiftBits );
       return;
     }
-    ClpPel* pLineY = d->m_pppcInputPel[CLP_LUMA][0];
-    ClpPel* pLineU = d->m_pppcInputPel[CLP_CHROMA_U][0];
-    ClpPel* pLineV = d->m_pppcInputPel[CLP_CHROMA_V][0];
-    unsigned int uiChromaStride = CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth );
+    ClpPel* pLineY = m_d->m_pppcInputPel[CLP_LUMA][0];
+    ClpPel* pLineU = m_d->m_pppcInputPel[CLP_CHROMA_U][0];
+    ClpPel* pLineV = m_d->m_pppcInputPel[CLP_CHROMA_V][0];
+    unsigned int uiChromaStride = CHROMASHIFT( m_d->m_uiWidth, m_d->m_pcPelFormat->log2ChromaWidth );
 
     int iR, iG, iB;  // NOLINT
     uint32_t* pARGBLine = pARGB;
 
-    for( unsigned y = 0; y < CHROMASHIFT( d->m_uiHeight, d->m_pcPelFormat->log2ChromaHeight ); y++ )
+    for( unsigned y = 0; y < CHROMASHIFT( m_d->m_uiHeight, m_d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
-      for( int i = 0; i < 1 << d->m_pcPelFormat->log2ChromaHeight; i++ )
+      for( int i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
         ClpPel* pY = pLineY;
         ClpPel* pU = pLineU;
         ClpPel* pV = pLineV;
         uint32_t* pARGBAux = pARGBLine;
-        for( unsigned x = 0; x < CHROMASHIFT( d->m_uiWidth, d->m_pcPelFormat->log2ChromaWidth ); x++ )
+        for( unsigned x = 0; x < CHROMASHIFT( m_d->m_uiWidth, m_d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
           int iU = *pU++;
           iU >>= shiftBits;
           int iV = *pV++;
           iV >>= shiftBits;
-          for( int j = 0; j < ( 1 << d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          for( int j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
           {
             int iY = *pY++;
             iY >>= shiftBits;
@@ -921,8 +884,8 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
             *pARGBAux++ = convert_to_pel_argb( iR, iG, iB );
           }
         }
-        pLineY += d->m_uiWidth;
-        pARGBLine += d->m_uiWidth;
+        pLineY += m_d->m_uiWidth;
+        pARGBLine += m_d->m_uiWidth;
       }
       pLineU += uiChromaStride;
       pLineV += uiChromaStride;
@@ -932,8 +895,7 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
 
 void CalypFrame::fillRGBBuffer() const
 {
-  if( d->m_bHasRGBPel )
-    return;
+  if( m_d->m_bHasRGBPel ) return;
 
   fillRGBBuffer( {} );
 }
@@ -944,71 +906,67 @@ void CalypFrame::fillRGBBuffer() const
 
 void CalypFrame::calcHistogram()
 {
-  if( d->m_bHasHistogram || d->m_puiHistogram.empty() )
-    return;
+  if( m_d->m_bHasHistogram || m_d->m_puiHistogram.empty() ) return;
 
-  d->m_bHistogramRunning = true;
+  m_d->m_bHistogramRunning = true;
 
-  std::fill( d->m_puiHistogram.begin(), d->m_puiHistogram.end(), 0 );
+  std::fill( m_d->m_puiHistogram.begin(), m_d->m_puiHistogram.end(), 0 );
 
-  unsigned int numberChannels = d->m_pcPelFormat->numberChannels;
+  unsigned int numberChannels = m_d->m_pcPelFormat->numberChannels;
   for( unsigned int ch = 0; ch < numberChannels; ch++ )
   {
-    unsigned int size = CHROMASHIFT( d->m_uiWidth, ch > 0 ? d->m_pcPelFormat->log2ChromaWidth : 0 ) *
-                        CHROMASHIFT( d->m_uiHeight, ch > 0 ? d->m_pcPelFormat->log2ChromaHeight : 0 );
+    unsigned int size = CHROMASHIFT( m_d->m_uiWidth, ch > 0 ? m_d->m_pcPelFormat->log2ChromaWidth : 0 ) *
+                        CHROMASHIFT( m_d->m_uiHeight, ch > 0 ? m_d->m_pcPelFormat->log2ChromaHeight : 0 );
 
-    ClpPel* chPel = &( d->m_pppcInputPel[ch][0][0] );
+    ClpPel* chPel = &( m_d->m_pppcInputPel[ch][0][0] );
     for( unsigned int i = 0; i < size; i++ )
     {
-      d->m_puiHistogram[*chPel + ch * d->m_uiHistoSegments]++;
+      m_d->m_puiHistogram[*chPel + ch * m_d->m_uiHistoSegments]++;
       chPel++;
     }
   }
 
-  if( d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB ||
-      d->m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
+  if( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_RGB || m_d->m_pcPelFormat->colorSpace == CLP_COLOR_RGBA )
   {
-    for( unsigned int y = 0; y < d->m_uiHeight; y++ )
-      for( unsigned int x = 0; x < d->m_uiWidth; x++ )
+    for( unsigned int y = 0; y < m_d->m_uiHeight; y++ )
+      for( unsigned int x = 0; x < m_d->m_uiWidth; x++ )
       {
         ClpPel luma = getPixel( x, y ).convertPixel( CLP_COLOR_YUV )[0];
-        d->m_puiHistogram[luma + ( d->m_uiHistoChannels - 1 ) * d->m_uiHistoSegments]++;
+        m_d->m_puiHistogram[luma + ( m_d->m_uiHistoChannels - 1 ) * m_d->m_uiHistoSegments]++;
       }
   }
-  d->m_bHasHistogram = true;
-  d->m_bHistogramRunning = false;
+  m_d->m_bHasHistogram = true;
+  m_d->m_bHistogramRunning = false;
 }
 
 int CalypFrame::getNumHistogramSegment() const
 {
-  return d->m_uiHistoSegments;
+  return m_d->m_uiHistoSegments;
 }
 
 unsigned int CalypFrame::getMinimumPelValue( unsigned channel ) const
 {
-  if( !d->m_bHasHistogram )
-    return 0;
+  if( !m_d->m_bHasHistogram ) return 0;
 
-  channel = d->getRealHistogramChannel( channel );
-  if( channel < 0 )
-    return 0;
+  channel = m_d->getRealHistogramChannel( channel );
+  if( channel < 0 ) return 0;
 
   int indexStart;
   int indexEnd;
   if( channel == HIST_ALL_CHANNELS )
   {
     indexStart = 0;
-    indexEnd = d->m_uiHistoChannels * d->m_uiHistoSegments;
+    indexEnd = m_d->m_uiHistoChannels * m_d->m_uiHistoSegments;
   }
   else
   {
-    indexStart = channel * d->m_uiHistoSegments;
-    indexEnd = indexStart + d->m_uiHistoSegments;
+    indexStart = channel * m_d->m_uiHistoSegments;
+    indexEnd = indexStart + m_d->m_uiHistoSegments;
   }
 
   for( int i = indexStart; i < indexEnd; i++ )
   {
-    if( d->m_puiHistogram[i] > 0 )
+    if( m_d->m_puiHistogram[i] > 0 )
     {
       return i - indexStart;
     }
@@ -1018,29 +976,27 @@ unsigned int CalypFrame::getMinimumPelValue( unsigned channel ) const
 
 unsigned int CalypFrame::getMaximumPelValue( unsigned channel ) const
 {
-  if( !d->m_bHasHistogram )
-    return 0;
+  if( !m_d->m_bHasHistogram ) return 0;
 
-  channel = d->getRealHistogramChannel( channel );
-  if( channel < 0 )
-    return 0;
+  channel = m_d->getRealHistogramChannel( channel );
+  if( channel < 0 ) return 0;
 
   int indexStart;
   int indexEnd;
   if( channel == HIST_ALL_CHANNELS )
   {
-    indexStart = d->m_uiHistoChannels * d->m_uiHistoSegments;
+    indexStart = m_d->m_uiHistoChannels * m_d->m_uiHistoSegments;
     indexEnd = 0;
   }
   else
   {
-    indexStart = ( channel + 1 ) * d->m_uiHistoSegments - 1;
-    indexEnd = indexStart - d->m_uiHistoSegments;
+    indexStart = ( channel + 1 ) * m_d->m_uiHistoSegments - 1;
+    indexEnd = indexStart - m_d->m_uiHistoSegments;
   }
 
   for( int i = indexStart; i > indexEnd; i-- )
   {
-    if( d->m_puiHistogram[i] > 0 )
+    if( m_d->m_puiHistogram[i] > 0 )
     {
       return i - indexEnd - 1;
     }
@@ -1050,30 +1006,28 @@ unsigned int CalypFrame::getMaximumPelValue( unsigned channel ) const
 
 unsigned int CalypFrame::getNEBins( unsigned channel ) const
 {
-  if( !d->m_bHasHistogram )
-    return 0;
+  if( !m_d->m_bHasHistogram ) return 0;
 
-  channel = d->getRealHistogramChannel( channel );
-  if( channel < 0 )
-    return 0;
+  channel = m_d->getRealHistogramChannel( channel );
+  if( channel < 0 ) return 0;
 
   int indexStart;
   int indexEnd;
   if( channel == HIST_ALL_CHANNELS )
   {
     indexStart = 0;
-    indexEnd = d->m_uiHistoChannels * d->m_uiHistoSegments;
+    indexEnd = m_d->m_uiHistoChannels * m_d->m_uiHistoSegments;
   }
   else
   {
-    indexStart = channel * d->m_uiHistoSegments;
-    indexEnd = indexStart + d->m_uiHistoSegments;
+    indexStart = channel * m_d->m_uiHistoSegments;
+    indexEnd = indexStart + m_d->m_uiHistoSegments;
   }
 
   int nEBins = 0;
   for( int i = indexStart; i < indexEnd; i++ )
   {
-    if( d->m_puiHistogram[i] > 0 )
+    if( m_d->m_puiHistogram[i] > 0 )
     {
       nEBins++;
     }
@@ -1083,12 +1037,10 @@ unsigned int CalypFrame::getNEBins( unsigned channel ) const
 
 unsigned int CalypFrame::getMaximum( unsigned channel ) const
 {
-  if( !d->m_bHasHistogram )
-    return 0;
+  if( !m_d->m_bHasHistogram ) return 0;
 
-  channel = d->getRealHistogramChannel( channel );
-  if( channel < 0 )
-    return 0;
+  channel = m_d->getRealHistogramChannel( channel );
+  if( channel < 0 ) return 0;
 
   unsigned int maxValue = 0;
   int indexStart{ 0 };
@@ -1096,19 +1048,19 @@ unsigned int CalypFrame::getMaximum( unsigned channel ) const
   if( channel == HIST_ALL_CHANNELS )
   {
     indexStart = 0;
-    indexEnd = d->m_uiHistoChannels * d->m_uiHistoSegments;
+    indexEnd = m_d->m_uiHistoChannels * m_d->m_uiHistoSegments;
   }
   else
   {
-    indexStart = channel * d->m_uiHistoSegments;
-    indexEnd = indexStart + d->m_uiHistoSegments;
+    indexStart = channel * m_d->m_uiHistoSegments;
+    indexEnd = indexStart + m_d->m_uiHistoSegments;
   }
 
   for( int x = indexStart; x < indexEnd; x++ )
   {
-    if( d->m_puiHistogram[x] > maxValue )
+    if( m_d->m_puiHistogram[x] > maxValue )
     {
-      maxValue = d->m_puiHistogram[x];
+      maxValue = m_d->m_puiHistogram[x];
     }
   }
   return maxValue;
@@ -1116,11 +1068,11 @@ unsigned int CalypFrame::getMaximum( unsigned channel ) const
 
 unsigned int CalypFrame::getNumPixelsRange( unsigned channel, unsigned int start, unsigned int end ) const
 {
-  if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
+  if( !m_d->m_bHasHistogram || start < 0 || end > m_d->m_uiHistoSegments - 1 || start > end )
   {
     return 0;
   }
-  channel = d->getRealHistogramChannel( channel );
+  channel = m_d->getRealHistogramChannel( channel );
   if( channel < 0 )
   {
     return 0;
@@ -1128,31 +1080,31 @@ unsigned int CalypFrame::getNumPixelsRange( unsigned channel, unsigned int start
 
   unsigned int count = 0;
   int indexStart{ 0 };
-  indexStart = channel * d->m_uiHistoSegments;
+  indexStart = channel * m_d->m_uiHistoSegments;
   for( unsigned int i = start; i <= end; i++ )
   {
-    count += d->m_puiHistogram[indexStart + i];
+    count += m_d->m_puiHistogram[indexStart + i];
   }
   return count;
 }
 
 double CalypFrame::getMean( unsigned channel, unsigned int start, unsigned int end ) const
 {
-  if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
+  if( !m_d->m_bHasHistogram || start < 0 || end > m_d->m_uiHistoSegments - 1 || start > end )
   {
     return 0.0;
   }
-  channel = d->getRealHistogramChannel( channel );
+  channel = m_d->getRealHistogramChannel( channel );
   if( channel < 0 )
   {
     return 0.0;
   }
 
   double mean{ 0.0 };
-  int indexStart = channel * d->m_uiHistoSegments;
+  int indexStart = channel * m_d->m_uiHistoSegments;
   for( unsigned int i = start; i <= end; i++ )
   {
-    mean += i * d->m_puiHistogram[indexStart + i];
+    mean += i * m_d->m_puiHistogram[indexStart + i];
   }
 
   auto count = getNumPixelsRange( channel, start, end );
@@ -1167,25 +1119,24 @@ double CalypFrame::getMean( unsigned channel, unsigned int start, unsigned int e
 
 int CalypFrame::getMedian( unsigned channel, unsigned int start, unsigned int end ) const
 {
-  if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
+  if( !m_d->m_bHasHistogram || start < 0 || end > m_d->m_uiHistoSegments - 1 || start > end )
   {
     return 0;
   }
 
-  channel = d->getRealHistogramChannel( channel );
+  channel = m_d->getRealHistogramChannel( channel );
   if( channel < 0 )
   {
     return 0;
   }
 
   double sum = 0.0;
-  int indexStart = channel * d->m_uiHistoSegments;
+  int indexStart = channel * m_d->m_uiHistoSegments;
   double count = getNumPixelsRange( channel, start, end );
   for( unsigned int i = start; i <= end; i++ )
   {
-    sum += d->m_puiHistogram[indexStart + i];
-    if( sum * 2 > count )
-      return i;
+    sum += m_d->m_puiHistogram[indexStart + i];
+    if( sum * 2 > count ) return i;
   }
 
   return 0;
@@ -1193,23 +1144,22 @@ int CalypFrame::getMedian( unsigned channel, unsigned int start, unsigned int en
 
 double CalypFrame::getStdDev( unsigned channel, unsigned int start, unsigned int end ) const
 {
-  if( !d->m_bHasHistogram || start < 0 || end > d->m_uiHistoSegments - 1 || start > end )
+  if( !m_d->m_bHasHistogram || start < 0 || end > m_d->m_uiHistoSegments - 1 || start > end )
   {
     return 0.0;
   }
 
-  channel = d->getRealHistogramChannel( channel );
+  channel = m_d->getRealHistogramChannel( channel );
   if( channel < 0 )
   {
     return 0.0;
   }
 
-  int indexStart = channel * d->m_uiHistoSegments;
+  int indexStart = channel * m_d->m_uiHistoSegments;
   double mean = getMean( channel, start, end );
   double count = getNumPixelsRange( channel, start, end );
   double dev = 0.0;
-  if( count == 0.0 )
-    count = 1.0;
+  if( count == 0.0 ) count = 1.0;
 
   /*------------ original
 
@@ -1224,7 +1174,7 @@ double CalypFrame::getStdDev( unsigned channel, unsigned int start, unsigned int
 
   for( unsigned int i = start; i <= end; i++ )
   {
-    dev += ( i * i ) * d->m_puiHistogram[indexStart + i];
+    dev += ( i * i ) * m_d->m_puiHistogram[indexStart + i];
   }
 
   return sqrt( ( dev - count * mean * mean ) / ( count - 1 ) );
@@ -1232,38 +1182,34 @@ double CalypFrame::getStdDev( unsigned channel, unsigned int start, unsigned int
 
 double CalypFrame::getHistogramValue( unsigned channel, unsigned int bin ) const
 {
-  if( !d->m_bHasHistogram || bin < 0 || bin > d->m_uiHistoSegments - 1 )
-    return 0.0;
+  if( !m_d->m_bHasHistogram || bin < 0 || bin > m_d->m_uiHistoSegments - 1 ) return 0.0;
 
-  channel = d->getRealHistogramChannel( channel );
+  channel = m_d->getRealHistogramChannel( channel );
   if( channel < 0 )
   {
     return 0;
   }
 
-  int indexStart = channel * d->m_uiHistoSegments;
-  return d->m_puiHistogram[indexStart + bin];
+  int indexStart = channel * m_d->m_uiHistoSegments;
+  return m_d->m_puiHistogram[indexStart + bin];
 }
 
 double CalypFrame::getEntropy( unsigned channel, unsigned int start, unsigned int end ) const
 {
-  if( !d->m_bHasHistogram )
-    return 0;
+  if( !m_d->m_bHasHistogram ) return 0;
 
-  channel = d->getRealHistogramChannel( channel );
-  if( channel < 0 )
-    return 0;
+  channel = m_d->getRealHistogramChannel( channel );
+  if( channel < 0 ) return 0;
 
-  int indexStart = channel * d->m_uiHistoSegments;
+  int indexStart = channel * m_d->m_uiHistoSegments;
   double numValues = getNumPixelsRange( channel, start, end );
   double entropy = 0.0;
 
   for( unsigned b = start; b <= end; b++ )
   {
-    if( d->m_puiHistogram[indexStart + b] == 0 )
-      continue;
+    if( m_d->m_puiHistogram[indexStart + b] == 0 ) continue;
 
-    double prob = d->m_puiHistogram[indexStart + b] / numValues;
+    double prob = m_d->m_puiHistogram[indexStart + b] / numValues;
 
     entropy -= prob * log2( prob );
   }
@@ -1281,16 +1227,15 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
 {
   bool bRet = false;
 #ifdef USE_OPENCV
-  if( convertToGray && !( d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV ||
-                          d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY ) )
+  if( convertToGray &&
+      !( m_d->m_pcPelFormat->colorSpace == CLP_COLOR_YUV || m_d->m_pcPelFormat->colorSpace == CLP_COLOR_GRAY ) )
   {
     return bRet;
   }
   auto numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
   auto numChannels = getNumberChannels();
-  double scaleFactor = 1 << ( numBytes * kNumBitsInByte - getBitsPel() );
-  if( scale == 0 )
-    scaleFactor = 1;
+  double scaleFactor = 1UL << ( numBytes * kNumBitsInByte - getBitsPel() );
+  if( scale == 0 ) scaleFactor = 1;
 
   if( convertToGray )
   {
@@ -1339,12 +1284,14 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
   else
   {
     unsigned char* cv_data = cvMat.data;
-    ClpPel* pel = getPelBufferYUV()[channel][0];
+    auto* pel = getPelBufferYUV()[channel][0];
     for( unsigned y = 0; y < imgHeight * imgWidth; y++ )
     {
-      ClpPel currPel = static_cast<ClpPel>( *pel++ * scaleFactor );
+      auto currPel = static_cast<ClpPel>( *pel++ * scaleFactor );
       for( auto b = 0; b < numBytes; b++ )
+      {
         *cv_data++ = currPel >> ( kNumBitsInByte * b );
+      }
     }
   }
   bRet = true;
@@ -1352,50 +1299,54 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
   return bRet;
 }
 
-bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
+auto CalypFrame::fromMat( cv::Mat& cvMat, int channel ) -> bool
 {
   bool bRet = false;
 #ifdef USE_OPENCV
-  unsigned numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
-  unsigned numChannels = getNumberChannels();
-  unsigned int cvPrecision = getBitsPel() > kNumBitsInByte ? CV_16U : CV_8U;
-  if( !d->m_bInit )
+  auto numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
+  auto numChannels = getNumberChannels();
+  auto cvPrecision = getBitsPel() > kNumBitsInByte ? CV_16U : CV_8U;
+  if( !m_d->m_bInit )
   {
     uchar depth = cvMat.type() & CV_MAT_DEPTH_MASK;
-    if( d->m_iPixelFormat == ClpPixelFormats::Invalid )
+    if( m_d->m_iPixelFormat == ClpPixelFormats::Invalid )
     {
       switch( cvMat.channels() )
       {
       case 1:
-        d->m_iPixelFormat = ClpPixelFormats::Gray;
+        m_d->m_iPixelFormat = ClpPixelFormats::Gray;
         break;
       case 3:
-        d->m_iPixelFormat = ClpPixelFormats::BGR24;
+        m_d->m_iPixelFormat = ClpPixelFormats::BGR24;
         break;
       default:
         assert( false );
         return false;
       }
     }
-    d->m_uiBitsPel = depth == CV_8U ? kNumBitsInByte : kMinBitsPerPixel * 2;
-    d->init( cvMat.cols, cvMat.rows, d->m_iPixelFormat, d->m_uiBitsPel );
+    m_d->m_uiBitsPel = depth == CV_8U ? kNumBitsInByte : kMinBitsPerPixel * 2;
+    m_d->init( cvMat.cols, cvMat.rows, m_d->m_iPixelFormat, m_d->m_uiBitsPel );
   }
 
-  d->m_bHasRGBPel = false;
-  d->m_bHasHistogram = false;
+  m_d->m_bHasRGBPel = false;
+  m_d->m_bHasHistogram = false;
 
   if( channel >= 0 )
+  {
     numChannels = 1;
+  }
   else
+  {
     channel = 0;
+  }
 
-  if( cvMat.channels() != int( numChannels ) )
+  if( cvMat.channels() != static_cast<int>( numChannels ) )
   {
     return false;
   }
 
-  unsigned imgWidth = getWidth( channel );
-  unsigned imgHeight = getHeight( channel );
+  auto imgWidth = getWidth( channel );
+  auto imgHeight = getHeight( channel );
 
   if( numChannels > 1 )
   {
@@ -1406,8 +1357,8 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
       cv::cvtColor( tmpMat, cvMat, cv::COLOR_RGB2YCrCb );
       break;
     }
-    unsigned char* cv_data = tmpMat.data;
-    unsigned int cv_step = tmpMat.step;
+    auto* cv_data = tmpMat.data;
+    auto cv_step = tmpMat.step;
     CalypPixel currPel;
     for( unsigned int y = 0; y < imgHeight; y++ )
     {
@@ -1418,7 +1369,8 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
           currPel[ch] = 0;
           for( unsigned b = 0; b < numBytes; b++ )
           {
-            currPel[ch] = currPel[ch] + ( *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b ) << ( kNumBitsInByte * b ) );
+            currPel[ch] = currPel[ch] + ( *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b )
+                                          << ( kNumBitsInByte * b ) );
           }
         }
         setPixel( x, y, currPel );
@@ -1427,13 +1379,15 @@ bool CalypFrame::fromMat( cv::Mat& cvMat, int channel )
   }
   else
   {
-    unsigned char* cv_data = cvMat.data;
+    auto* cv_data = cvMat.data;
     ClpPel* pel = getPelBufferYUV()[channel][0];
     for( unsigned int y = 0; y < imgHeight * imgWidth; y++ )
     {
       ClpPel curr_pel{ 0 };
       for( unsigned b = 0; b < numBytes; b++ )
+      {
         curr_pel += ( *cv_data++ ) << ( kNumBitsInByte * b );
+      }
       *pel++ = curr_pel;
     }
   }
@@ -1469,13 +1423,10 @@ std::vector<std::string> CalypFrame::supportedQualityMetricsUnitsList()
   };
 }
 
-double CalypFrame::getQuality( int Metric, CalypFrame* Org, unsigned int component )
+double CalypFrame::getQuality( int metric, CalypFrame* Org, unsigned int component )
 {
-  if( component >= getNumberChannels() )
-  {
-    return 0;
-  }
-  switch( Metric )
+  if( component >= getNumberChannels() ) return 0;
+  switch( metric )
   {
   case PSNR_METRIC:
     return getPSNR( Org, component );
@@ -1495,11 +1446,11 @@ double CalypFrame::getQuality( int Metric, CalypFrame* Org, unsigned int compone
   return 0;
 }
 
-double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
+auto CalypFrame::getMSE( CalypFrame* org, unsigned int component ) -> double
 {
   ClpPel* pPelYUV = getPelBufferYUV()[component][0];
-  ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
-  std::uint64_t numberOfPixels = Org->getHeight( component ) * Org->getWidth( component );
+  ClpPel* pOrgPelYUV = org->getPelBufferYUV()[component][0];
+  std::uint64_t numberOfPixels = org->getHeight( component ) * org->getWidth( component );
   std::uint64_t ssd = 0;
   for( unsigned int i = 0; i < numberOfPixels; i++ )
   {
@@ -1513,18 +1464,17 @@ double CalypFrame::getMSE( CalypFrame* Org, unsigned int component )
   return double( ssd ) / double( numberOfPixels );
 }
 
-double CalypFrame::getPSNR( CalypFrame* Org, unsigned int component )
+auto CalypFrame::getPSNR( CalypFrame* org, unsigned int component ) -> double
 {
-  std::uint64_t uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
+  std::uint64_t uiMaxValue = ( 1UL << org->getBitsPel() ) - 1;
   double dPSNR = 100;
-  double dMSE = getMSE( Org, component );
-  if( dMSE != 0 )
-    dPSNR = 10 * log10( double( uiMaxValue * uiMaxValue ) / dMSE );
+  double dMSE = getMSE( org, component );
+  if( dMSE != 0 ) dPSNR = 10 * log10( double( uiMaxValue * uiMaxValue ) / dMSE );
   return dPSNR;
 }
 
-float compute_ssim( ClpPel** refImg, ClpPel** encImg, int width, int height, int win_width, int win_height,
-                    int max_pel_value_comp, int overlapSize )
+auto compute_ssim( ClpPel** refImg, ClpPel** encImg, int width, int height, int win_width, int win_height,
+                   int max_pel_value_comp, int overlapSize ) -> float
 {
   static const float K1 = 0.01f, K2 = 0.03f;
   float max_pix_value_sqd;
@@ -1590,26 +1540,26 @@ float compute_ssim( ClpPel** refImg, ClpPel** encImg, int width, int height, int
   return cur_distortion;
 }
 
-double CalypFrame::getSSIM( CalypFrame* Org, unsigned int component )
+auto CalypFrame::getSSIM( CalypFrame* org, unsigned int component ) -> double
 {
   double dSSIM = 1;
   if( component == CLP_LUMA )
   {
-    dSSIM = compute_ssim( d->m_pppcInputPel[component], Org->getPelBufferYUV()[component], d->m_uiWidth, d->m_uiHeight,
-                          8, 8, 255, 8 );
+    dSSIM = compute_ssim( m_d->m_pppcInputPel[component], org->getPelBufferYUV()[component], m_d->m_uiWidth,
+                          m_d->m_uiHeight, 8, 8, 255, 8 );
   }
   else
   {
-    dSSIM = compute_ssim( d->m_pppcInputPel[component], Org->getPelBufferYUV()[component], getWidth( component ),
+    dSSIM = compute_ssim( m_d->m_pppcInputPel[component], org->getPelBufferYUV()[component], getWidth( component ),
                           getHeight( component ), 4, 4, 255, 4 );
   }
   return dSSIM;
 }
 
-double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
+auto CalypFrame::getWSPNR( CalypFrame* org, unsigned int component ) -> double
 {
   ClpPel* pPelYUV = getPelBufferYUV()[component][0];
-  ClpPel* pOrgPelYUV = Org->getPelBufferYUV()[component][0];
+  ClpPel* pOrgPelYUV = org->getPelBufferYUV()[component][0];
 
   unsigned height = getHeight( component );
   unsigned width = getWidth( component );
@@ -1617,18 +1567,17 @@ double CalypFrame::getWSPNR( CalypFrame* Org, unsigned int component )
   double weight_sum = 0;
 
   for( unsigned y = 0; y < height; y++ )
+  {
     for( unsigned x = 0; x < width; x++ )
     {
-      int diff = int( *pPelYUV++ ) - int( *pOrgPelYUV++ );
-      double weight = cos( double( ( y + 0.5 - height / 2.0 ) * S_PI / height ) );
-      ssd += (double)( diff * diff * 1000 ) * weight;
+      int diff = static_cast<int>( *pPelYUV++ ) - static_cast<int>( *pOrgPelYUV++ );
+      double weight = std::cos( ( ( y + 0.5 - height / 2.0 ) * S_PI / height ) );
+      ssd += static_cast<double>( diff * diff * 1000 ) * weight;
       weight_sum += weight * 1000;
     }
-
-  if( ssd == 0.0 )
-  {
-    return 100.00;
   }
-  unsigned long uiMaxValue = ( 1 << Org->getBitsPel() ) - 1;
-  return 10 * log10( double( uiMaxValue * uiMaxValue ) * weight_sum / ssd );
+
+  if( ssd == 0.0 ) return 100.00;
+  auto uiMaxValue = ( 1UL << org->getBitsPel() ) - 1;
+  return 10 * std::log10( static_cast<double>( uiMaxValue * uiMaxValue ) * weight_sum / ssd );
 }

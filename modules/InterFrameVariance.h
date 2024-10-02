@@ -29,10 +29,8 @@
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 
-class InterFrameVariance : public CalypModuleIf
+class InterFrameVariance : public CalypModuleIf, public CalypModuleInstance<InterFrameVariance>
 {
-  REGISTER_CLASS_FACTORY( InterFrameVariance )
-
 private:
   CalypFrame* m_pcFrameVariance;
   CalypPlane<double> m_pVariance;

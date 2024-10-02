@@ -24,17 +24,15 @@
 
 #include <algorithm>
 #include <cassert>
-#include <memory>
-#include <numeric>
 
 #include "CalypFrame.h"
-#include "PixelFormats.h"
-#include "config.h"
 
+namespace
+{
 constexpr auto kMinPixelValue{ 0 };
 constexpr auto kMaxPixelValue{ 255 };
 
-static inline void yuvToRgb( const int& iY, const int& iU, const int& iV, int& iR, int& iG, int& iB )
+constexpr void yuvToRgb( int iY, int iU, int iV, int& iR, int& iG, int& iB )
 {
   iR = std::clamp( iY + ( ( 1436 * ( iV - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );  // NOLINT
   iG = std::clamp( iY - ( ( 352 * ( iU - 128 ) + 731 * ( iV - 128 ) ) >> 10 ), kMinPixelValue,
@@ -42,95 +40,91 @@ static inline void yuvToRgb( const int& iY, const int& iU, const int& iV, int& i
   iB = std::clamp( iY + ( ( 1812 * ( iU - 128 ) ) >> 10 ), kMinPixelValue, kMaxPixelValue );  // NOLINT
 }
 
-static inline void rgbToYuv( const int& iR, const int& iG, const int& iB, int& iY, int& iU, int& iV )
+constexpr void rgbToYuv( int iR, int iG, int iB, int& iY, int& iU, int& iV )
 {
   iY = ( 299 * iR + 587 * iG + 114 * iB + 500 ) / 1000;  // NOLINT
   iU = ( 1000 * ( iB - iY ) + 226816 ) / 1772;           // NOLINT
   iV = ( 1000 * ( iR - iY ) + 179456 ) / 1402;           // NOLINT
 }
+}  // namespace
 
-CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0 )
+CalypPixel::CalypPixel( int colorSpace, const ClpPel c0 ) : m_colorSpace( colorSpace )
 {
-  m_colorSpace = ColorSpace;
   m_pelComp[0] = c0;
 }
 
-CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2 )
+CalypPixel::CalypPixel( int colorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2 ) : m_colorSpace( colorSpace )
 {
-  m_colorSpace = ColorSpace;
   m_pelComp[0] = c0;
   m_pelComp[1] = c1;
   m_pelComp[2] = c2;
 }
 
-CalypPixel::CalypPixel( const int ColorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2, const ClpPel c3 )
+CalypPixel::CalypPixel( int colorSpace, const ClpPel c0, const ClpPel c1, const ClpPel c2, const ClpPel c3 )
+    : m_colorSpace( colorSpace )
 {
-  m_colorSpace = ColorSpace;
   m_pelComp[0] = c0;
   m_pelComp[1] = c1;
   m_pelComp[2] = c2;
   m_pelComp[3] = c3;
 }
 
-CalypPixel& CalypPixel::operator+=( const CalypPixel& in )
+auto CalypPixel::operator+=( const CalypPixel& in ) -> CalypPixel&
 {
   assert( in.colorSpace() == m_colorSpace );
   const auto& other_comp = in.components();
-  std::transform( other_comp.begin(), other_comp.end(), m_pelComp.begin(), m_pelComp.begin(),
-                  []( auto& p1, auto& p2 ) { return p1 + p2; } );
+  std::ranges::transform( other_comp, m_pelComp, m_pelComp.begin(), []( auto& lhs, auto& rhs ) { return lhs + rhs; } );
   return *this;
 }
 
-CalypPixel& CalypPixel::operator-=( const CalypPixel& in )
+auto CalypPixel::operator-=( const CalypPixel& in ) -> CalypPixel&
 {
   assert( in.colorSpace() == m_colorSpace );
   const auto& other_comp = in.components();
-  std::transform( other_comp.begin(), other_comp.end(), m_pelComp.begin(), m_pelComp.begin(),
-                  []( auto& p1, auto& p2 ) { return p1 - p2; } );
+  std::ranges::transform( other_comp, m_pelComp, m_pelComp.begin(), []( auto& lhs, auto& rhs ) { return lhs - rhs; } );
   return *this;
 }
 
-CalypPixel& CalypPixel::operator*=( const double op )
+auto CalypPixel::operator*=( double op ) -> CalypPixel&
 {
-  std::transform( m_pelComp.begin(), m_pelComp.end(), m_pelComp.begin(), [&op]( auto& p1 ) { return p1 * op; } );
+  std::ranges::transform( m_pelComp, m_pelComp.begin(), [&op]( auto& p1 ) { return p1 * op; } );
   return *this;
 }
 
-CalypPixel CalypPixel::operator+( const CalypPixel& in ) const
+auto CalypPixel::operator+( const CalypPixel& in ) const -> CalypPixel
 {
   assert( in.colorSpace() == m_colorSpace );
   const auto& other_comp = in.components();
   CalypPixel result{ m_colorSpace };
-  std::transform( other_comp.begin(), other_comp.end(), m_pelComp.begin(), result.components().begin(),
-                  []( auto& p1, auto& p2 ) { return p1 + p2; } );
+  std::ranges::transform( other_comp, m_pelComp, result.components().begin(),
+                          []( auto& lhs, auto& rhs ) { return lhs + rhs; } );
   return result;
 }
 
-CalypPixel CalypPixel::operator-( const CalypPixel& in ) const
+auto CalypPixel::operator-( const CalypPixel& input ) const -> CalypPixel
 {
-  assert( in.colorSpace() == m_colorSpace );
-  const auto& other_comp = in.components();
+  assert( input.colorSpace() == m_colorSpace );
+  const auto& other_comp = input.components();
   CalypPixel result{ m_colorSpace };
-  std::transform( other_comp.begin(), other_comp.end(), m_pelComp.begin(), result.components().begin(),
-                  []( auto& p1, auto& p2 ) { return p1 - p2; } );
+  std::ranges::transform( other_comp, m_pelComp, result.components().begin(),
+                          []( auto& lhs, auto& rhs ) { return lhs - rhs; } );
   return result;
 }
 
-CalypPixel CalypPixel::operator*( const double op ) const
+auto CalypPixel::operator*( double op ) const -> CalypPixel
 {
   CalypPixel result{ m_colorSpace };
   auto& comp = result.components();
-  std::transform( comp.begin(), comp.end(), comp.begin(), [&op]( auto& p1 ) { return p1 * op; } );
+  std::ranges::transform( comp, comp.begin(), [&op]( auto& p1 ) { return p1 * op; } );
   return result;
 }
 
 auto CalypPixel::operator==( const CalypPixel& other ) const -> bool
 {
-  return colorSpace() == other.colorSpace() &&
-         std::equal( m_pelComp.begin(), m_pelComp.end(), other.components().begin() );
+  return colorSpace() == other.colorSpace() && std::ranges::equal( m_pelComp, other.components() );
 }
 
-std::ostream& operator<<( std::ostream& os, const CalypPixel& p )
+auto operator<<( std::ostream& stream, const CalypPixel& pixel ) -> std::ostream&
 {
   // #ifdef CLP_DEBUG
   //   if( p.colorSpace() == CLP_COLOR_RGB || p.colorSpace() == CLP_COLOR_YUV )
@@ -142,18 +136,18 @@ std::ostream& operator<<( std::ostream& os, const CalypPixel& p )
   //     os << "(" << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << ")";
   //   }
   // #endif
-  return os;
+
+  return stream;
 }
 
-CalypPixel CalypPixel::convertPixel( CalypColorSpace eOutputSpace ) const
+auto CalypPixel::convertPixel( CalypColorSpace eOutputSpace ) const -> CalypPixel
 {
-  if( m_colorSpace == eOutputSpace )
-    return *this;
+  if( m_colorSpace == eOutputSpace ) return *this;
 
-  int outA = 0;
-  int outB = 0;
-  int outC = 0;
-  int outD = 0;
+  int outA{ 0 };
+  int outB{ 0 };
+  int outC{ 0 };
+  int outD{ 0 };
   if( m_colorSpace == CLP_COLOR_YUV )
   {
     switch( eOutputSpace )
@@ -186,5 +180,6 @@ CalypPixel CalypPixel::convertPixel( CalypColorSpace eOutputSpace ) const
       break;
     }
   }
-  return CalypPixel( eOutputSpace, outA, outB, outC, outD );
+  return { eOutputSpace, static_cast<ClpPel>( outA ), static_cast<ClpPel>( outB ), static_cast<ClpPel>( outC ),
+           static_cast<ClpPel>( outD ) };
 }

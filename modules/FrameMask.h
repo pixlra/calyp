@@ -28,10 +28,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class FrameMask : public CalypModuleIf
+class FrameMask : public CalypModuleIf, public CalypModuleInstance<FrameMask>
 {
-  REGISTER_CLASS_FACTORY( FrameMask )
-
 private:
   int m_iWeight;
   CalypFrame* m_pcFrameProcessed;

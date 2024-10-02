@@ -34,9 +34,8 @@ using cv::Mat;
 using cv::Mat_;
 using cv::Point;
 
-class ThreeSixtyDownsampling : public CalypModuleIf
+class ThreeSixtyDownsampling : public CalypModuleIf, public CalypModuleInstance<ThreeSixtyDownsampling>
 {
-  REGISTER_CLASS_FACTORY( ThreeSixtyDownsampling )
 private:
   unsigned m_uiDownsampling;
   unsigned m_uiX0;

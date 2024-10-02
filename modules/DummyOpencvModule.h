@@ -32,8 +32,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/saliency.hpp>
 
-class DummyOpencvModule : public CalypOpenCVModuleIf,
-                          public CalypModuleInstace<DummyOpencvModule>
+class DummyOpencvModule : public CalypOpenCVModuleIf, public CalypModuleInstance<DummyOpencvModule>
 {
   using Mat = cv::Mat;
 

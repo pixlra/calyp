@@ -44,8 +44,7 @@ public:
   CalypFrame* filterComponent( CalypFrame* InputFrame, int Component );
 };
 
-class FilterComponentLuma : public FilterComponentModule,
-                            public CalypModuleInstace<FilterComponentLuma>
+class FilterComponentLuma : public FilterComponentModule, public CalypModuleInstance<FilterComponentLuma>
 {
 public:
   FilterComponentLuma();
@@ -54,8 +53,7 @@ public:
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
 };
 
-class FilterComponentChromaU : public FilterComponentModule,
-                               public CalypModuleInstace<FilterComponentChromaU>
+class FilterComponentChromaU : public FilterComponentModule, public CalypModuleInstance<FilterComponentChromaU>
 {
 public:
   FilterComponentChromaU();
@@ -64,8 +62,7 @@ public:
   CalypFrame* process( std::vector<CalypFrame*> apcFrameList );
 };
 
-class FilterComponentChromaV : public FilterComponentModule,
-                               public CalypModuleInstace<FilterComponentChromaV>
+class FilterComponentChromaV : public FilterComponentModule, public CalypModuleInstance<FilterComponentChromaV>
 {
 public:
   FilterComponentChromaV();

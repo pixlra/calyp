@@ -27,6 +27,7 @@
 #define __CALYPDEFS_H__
 
 #include <algorithm>
+#include <format>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -58,20 +59,16 @@ inline std::string clpUppercase( const std::string& in )
 
 struct CalypFailure : public std::exception
 {
-  std::string m_class_name;
-  std::string m_error_msg;
-  CalypFailure( std::string error_msg ) throw()
-      : m_error_msg( error_msg ) {}
+  CalypFailure( std::string error_msg ) throw() : m_error_msg{ std::move( error_msg ) } {}
   CalypFailure( std::string class_name, std::string error_msg ) throw()
-      : m_class_name( class_name ), m_error_msg( error_msg )
+      : m_error_msg{ std::format( "[%s] %s", class_name, error_msg ) }
   {
   }
   ~CalypFailure() throw() {}
-  const char* what() const throw()
-  {
-    std::string* msg = new std::string( "[" + m_class_name + "] " + m_error_msg );
-    return msg->c_str();
-  }
+  auto what() const throw() -> const char* { return m_error_msg.c_str(); }
+
+private:
+  std::string m_error_msg;
 };
 
 #endif  // __CALYPDEFS_H__

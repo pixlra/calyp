@@ -35,6 +35,10 @@
 #define FF_USER_CODEC_PARAM
 #endif
 
+#if( LIBAVCODEC_VERSION_MAJOR >= 59 && LIBAVFORMAT_VERSION_MAJOR >= 59 )
+#define FF_API_LAVF_AVCTX
+#endif
+
 std::vector<CalypStreamFormat> StreamHandlerLibav::supportedReadFormats()
 {
   INI_REGIST_CALYP_SUPPORTED_FMT;
@@ -123,7 +127,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
 #else
   int codecId = m_cStream->codec->codec_id;
 #endif
-  AVCodec* dec = avcodec_find_decoder( AVCodecID( codecId ) );
+  auto* dec = avcodec_find_decoder( AVCodecID( codecId ) );
   if( !dec )
   {
     std::cout << "Failed to find video coded" << std::endl;
@@ -150,7 +154,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
 
   if( avcodec_open2( m_cCodedCtx, dec, NULL ) < 0 )
   {
-    std::cout << "Failed to open video coded" << std::endl;
+    std::cout << "Failed to open video codec" << std::endl;
     return false;
   }
 
@@ -200,9 +204,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   m_iPixelFormat = ClpPixelFormats::Invalid;
   m_bNative = false;
   auto found_fmt = std::find_if( g_CalypPixFmtDescriptorsMap.begin(), g_CalypPixFmtDescriptorsMap.end(),
-                                 [auxPixFmt]( const auto& fmt ) {
-                                   return fmt.second.ffmpegPelFormat == auxPixFmt;
-                                 } );
+                                 [auxPixFmt]( const auto& fmt ) { return fmt.second.ffmpegPelFormat == auxPixFmt; } );
   if( found_fmt != g_CalypPixFmtDescriptorsMap.end() )
   {
     m_bNative = true;
@@ -272,8 +274,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
     AVPixelFormat newAvFmt = AVPixelFormat( g_CalypPixFmtDescriptorsMap.at( m_iPixelFormat ).ffmpegPelFormat );
 
     /* create scaling context */
-    m_ScalerCtx = sws_getContext( m_uiWidth, m_uiHeight, AVPixelFormat( m_ffPixFmt ),
-                                  m_uiWidth, m_uiHeight, newAvFmt,
+    m_ScalerCtx = sws_getContext( m_uiWidth, m_uiHeight, AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, newAvFmt,
                                   SWS_BILINEAR, NULL, NULL, NULL );
 
     m_cConvertedFrame = av_frame_alloc();
@@ -283,8 +284,9 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
       return false;
     }
 
-    if( av_image_alloc( m_cConvertedFrame->data, m_cConvertedFrame->linesize,
-                        m_uiWidth, m_uiHeight, newAvFmt, 16 ) < 0 )
+    auto alloc_error =
+        av_image_alloc( m_cConvertedFrame->data, m_cConvertedFrame->linesize, m_uiWidth, m_uiHeight, newAvFmt, 16 );
+    if( alloc_error < 0 )
     {
       closeHandler();
       return false;
@@ -296,10 +298,10 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   m_uiFrameBufferSize = av_image_get_buffer_size( AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
 
   /* initialize packet, set data to NULL, let the demuxer fill it */
-  av_init_packet( &m_cPacket );
-  m_cPacket.data = NULL;
-  m_cPacket.size = 0;
-  m_cOrgPacket = m_cPacket;
+  m_cPacket = av_packet_alloc();
+  m_cPacket->data = NULL;
+  m_cPacket->size = 0;
+  m_cOrgPacket = *m_cPacket;
 
   m_bHasStream = true;
   return true;
@@ -316,6 +318,7 @@ void StreamHandlerLibav::closeHandler()
       avformat_close_input( &m_cFmtCtx );
 
     av_free( m_cFrame );
+    av_packet_free( &m_cPacket );
   }
   m_bHasStream = false;
 }
@@ -373,13 +376,13 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
       bGotFrame = 1;
     }
 #else
-    if( m_cPacket.stream_index == m_iStreamIdx )
+    if( m_cPacket->stream_index == m_iStreamIdx )
     {
-      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, &m_cPacket ) ) < 0 )
+      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, m_cPacket ) ) < 0 )
         return false;
-      m_cPacket.data += iRet;
-      m_cPacket.size -= iRet;
-      if( m_cPacket.size <= 0 )
+      m_cPacket->data += iRet;
+      m_cPacket->size -= iRet;
+      if( m_cPacket->size <= 0 )
       {
         bReadPkt = true;
         av_packet_unref( &m_cOrgPacket );
@@ -392,7 +395,7 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
     {
       bReadPkt = false;
       av_packet_unref( &m_cOrgPacket );
-      if( ( iRet = av_read_frame( m_cFmtCtx, &m_cPacket ) ) < 0 )
+      if( ( iRet = av_read_frame( m_cFmtCtx, m_cPacket ) ) < 0 )
       {
         if( iRet == AVERROR_EOF )
         {
@@ -401,10 +404,10 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
         }
         return false;
       }
-      m_cOrgPacket = m_cPacket;
+      m_cOrgPacket = *m_cPacket;
 #ifdef FF_SEND_RECEIVE_API
-      if( m_cPacket.stream_index == m_iStreamIdx )
-        if( ( iRet = avcodec_send_packet( m_cCodedCtx, &m_cPacket ) ) < 0 )
+      if( m_cPacket->stream_index == m_iStreamIdx )
+        if( ( iRet = avcodec_send_packet( m_cCodedCtx, m_cPacket ) ) < 0 )
           return false;
 #endif
     }
@@ -415,13 +418,13 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
     AVFrame* decFrame = m_cFrame;
     if( !m_bNative )
     {
-      sws_scale( m_ScalerCtx, (const uint8_t* const*)decFrame->data, decFrame->linesize, 0,
-                 decFrame->height, (uint8_t* const*)m_cConvertedFrame->data, m_cConvertedFrame->linesize );
+      sws_scale( m_ScalerCtx, (const uint8_t* const*)decFrame->data, decFrame->linesize, 0, decFrame->height,
+                 (uint8_t* const*)m_cConvertedFrame->data, m_cConvertedFrame->linesize );
 
       decFrame = m_cConvertedFrame;
     }
-    av_image_copy_to_buffer( m_pStreamBuffer.data(), m_uiFrameBufferSize, decFrame->data,
-                             decFrame->linesize, AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
+    av_image_copy_to_buffer( m_pStreamBuffer.data(), m_uiFrameBufferSize, decFrame->data, decFrame->linesize,
+                             AVPixelFormat( m_ffPixFmt ), m_uiWidth, m_uiHeight, 1 );
 
     pcFrame.frameFromBuffer( m_pStreamBuffer, m_iEndianness );
     m_uiCurrFrameFileIdx++;

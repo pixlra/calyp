@@ -31,10 +31,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class MeasureOpticalFlowDualTVL1 : public CalypModuleIf
+class MeasureOpticalFlowDualTVL1 : public CalypModuleIf, public CalypModuleInstance<MeasureOpticalFlowDualTVL1>
 {
-  REGISTER_CLASS_FACTORY( MeasureOpticalFlowDualTVL1 )
-
 private:
   bool m_bShowReconstruction;
   int m_iStep;

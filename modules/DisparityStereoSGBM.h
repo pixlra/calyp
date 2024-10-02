@@ -51,10 +51,8 @@
 // CalypLib
 #include "lib/CalypModuleIf.h"
 
-class DisparityStereoSGBM : public CalypModuleIf
+class DisparityStereoSGBM : public CalypModuleIf, public CalypModuleInstance<DisparityStereoSGBM>
 {
-  REGISTER_CLASS_FACTORY( DisparityStereoSGBM )
-
 private:
   CalypFrame* m_pcDisparityFrame;
   bool m_bUseHH;

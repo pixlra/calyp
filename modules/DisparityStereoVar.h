@@ -32,10 +32,8 @@
 // CalypLib
 #include "CalypModuleIf.h"
 
-class DisparityStereoVar : public CalypModuleIf
+class DisparityStereoVar : public CalypModuleIf, public CalypModuleInstance<DisparityStereoVar>
 {
-  REGISTER_CLASS_FACTORY( DisparityStereoVar )
-
 private:
   CalypFrame* m_pcDisparityFrame;
   cv::StereoVar m_cStereoVar;

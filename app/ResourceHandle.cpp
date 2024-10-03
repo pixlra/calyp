@@ -30,10 +30,7 @@
 #include <QFileInfo>
 #include <QMutex>
 #include <QThread>
-#include <chrono>
-#include <iostream>
 #include <memory>
-#include <optional>
 
 auto get_new_resource_id() -> std::size_t
 {
@@ -48,7 +45,9 @@ ResourceWorker::~ResourceWorker()
 
 void ResourceWorker::stop()
 {
-  while( m_bStarting ) {}
+  while( m_bStarting )
+  {
+  }
   m_bStop = true;
   if( m_bStarted )
   {
@@ -158,8 +157,7 @@ auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
     {
       if( auto* resource = dynamic_cast<OldStreamResource*>( m_apcStreamResourcesList[i].get() ) )
       {
-        if( &resource->m_stream == ptr )
-          return i;
+        if( &resource->m_stream == ptr ) return i;
       }
     }
   }
@@ -168,11 +166,8 @@ auto ResourceHandle::getResource( CalypStream* ptr ) -> std::size_t
 
 auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 {
-  if( m_apcStreamResourcesWorkersList.count( id ) )
-  {
-    return m_apcStreamResourcesList[id]->getResource();
-  }
-  return nullptr;
+  if( !m_apcStreamResourcesWorkersList.contains( id ) ) return nullptr;
+  return m_apcStreamResourcesList[id]->getResource();
 }
 
 auto ResourceHandle::appendResource( std::unique_ptr<CalypResource>&& resource ) -> std::size_t
@@ -186,7 +181,7 @@ auto ResourceHandle::appendResource( std::unique_ptr<CalypResource>&& resource )
 
 void ResourceHandle::removeResource( std::size_t id )
 {
-  if( !m_apcStreamResourcesList.count( id ) )
+  if( !m_apcStreamResourcesList.contains( id ) )
   {
     assert( false );
     return;
@@ -202,7 +197,7 @@ void ResourceHandle::removeResource( std::size_t id )
 
 void ResourceHandle::stopResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.count( id ) )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;
@@ -212,7 +207,7 @@ void ResourceHandle::stopResourceWorker( std::size_t id )
 
 void ResourceHandle::startResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.count( id ) )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;
@@ -225,7 +220,7 @@ void ResourceHandle::startResourceWorker( std::size_t id )
 
 void ResourceHandle::wakeResourceWorker( std::size_t id )
 {
-  if( !m_apcStreamResourcesWorkersList.count( id ) )
+  if( !m_apcStreamResourcesWorkersList.contains( id ) )
   {
     assert( false );
     return;

@@ -1,4 +1,4 @@
-name: Build on Linux
+name: Build/Test Pipeline
 
 on:
   push:
@@ -18,11 +18,8 @@ jobs:
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Build (Linux)
-    env:
-      CC: gcc-13
-      CXX: g++-13
     steps:
       - name: Install dependencies
         run: sudo apt-get update &&  sudo apt-get install cmake qtbase5-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev
@@ -68,11 +65,8 @@ jobs:
 
   check-tests-linux:
     name: Tests (Linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-build-linux
-    env:
-      CC: gcc-13
-      CXX: g++-13
     steps:
       - name: Install dependencies
         run: sudo apt-get update &&  sudo apt-get install cmake qtbase5-dev qt6-base-dev libavcodec-dev libavformat-dev libavutil-dev libopencv-dev libopencv-video-dev libopencv-contrib-dev

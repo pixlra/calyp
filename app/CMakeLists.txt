@@ -199,7 +199,11 @@ INSTALL(FILES resources/calyp.xml DESTINATION share/mime/packages)
 IF(BUILD_TESTS)
   FETCHCONTENT_MAKEAVAILABLE(Catch2)
 
-  SET(Calyp_App_Catch2_Tests_SRCS ${Calyp_App_Module_SRCS} catch2/CalypAppTests.cpp catch2/CalypResourcesTests.cpp)
+  SET(Calyp_App_Catch2_Tests_SRCS
+    ${Calyp_App_Module_SRCS}
+    catch2/CalypAppTests.cpp
+    catch2/CalypResourcesTests.cpp
+  )
 
   ADD_DEFINITIONS(-DCALYP_TEST_DATA_DIR=\"${CALYP_TEST_DATA_DIR}\")
 
@@ -211,8 +215,7 @@ IF(BUILD_TESTS)
     ${APP_LINKER_LIBS}
     ${QT_LINKER_LIBS}
     QCustomPlotLib
-    Catch2::Catch2
+    Catch2::Catch2WithMain
   )
   CATCH_DISCOVER_TESTS(CalypAppCatch2Tests)
-
 ENDIF()

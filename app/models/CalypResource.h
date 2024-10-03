@@ -38,14 +38,15 @@ public:
   virtual auto isReady() -> bool = 0;
 
   virtual auto getResourceName() -> std::string = 0;
-  [[deprecated( "Do not directly access the resource" )]] virtual auto getResource() -> CalypStream* = 0;
+  // TODO(JC)  [[deprecated( "Do not directly access the resource" )]]  after refactoring
+  virtual auto getResource() -> CalypStream* = 0;
 
 protected:
   CalypResource() = default;
-  CalypResource( CalypResource&& other ) noexcept = delete;
-  CalypResource& operator=( CalypResource&& other ) noexcept = delete;
-  CalypResource( const CalypResource& other ) = delete;
-  CalypResource& operator=( const CalypResource& other ) = delete;
+  CalypResource( CalypResource&& other ) noexcept = default;
+  CalypResource( const CalypResource& other ) = default;
+  auto operator=( CalypResource&& other ) noexcept -> CalypResource& = default;
+  auto operator=( const CalypResource& other ) -> CalypResource& = default;
 };
 
 #endif  // __CALYPRESOURCE_H__

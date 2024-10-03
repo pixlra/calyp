@@ -45,10 +45,11 @@ struct CalypFileInfo
   unsigned long long int m_uiFileSize;
   bool m_bForceRaw{ false };
 };
+
 using CalypFileInfoVector = QVector<CalypFileInfo>;
 
-QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& d );
-QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& d );
+auto operator<<( QDataStream& out, const CalypFileInfoVector& infos ) -> QDataStream&;
+auto operator>>( QDataStream& in, CalypFileInfoVector& infos ) -> QDataStream&;
 auto findCalypStreamInfo( const CalypFileInfoVector& array, const QString& filename ) -> int;
 
 class VideostreamResource : public QObject, public CalypResource
@@ -88,7 +89,7 @@ private:
   // Q_SIGNALS:
   // private Q_SLOTS:
 
-private:
+private:  // NOLINT
   CalypStream m_currStream;
   CalypFileInfo m_sStreamInfo;
 

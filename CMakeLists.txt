@@ -120,7 +120,11 @@ SET_PACKAGE_PROPERTIES(
 
 # Catch2 and Google Tests
 IF(BUILD_TESTS)
-  FETCHCONTENT_DECLARE(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
+  FETCHCONTENT_DECLARE(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.11.0
+  )
   # For Windows: Prevent overriding the parent project's compiler/linker settings
   SET(gtest_force_shared_crt
       ON

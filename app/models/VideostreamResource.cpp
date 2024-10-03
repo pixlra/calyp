@@ -38,27 +38,25 @@
  * \brief Functions to control data stream from stream information
  */
 
-QDataStream& operator<<( QDataStream& out, const CalypFileInfoVector& array )
+auto operator<<( QDataStream& out, const CalypFileInfoVector& infos ) -> QDataStream&
 {
-  CalypFileInfo d;
-  out << array.size();
-  for( int i = 0; i < array.size(); i++ )
+  out << infos.size();
+  for( const auto& info : infos )
   {
-    d = array.at( i );
-    out << d.m_cFilename << d.m_uiWidth << d.m_uiHeight << static_cast<int>( d.m_iPelFormat ) << d.m_uiBitsPelPixel
-        << d.m_iEndianness << d.m_uiFrameRate << d.m_uiFileSize << d.m_bForceRaw;
+    out << info.m_cFilename << info.m_uiWidth << info.m_uiHeight << static_cast<int>( info.m_iPelFormat )
+        << info.m_uiBitsPelPixel << info.m_iEndianness << info.m_uiFrameRate << info.m_uiFileSize << info.m_bForceRaw;
   }
   return out;
 }
 
-QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
+auto operator>>( QDataStream& in, CalypFileInfoVector& infos ) -> QDataStream&
 {
-  int array_size{ 0 };
+  auto array_size = infos.size();
   in >> array_size;
   for( int i = 0; i < array_size; i++ )
   {
     CalypFileInfo d;
-    int pelFormat;
+    int pelFormat{ 0 };
     in >> d.m_cFilename;
     in >> d.m_uiWidth;
     in >> d.m_uiHeight;
@@ -69,7 +67,7 @@ QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
     in >> d.m_uiFileSize;
     in >> d.m_bForceRaw;
     d.m_iPelFormat = static_cast<ClpPixelFormats>( pelFormat );
-    array.append( d );
+    infos.append( d );
   }
   return in;
 }
@@ -77,8 +75,9 @@ QDataStream& operator>>( QDataStream& in, CalypFileInfoVector& array )
 auto findCalypStreamInfo( const CalypFileInfoVector& array, const QString& filename ) -> int
 {
   for( int i = 0; i < array.size(); i++ )
-    if( array.at( i ).m_cFilename == filename )
-      return i;
+  {
+    if( array.at( i ).m_cFilename == filename ) return i;
+  }
   return -1;
 }
 
@@ -160,8 +159,7 @@ void VideostreamResource::pause()
 
 void VideostreamResource::seekAbsoluteEvent( unsigned int new_frame_num )
 {
-  if( m_currStream.seekInput( new_frame_num ) )
-    triggerRefresh();
+  if( m_currStream.seekInput( new_frame_num ) ) triggerRefresh();
 }
 
 void VideostreamResource::seekRelativeEvent( bool bIsForward )
@@ -186,7 +184,9 @@ void VideostreamResource::stop()
 
 auto VideostreamResource::goToNextFrame( bool bThreaded ) -> bool
 {
-  while( !m_currStream.hasNextFrame() && !m_currStream.isEof() ) {}
+  while( !m_currStream.hasNextFrame() && !m_currStream.isEof() )
+  {
+  }
   bool bEndOfSeq = m_currStream.setNextFrame();
   if( !bEndOfSeq )
   {
@@ -345,8 +345,7 @@ auto video_resource_guess_format( const QString& filename, unsigned int& rWidth,
       rEndianness = CLP_LITTLE_ENDIAN;
     }
 
-    if( rWidth > 0 && rHeight > 0 && rInputFormat != ClpPixelFormats::Invalid )
-      bGuessed = true && !bGuessedByFilesize;
+    if( rWidth > 0 && rHeight > 0 && rInputFormat != ClpPixelFormats::Invalid ) bGuessed = true && !bGuessedByFilesize;
   }
   return bGuessed;
 }

@@ -33,7 +33,6 @@
 #include <atomic>
 
 #include "CalypResource.h"
-#include "CommonDefs.h"
 #include "lib/CalypStream.h"
 
 class ResourceWorker : public QThread
@@ -47,12 +46,12 @@ private:
   std::atomic<bool> m_bStarting{ false };
 
 public:
-  ResourceWorker( std::shared_ptr<CalypResource> resource ) : m_resource{ std::move( resource ) } {}
+  explicit ResourceWorker( std::shared_ptr<CalypResource> resource ) : m_resource{ std::move( resource ) } {}
   ResourceWorker( ResourceWorker&& other ) noexcept = delete;
-  ResourceWorker& operator=( ResourceWorker&& other ) noexcept = delete;
   ResourceWorker( const ResourceWorker& other ) = delete;
-  ResourceWorker& operator=( const ResourceWorker& other ) = delete;
-  ~ResourceWorker();
+  auto operator=( ResourceWorker&& other ) noexcept -> ResourceWorker& = delete;
+  auto operator=( const ResourceWorker& other ) -> ResourceWorker& = delete;
+  ~ResourceWorker() override;
   void stop();
   void wake();
   void start();
@@ -68,10 +67,10 @@ class ResourceHandle : public QObject
 public:
   ResourceHandle();
   ResourceHandle( ResourceHandle&& other ) noexcept = delete;
-  ResourceHandle& operator=( ResourceHandle&& other ) noexcept = delete;
   ResourceHandle( const ResourceHandle& other ) = delete;
-  ResourceHandle& operator=( const ResourceHandle& other ) = delete;
-  ~ResourceHandle();
+  auto operator=( ResourceHandle&& other ) noexcept -> ResourceHandle& = delete;
+  auto operator=( const ResourceHandle& other ) -> ResourceHandle& = delete;
+  ~ResourceHandle() override;
 
   auto getResource( CalypStream* ptr ) -> std::size_t;
   auto getResourceAsset( std::size_t id ) -> CalypStream*;
@@ -86,7 +85,7 @@ public:
   auto executeResourceAction( std::size_t id, const std::function<bool( T* )>& action ) -> bool
   {
     static_assert( std::is_base_of<CalypResource, T>::value, "T must inherit from CalypResource" );
-    if( !m_apcStreamResourcesList.count( id ) )
+    if( !m_apcStreamResourcesList.contains( id ) )
     {
       assert( false );
       return false;
@@ -106,7 +105,7 @@ public:
 private:
   auto addResource() -> std::size_t;
 
-private:
+private:  // NOLINT
   std::unique_ptr<QThread> m_thread;
   std::map<std::size_t, std::shared_ptr<CalypResource>> m_apcStreamResourcesList;
   std::map<std::size_t, std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;

@@ -451,7 +451,7 @@ std::uint64_t CalypFrame::getChromaLength() const
   return getWidth( 1 ) * getHeight( 1 );
 }
 
-unsigned int CalypFrame::getBitsPel() const
+auto CalypFrame::getBitsPel() const -> unsigned int
 {
   return m_d->m_uiBitsPel;
 }
@@ -814,13 +814,13 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
     ClpPel* pLine = m_d->m_pppcInputPel[*channel][0];
     for( unsigned y = 0; y < CHROMASHIFT( m_d->m_uiHeight, m_d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
-      for( int i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
+      for( unsigned i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
         ClpPel* pPel = pLine;
         for( unsigned x = 0; x < CHROMASHIFT( m_d->m_uiWidth, m_d->m_pcPelFormat->log2ChromaWidth ); x++ )
         {
           unsigned char finalPel = ( *pPel++ ) >> shiftBits;
-          for( int j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          for( unsigned j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
           {
             *pARGB++ = convert_to_pel_argb( finalPel, finalPel, finalPel );
           }
@@ -864,7 +864,7 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
 
     for( unsigned y = 0; y < CHROMASHIFT( m_d->m_uiHeight, m_d->m_pcPelFormat->log2ChromaHeight ); y++ )
     {
-      for( int i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
+      for( unsigned i = 0; i < 1UL << m_d->m_pcPelFormat->log2ChromaHeight; i++ )
       {
         ClpPel* pY = pLineY;
         ClpPel* pU = pLineU;
@@ -876,7 +876,7 @@ void CalypFrame::fillRGBBuffer( std::optional<std::size_t> channel ) const
           iU >>= shiftBits;
           int iV = *pV++;
           iV >>= shiftBits;
-          for( int j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
+          for( unsigned j = 0; j < ( 1UL << m_d->m_pcPelFormat->log2ChromaWidth ); j++ )
           {
             int iY = *pY++;
             iY >>= shiftBits;
@@ -1232,7 +1232,7 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
   {
     return bRet;
   }
-  auto numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
+  unsigned numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
   auto numChannels = getNumberChannels();
   double scaleFactor = 1UL << ( numBytes * kNumBitsInByte - getBitsPel() );
   if( scale == 0 ) scaleFactor = 1;
@@ -1260,11 +1260,13 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
         CalypPixel currPel = getPixel( x, y );
         currPel *= scaleFactor;
         for( unsigned int ch = 0; ch < numChannels; ch++ )
-          for( auto b = 0; b < numBytes; b++ )
+        {
+          for( unsigned b = 0; b < numBytes; b++ )
           {
             unsigned char pel = currPel[ch] >> ( kNumBitsInByte * b );
             *cv_data++ = pel;
           }
+        }
       }
     }
     // TODO: check for other formats
@@ -1288,7 +1290,7 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
     for( unsigned y = 0; y < imgHeight * imgWidth; y++ )
     {
       auto currPel = static_cast<ClpPel>( *pel++ * scaleFactor );
-      for( auto b = 0; b < numBytes; b++ )
+      for( unsigned b = 0; b < numBytes; b++ )
       {
         *cv_data++ = currPel >> ( kNumBitsInByte * b );
       }
@@ -1303,7 +1305,7 @@ auto CalypFrame::fromMat( cv::Mat& cvMat, int channel ) -> bool
 {
   bool bRet = false;
 #ifdef USE_OPENCV
-  auto numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
+  unsigned numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
   auto numChannels = getNumberChannels();
   auto cvPrecision = getBitsPel() > kNumBitsInByte ? CV_16U : CV_8U;
   if( !m_d->m_bInit )

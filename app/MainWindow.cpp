@@ -45,6 +45,7 @@
 #include "VideoHandle.h"
 #include "VideoSubWindow.h"
 #include "lib/CalypOptions.h"
+#include "models/VideostreamResource.h"
 #ifdef USE_FERVOR
 #include "fvupdater.h"
 #endif
@@ -908,11 +909,13 @@ void MainWindow::addStreamInfoToRecentList( CalypFileInfo streamInfo )
   if( idx >= 0 ) m_aRecentFileStreamInfo.remove( idx );
   m_aRecentFileStreamInfo.prepend( streamInfo );
   while( m_aRecentFileStreamInfo.size() > MAX_RECENT_FILES )
+  {
     m_aRecentFileStreamInfo.remove( m_aRecentFileStreamInfo.size() - 1 );
+  }
   updateRecentFileActions();
   QSettings appSettings;
   QVariant var;
-  var.setValue<CalypFileInfoVector>( m_aRecentFileStreamInfo );
+  var.setValue( m_aRecentFileStreamInfo );
   appSettings.setValue( "MainWindow/RecentFileList", var );
 }
 

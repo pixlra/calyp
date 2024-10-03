@@ -23,7 +23,7 @@
  */
 
 #include <QString>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <filesystem>
 #include <iostream>
 #include <variant>
@@ -36,7 +36,7 @@
 using namespace std::chrono_literals;
 
 constexpr int kFrameRate{ 30 };
-constexpr auto kStreamType = CalypStream::Type::Input;
+// constexpr auto kStreamType = CalypStream::Type::Input;
 
 auto getFileTestFilename( const char* test_sequence ) -> std::string
 {

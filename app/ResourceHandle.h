@@ -100,6 +100,7 @@ public:
     return result;
   }
 
+public slots:
   void cleanup();
 
 private:

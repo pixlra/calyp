@@ -124,12 +124,14 @@ public:
 ResourceHandle::ResourceHandle() : m_thread{ std::make_unique<QThread>() }
 {
   moveToThread( m_thread.get() );
+  m_thread->setObjectName( "ResourceHandleThread" );
   m_thread->start();
 };
 
 ResourceHandle::~ResourceHandle()
 {
-  QMetaObject::invokeMethod( this, "cleanup" );
+  auto result = QMetaObject::invokeMethod( this, "cleanup" );
+  assert( result );
   m_thread->wait();
 };
 
@@ -141,7 +143,6 @@ void ResourceHandle::cleanup()
 auto ResourceHandle::addResource() -> std::size_t
 {
   auto resource_id = get_new_resource_id();
-  ;
   auto newStreamResource = std::make_shared<OldStreamResource>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
   m_apcStreamResourcesList[resource_id] = newStreamResource;

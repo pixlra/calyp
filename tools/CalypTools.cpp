@@ -32,7 +32,7 @@
 #include "lib/CalypStream.h"
 #include "modules/CalypModulesFactory.h"
 
-CalypTools::CalypTools() : m_bVerbose{ true }, m_uiOperation{ INVALID_OPERATION }, m_uiQualityMetric{ -1 }
+CalypTools::CalypTools() : m_uiOperation{ INVALID_OPERATION }, m_uiQualityMetric{ -1 }
 {
   m_pcCurrModuleIf = NULL;
 }

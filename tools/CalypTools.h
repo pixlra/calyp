@@ -70,8 +70,6 @@ public:
   auto Close() -> int;
 
 private:
-  bool m_bVerbose;
-
   unsigned int m_uiOperation;
   enum TOOLS_OPERATIONS_LIST
   {

@@ -78,8 +78,8 @@ public:
     VIDEO_STREAM_SUBWINDOW = SubWindowAbstract::VIDEO_STREAM_SUBWINDOW,
     MODULE_SUBWINDOW = SubWindowAbstract::MODULE_SUBWINDOW,
   };
-  VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent = 0 );
-  ~VideoSubWindow();
+  explicit VideoSubWindow( VideoSubWindowCategories category, QWidget* parent = 0 );
+  ~VideoSubWindow() override;
 
   virtual void resetWindowName() = 0;
   virtual void updateVideoWindowInfo() = 0;
@@ -103,8 +103,7 @@ public:
   {
     m_pcReferenceSubWindow = NULL;
     if( subWindow )
-      if( m_pcCurrFrameAsset->haveSameFmt( subWindow->getCurrFrame() ) )
-        m_pcReferenceSubWindow = subWindow;
+      if( m_pcCurrFrameAsset->haveSameFmt( subWindow->getCurrFrame() ) ) m_pcReferenceSubWindow = subWindow;
   }
 
   /**

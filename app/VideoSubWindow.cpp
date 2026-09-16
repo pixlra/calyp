@@ -33,6 +33,22 @@
 #include "ModulesHandle.h"
 #include "SubWindowAbstract.h"
 
+namespace
+{
+auto to_sub_window_abstract( VideoSubWindow::VideoSubWindowCategories category ) noexcept
+{
+  switch( category )
+  {
+  case VideoSubWindow::VideoSubWindowCategories::VIDEO_STREAM_SUBWINDOW:
+    return SubWindowAbstract::VIDEO_STREAM_SUBWINDOW;
+  case VideoSubWindow::VideoSubWindowCategories::MODULE_SUBWINDOW:
+    return SubWindowAbstract::MODULE_SUBWINDOW;
+  }
+  // Add a default case to handle unexpected values
+  return SubWindowAbstract::VIDEO_STREAM_SUBWINDOW;
+}
+}  // namespace
+
 VideoInformation::VideoInformation( QWidget* parent )
     : QWidget( parent ), m_pcRefreshTimer{ new QTimer }, m_bBusyWindow( false )
 {
@@ -80,8 +96,8 @@ void VideoInformation::paintEvent( QPaintEvent* event )
   }
 }
 
-VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget* parent )
-    : SubWindowAbstract( parent, SubWindowAbstract::VIDEO_SUBWINDOW | category )
+VideoSubWindow::VideoSubWindow( VideoSubWindowCategories category, QWidget* parent )
+    : SubWindowAbstract( parent, SubWindowAbstract::VIDEO_SUBWINDOW | to_sub_window_abstract( category ) )
     , m_pcVideoInfo{ new VideoInformation{ this } }
     , m_pcScrollArea{ new QScrollArea }
     , m_cViewArea{ new ViewArea }
@@ -92,8 +108,7 @@ VideoSubWindow::VideoSubWindow( enum VideoSubWindowCategories category, QWidget*
 
   connect( m_pcScrollArea->horizontalScrollBar(), SIGNAL( actionTriggered( int ) ), this,
            SLOT( updateScrollValues() ) );
-  connect( m_pcScrollArea->verticalScrollBar(), SIGNAL( actionTriggered( int ) ), this,
-           SLOT( updateScrollValues() ) );
+  connect( m_pcScrollArea->verticalScrollBar(), SIGNAL( actionTriggered( int ) ), this, SLOT( updateScrollValues() ) );
 
   // Create a new interface to show images
 
@@ -237,8 +252,7 @@ void VideoSubWindow::updateSelectedArea( QRect area )
 
 bool VideoSubWindow::hasAssociatedModule()
 {
-  if( m_pcDisplayModule == nullptr )
-    return !m_associatedModules.empty();
+  if( m_pcDisplayModule == nullptr ) return !m_associatedModules.empty();
   return m_associatedModules.size() > 1;
 }
 
@@ -264,8 +278,7 @@ void VideoSubWindow::associateModule( std::shared_ptr<CalypAppModuleIf> pcModule
 
 void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
 {
-  if( pcModule == nullptr )
-    return;
+  if( pcModule == nullptr ) return;
   bool bRefresh = false;
 
   auto it = std::find_if( m_associatedModules.begin(), m_associatedModules.end(),
@@ -326,8 +339,7 @@ void VideoSubWindow::disableModule( CalypAppModuleIf* pcModule )
 
 bool VideoSubWindow::disableAllModules()
 {
-  if( m_associatedModules.empty() )
-    return false;
+  if( m_associatedModules.empty() ) return false;
   // For loop is required as we will invalidate the iterator
   while( m_associatedModules.size() > 0 )
   {
@@ -364,8 +376,7 @@ void VideoSubWindow::refreshFrame()
   m_cViewArea->setImage( m_pcCurrFrameAsset );
   for( auto& module : m_associatedModules )
   {
-    if( module.get() != m_pcDisplayModule )
-      module->update( isPlaying() );
+    if( module.get() != m_pcDisplayModule ) module->update( isPlaying() );
   }
 }
 
@@ -378,8 +389,8 @@ bool VideoSubWindow::save( const QString& filename )
   CalypFrame* saveFrame = m_pcCurrFrameAsset.get();
   if( m_cSelectedArea.isValid() )
   {
-    new_frame = std::make_unique<CalypFrame>( m_pcCurrFrameAsset.get(), m_cSelectedArea.x(), m_cSelectedArea.y(), m_cSelectedArea.width(),
-                                              m_cSelectedArea.height() );
+    new_frame = std::make_unique<CalypFrame>( m_pcCurrFrameAsset.get(), m_cSelectedArea.x(), m_cSelectedArea.y(),
+                                              m_cSelectedArea.width(), m_cSelectedArea.height() );
     saveFrame = new_frame.get();
   }
   if( !saveFrame )
@@ -464,7 +475,8 @@ void VideoSubWindow::updateScrollValues()
   m_dHorScroll = m_dVerScroll = 0;
 
   if( xPos != 0 )
-    m_dHorScroll = static_cast<double>( xPos ) / static_cast<double>( m_pcScrollArea->horizontalScrollBar()->maximum() );
+    m_dHorScroll =
+        static_cast<double>( xPos ) / static_cast<double>( m_pcScrollArea->horizontalScrollBar()->maximum() );
 
   if( yPos != 0 )
     m_dVerScroll = static_cast<double>( yPos ) / static_cast<double>( m_pcScrollArea->verticalScrollBar()->maximum() );
@@ -499,8 +511,7 @@ void VideoSubWindow::zoomToFactor( double factor, QPoint center )
 
 void VideoSubWindow::scaleView( double scale, QPoint center )
 {
-  if( scale == 1.0 )
-    return;
+  if( scale == 1.0 ) return;
 
   double usedScale = m_cViewArea->scaleZoomFactor( scale, center, getScrollSize() );
   adjustScrollBarByScale( usedScale, center );
@@ -509,8 +520,7 @@ void VideoSubWindow::scaleView( double scale, QPoint center )
 void VideoSubWindow::scaleView( const QSize& size, QPoint center )
 {
   QSize imgViewSize;
-  if( m_pcCurrFrameAsset )
-    imgViewSize = QSize( m_pcCurrFrameAsset->getWidth(), m_pcCurrFrameAsset->getHeight() );
+  if( m_pcCurrFrameAsset ) imgViewSize = QSize( m_pcCurrFrameAsset->getWidth(), m_pcCurrFrameAsset->getHeight() );
   // else
   //   imgViewSize = QSize( m_pCurrStream->getWidth(), m_pCurrStream->getHeight() );
   QSize newSize = imgViewSize;
@@ -551,16 +561,12 @@ void VideoSubWindow::updatePixelValueStatusBar( const QPoint& pos )
         strStatus.append( QString( "Y: %1" ).arg( pixelValue[0] ) );
         break;
       case CLP_COLOR_YUV:
-        strStatus.append( QString( "Y: %1   U: %2   V: %3" )
-                              .arg( pixelValue[0] )
-                              .arg( pixelValue[1] )
-                              .arg( pixelValue[2] ) );
+        strStatus.append(
+            QString( "Y: %1   U: %2   V: %3" ).arg( pixelValue[0] ).arg( pixelValue[1] ).arg( pixelValue[2] ) );
         break;
       case CLP_COLOR_RGB:
-        strStatus.append( QString( "R: %1   G: %2   B: %3" )
-                              .arg( pixelValue[0] )
-                              .arg( pixelValue[1] )
-                              .arg( pixelValue[2] ) );
+        strStatus.append(
+            QString( "R: %1   G: %2   B: %3" ).arg( pixelValue[0] ).arg( pixelValue[1] ).arg( pixelValue[2] ) );
         break;
       case CLP_COLOR_RGBA:
         strStatus.append( QString( "R: %1   G: %2   B: %3   A: %4" )

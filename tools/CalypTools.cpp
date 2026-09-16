@@ -26,28 +26,20 @@
 
 #include <climits>
 #include <cstring>
-#include <iostream>
 
-#include "config.h"
 #include "lib/CalypFrame.h"
 #include "lib/CalypModuleIf.h"
 #include "lib/CalypStream.h"
 #include "modules/CalypModulesFactory.h"
 
-CalypTools::CalypTools()
+CalypTools::CalypTools() : m_bVerbose{ true }, m_uiOperation{ INVALID_OPERATION }, m_uiQualityMetric{ -1 }
 {
-  m_bVerbose = true;
-  m_uiOperation = INVALID_OPERATION;
-  m_uiNumberOfFrames = -1;
-
-  m_uiQualityMetric = -1;
-
   m_pcCurrModuleIf = NULL;
 }
 
 CalypTools::~CalypTools() = default;
 
-#define GET_PARAM( X, i ) X[X.size() > i ? i : X.size() - 1]
+#define GET_PARAM( X, i ) X[( X ).size() > i ? i : X.size() - 1]
 
 void CalypTools::reportStreamInfo( const CalypStream* stream, std::string strPrefix )
 {
@@ -188,13 +180,12 @@ int CalypTools::Open( int argc, char* argv[] )
       log( CLP_LOG_ERROR, "Invalid number of input streams! " );
       return -1;
     }
-    long long int currFrames = 0;
-    long long int numberOfFrames = LONG_MAX;
+    std::int64_t currFrames = 0;
+    std::int64_t numberOfFrames = LONG_MAX;
     for( unsigned int i = 0; i < m_apcInputStreams.size(); i++ )
     {
       currFrames = m_apcInputStreams[i]->getFrameNum();
-      if( currFrames < numberOfFrames )
-        numberOfFrames = currFrames;
+      if( currFrames < numberOfFrames ) numberOfFrames = currFrames;
     }
     m_iFrameNum = m_iFrames;
     if( !( m_iFrameNum >= 0 && m_iFrameNum < numberOfFrames ) )
@@ -202,8 +193,7 @@ int CalypTools::Open( int argc, char* argv[] )
       log( CLP_LOG_ERROR, "Invalid frame number! Use --frame option " );
       return -1;
     }
-    if( Opts().hasOpt( "output" ) )
-      m_pcOutputFileNames.push_back( m_strOutput );
+    if( Opts().hasOpt( "output" ) ) m_pcOutputFileNames.push_back( m_strOutput );
     if( m_pcOutputFileNames.size() != m_apcInputStreams.size() )
     {
       log( CLP_LOG_ERROR, "Invalid number of outputs! Each input must have an "
@@ -228,8 +218,7 @@ int CalypTools::Open( int argc, char* argv[] )
     for( unsigned int i = 0; i < m_apcInputStreams.size(); i++ )
     {
       currFrames = m_apcInputStreams[i]->getFrameNum();
-      if( currFrames < numberOfFrames )
-        numberOfFrames = currFrames;
+      if( currFrames < numberOfFrames ) numberOfFrames = currFrames;
     }
     if( m_iRateReductionFactor <= 0 )
     {
@@ -237,8 +226,7 @@ int CalypTools::Open( int argc, char* argv[] )
       return -1;
     }
 
-    if( Opts().hasOpt( "output" ) )
-      m_pcOutputFileNames.push_back( m_strOutput );
+    if( Opts().hasOpt( "output" ) ) m_pcOutputFileNames.push_back( m_strOutput );
 
     const CalypFrame* pcInputFrame = m_apcInputStreams[0]->getCurrFrame();
     CalypStream* pcOutputStream = new CalypStream;
@@ -355,8 +343,7 @@ int CalypTools::Open( int argc, char* argv[] )
     {
       // Check outputs
       std::vector<std::string> outputFileNames;
-      if( Opts().hasOpt( "output" ) )
-        outputFileNames.push_back( m_strOutput );
+      if( Opts().hasOpt( "output" ) ) outputFileNames.push_back( m_strOutput );
 
       if( outputFileNames.size() == 1 )
       {
@@ -476,13 +463,13 @@ int CalypTools::RateReductionOperation()
   return 0;
 }
 
-int CalypTools::QualityOperation()
+auto CalypTools::QualityOperation() -> int
 {
-  const char* pchQualityMetricName = CalypFrame::supportedQualityMetricsList()[m_uiQualityMetric].c_str();
-  CalypFrame* apcCurrFrame[MAX_NUMBER_INPUTS];
-  bool abEOF[MAX_NUMBER_INPUTS];
-  double adAverageQuality[MAX_NUMBER_INPUTS - 1][MAX_NUMBER_CHANNELS];
-  double dQuality;
+  const auto pchQualityMetricName = CalypFrame::supportedQualityMetricsList()[m_uiQualityMetric];
+  std::array<CalypFrame*, MAX_NUMBER_INPUTS> apcCurrFrame{};
+  std::array<bool, MAX_NUMBER_INPUTS> abEOF{};
+  std::array<std::array<double, MAX_NUMBER_CHANNELS>, MAX_NUMBER_INPUTS - 1> adAverageQuality{};
+  double dQuality{ 0.0 };
 
   std::string metric_fmt = " ";
   switch( m_uiQualityMetric )
@@ -504,14 +491,14 @@ int CalypTools::QualityOperation()
   }
   metric_fmt += " ";
 
-  log( CLP_LOG_INFO, "  Measuring Quality using %s ... \n", pchQualityMetricName );
-  log( CLP_LOG_INFO, "# Frame   ", pchQualityMetricName );
+  log( CLP_LOG_INFO, "  Measuring Quality using %s ... \n", pchQualityMetricName.c_str() );
+  log( CLP_LOG_INFO, "# Frame   %s", pchQualityMetricName.c_str() );
 
   for( unsigned int s = 1; s < m_apcInputStreams.size(); s++ )
   {
     for( unsigned int c = 0; c < m_uiNumberOfComponents; c++ )
     {
-      log( CLP_LOG_INFO, "%s_%d_%d  ", pchQualityMetricName, s, c );
+      log( CLP_LOG_INFO, "%s_%d_%d  ", pchQualityMetricName.c_str(), s, c );
     }
     log( CLP_LOG_INFO, "   " );
   }
@@ -530,7 +517,9 @@ int CalypTools::QualityOperation()
   {
     log( CLP_LOG_INFO, "  %3d  ", frame );
     for( unsigned int s = 0; s < m_apcInputStreams.size(); s++ )
+    {
       apcCurrFrame[s] = m_apcInputStreams[s]->getCurrFrame();
+    }
 
     for( unsigned int s = 1; s < m_apcInputStreams.size(); s++ )
     {
@@ -659,8 +648,7 @@ int CalypTools::ModuleOperation()
       if( m_pcCurrModuleIf->m_iModuleType == ClpModuleType::FrameProcessing )
       {
         pcProcessedFrame = m_pcCurrModuleIf->process( apcFrameList );
-        if( !pcProcessedFrame )
-          break;
+        if( !pcProcessedFrame ) break;
         m_apcOutputStreams[0]->writeFrame( *pcProcessedFrame );
       }
     }

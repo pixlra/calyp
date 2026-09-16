@@ -52,18 +52,22 @@
 class CalypFrame;
 class CalypStream;
 
-#define MAX_NUMBER_INPUTS 255
-#define MAX_NUMBER_CHANNELS 4
+constexpr std::size_t MAX_NUMBER_INPUTS = 255;
+constexpr std::size_t MAX_NUMBER_CHANNELS = 4;
 
 class CalypTools : public CalypToolsCmdParser
 {
 public:
   CalypTools();
+  CalypTools( const CalypTools& ) = delete;
+  CalypTools( CalypTools&& ) = delete;
+  auto operator=( const CalypTools& ) -> CalypTools& = delete;
+  auto operator=( CalypTools&& ) -> CalypTools& = delete;
   ~CalypTools();
 
-  int Open( int argc, char* argv[] );
-  int Process();
-  int Close();
+  auto Open( int argc, char* argv[] ) -> int;
+  auto Process() -> int;
+  auto Close() -> int;
 
 private:
   bool m_bVerbose;
@@ -79,30 +83,30 @@ private:
     STATISTICS_OPERATION,
   };
 
-  std::uint64_t m_uiNumberOfFrames;
-  unsigned int m_uiNumberOfComponents;
+  std::uint64_t m_uiNumberOfFrames{ 0 };
+  unsigned int m_uiNumberOfComponents{ 0 };
   std::vector<CalypStream*> m_apcInputStreams;
   std::vector<CalypStream*> m_apcOutputStreams;
 
   void reportStreamInfo( const CalypStream* stream, std::string strPrefix = "" );
-  int openInputs();
-  std::vector<CalypFrame*> readInput();
+  auto openInputs() -> int;
+  auto readInput() -> std::vector<CalypFrame*>;
 
-  typedef int ( CalypTools::*FpProcess )();
+  using FpProcess = int ( CalypTools::* )();
   FpProcess m_fpProcess;
 
-  long long int m_iFrameNum;
+  std::int64_t m_iFrameNum{ 0 };
   std::vector<std::string> m_pcOutputFileNames;
-  int SaveOperation();
+  auto SaveOperation() -> int;
 
-  int RateReductionOperation();
+  auto RateReductionOperation() -> int;
 
   int m_uiQualityMetric;
-  int QualityOperation();
+  auto QualityOperation() -> int;
 
   CalypModulePtr m_pcCurrModuleIf;
-  int ModuleOperation();
-  int ListStatistics();
+  auto ModuleOperation() -> int;
+  auto ListStatistics() -> int;
 };
 
 #endif  // __CALYPTOOLS_H__

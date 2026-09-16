@@ -130,8 +130,7 @@ ResourceHandle::ResourceHandle() : m_thread{ std::make_unique<QThread>() }
 
 ResourceHandle::~ResourceHandle()
 {
-  auto result = QMetaObject::invokeMethod( this, "cleanup" );
-  assert( result );
+  QMetaObject::invokeMethod( this, "cleanup" );
   m_thread->wait();
 };
 

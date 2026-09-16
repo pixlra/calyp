@@ -18,7 +18,7 @@ jobs:
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: Build (Linux)
     steps:
       - name: Install dependencies
@@ -43,10 +43,10 @@ jobs:
           cmake -B ${{github.workspace}}/build-without-deps -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_WERROR=ON -DUSE_OPENCV=OFF -DUSE_FFMPEG=OFF
           cmake --build ${{github.workspace}}/build-without-deps --config ${{env.BUILD_TYPE}}
 
-      - name: Install Qt&
+      - name: Install Qt6
         run: sudo apt-get install  qt6-base-dev
 
-      - name: Build with Qt& (autodetect)
+      - name: Build with Qt6 (autodetect)
         run: |
           cmake -B ${{github.workspace}}/build-qt6 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_WERROR=ON
           cmake --build ${{github.workspace}}/build-qt6 --config ${{env.BUILD_TYPE}}
@@ -65,7 +65,7 @@ jobs:
 
   check-tests-linux:
     name: Tests (Linux)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: check-build-linux
     steps:
       - name: Install dependencies

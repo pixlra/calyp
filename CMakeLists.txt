@@ -2,7 +2,7 @@
 # CMakeLists for calyp
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 4.3)
 
 # ####################################################################################################################################################
 # Project Definition
@@ -123,7 +123,7 @@ IF(BUILD_TESTS)
   FETCHCONTENT_DECLARE(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG release-1.11.0
+    GIT_TAG v1.18.0
   )
   # For Windows: Prevent overriding the parent project's compiler/linker settings
   SET(gtest_force_shared_crt
@@ -133,7 +133,7 @@ IF(BUILD_TESTS)
   FETCHCONTENT_DECLARE(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.3.2
+    GIT_TAG v3.16.0
   )
 
   SET_PACKAGE_PROPERTIES(

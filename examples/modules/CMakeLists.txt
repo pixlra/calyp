@@ -2,7 +2,7 @@
 # CMakeLists for modules_example
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 4.3.0)
 
 PROJECT("modules_example")
 

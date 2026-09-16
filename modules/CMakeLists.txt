@@ -36,8 +36,6 @@ ADD_MODULE(WeightedPSNR "WeightedPSNR")
 ADD_MODULE(HEVCIntraPrediction "HEVCIntraPrediction")
 ADD_MODULE(OptimiseDisplay "OptimiseDisplay")
 
-ADD_MODULE_USE_OPENCV(ShapeDetection "ShapeDetection" VERSION 3.1.0 MODULES core)
-
 ADD_MODULE_USE_OPENCV(
   MeasureOpticalFlowDualTVL1
   "MeasureOpticalFlowDualTVL1"
@@ -47,8 +45,6 @@ ADD_MODULE_USE_OPENCV(
   video
   optflow
 )
-ADD_MODULE_USE_OPENCV(DisparityStereoBM "DisparityStereoBM" VERSION 2.4.13.0 MODULES calib3d)
-ADD_MODULE_USE_OPENCV(DisparityStereoSGBM "DisparityStereoSGBM" VERSION 2.4.13.0 MODULES calib3d)
 ADD_MODULE_USE_OPENCV(OpticalFlowDualTVL1 "OpticalFlow" VERSION 3.1.0 MODULES optflow)
 ADD_MODULE_USE_OPENCV(OpticalFlowSparseToDense "OpticalFlow" VERSION 3.1.0 MODULES optflow)
 ADD_MODULE_USE_OPENCV(
@@ -79,16 +75,7 @@ ADD_MODULE_USE_OPENCV(SaliencyBasedFiltering "SaliencyBasedFiltering" VERSION 3.
 ADD_MODULE_USE_OPENCV(ThreeSixtySpatialtoTemporal "ThreeSixtySpatialtoTemporal" VERSION 3.1.0 MODULES core)
 ADD_MODULE_USE_OPENCV(ThreeSixtyFaceExtraction "ThreeSixtyFaceExtraction" VERSION 3.1.0 MODULES core)
 ADD_MODULE_USE_OPENCV(ThreeSixtyFaceConcatenation "ThreeSixtyFaceConcatenation" VERSION 3.1.0 MODULES core)
-ADD_MODULE_USE_OPENCV(
-  ThreeSixtyDownsampling
-  "ThreeSixtyDownsampling"
-  VERSION
-  3.1.0
-  MODULES
-  core
-  imgproc
-  photo
-)
+
 # ADD_MODULE_USE_OPENCV( ThreeSixtyDynamicDownsampling "ThreeSixtyDynamicDownsampling" VERSION 3.1.0 MODULES core imgproc )
 ADD_MODULE_USE_OPENCV(
   ThreeSixtyNxN
@@ -99,6 +86,41 @@ ADD_MODULE_USE_OPENCV(
   core
   imgproc
   photo
+)
+
+IF(OpenCV_VERSION VERSION_GREATER_EQUAL "5.0")
+  SET(CALYP_OPENCV_GEOMETRY geometry)
+  SET(CALYP_OPENCV_STEREO stereo)
+ELSE()
+  SET(CALYP_OPENCV_GEOMETRY imgproc)
+  SET(CALYP_OPENCV_STEREO calib3d)
+ENDIF()
+
+ADD_MODULE_USE_OPENCV(
+  ShapeDetection
+  "ShapeDetection"
+  VERSION
+  3.1.0
+  MODULES
+  core
+  imgproc
+  ${CALYP_OPENCV_GEOMETRY}
+)
+
+ADD_MODULE_USE_OPENCV(DisparityStereoBM "DisparityStereoBM" VERSION 2.4.13.0 MODULES ${CALYP_OPENCV_STEREO})
+
+ADD_MODULE_USE_OPENCV(DisparityStereoSGBM "DisparityStereoSGBM" VERSION 2.4.13.0 MODULES ${CALYP_OPENCV_STEREO})
+
+ADD_MODULE_USE_OPENCV(
+  ThreeSixtyDownsampling
+  "ThreeSixtyDownsampling"
+  VERSION
+  3.1.0
+  MODULES
+  core
+  imgproc
+  photo
+  ${CALYP_OPENCV_GEOMETRY}
 )
 
 IF(EXISTS ${CALYP_EXTRA_MODULES_DIR})

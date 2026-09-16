@@ -24,7 +24,11 @@
 #include "ThreeSixtyDynamicDownsampling.h"
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo.hpp>
+#if CV_VERSION_MAJOR >= 5
+#include <opencv2/geometry.hpp>
+#endif
 
 using cv::InputArray;
 using cv::Mat;
@@ -51,9 +55,11 @@ ThreeSixtyDynamicDownsampling::ThreeSixtyDynamicDownsampling()
       ( "SourceFPStructure", m_arrayInputDefinitionString, "Input frame packing" )    /**/
       ( "CodingFPStructure", m_arrayOutputDefinitionString, "Coding frame packing" ); /**/
 
-  m_arrayInputDefinitionString = "6 2 3  0 0 0 0 100   1 0 1 0 100   2 0 2 0 100  0 1 3 0 100   1 1 4 0 100   2 1 5 0 100";
+  m_arrayInputDefinitionString =
+      "6 2 3  0 0 0 0 100   1 0 1 0 100   2 0 2 0 100  0 1 3 0 100   1 1 4 0 100   2 1 5 0 100";
 
-  m_arrayOutputDefinitionString = "6 3 3  0 0 0 0 100   1 0 1 0 200   0 1 2 0 100  0 2 3 0 100   1 2 4 0 100   2 2 5 0 100 ";
+  m_arrayOutputDefinitionString =
+      "6 3 3  0 0 0 0 100   1 0 1 0 200   0 1 2 0 100  0 2 3 0 100   1 2 4 0 100   2 2 5 0 100 ";
 
   m_uiFaceWidth = 0;
   m_uiFaceHeight = 0;
@@ -92,8 +98,7 @@ bool ThreeSixtyDynamicDownsampling::create( std::vector<CalypFrame*> apcFrameLis
     m_uiFaceHeight = m_uiFaceWidth;
   }
 
-  m_pcOutputFrame = new CalypFrame( m_uiFaceWidth * m_cOutputFPSStruct.cols,
-                                    m_uiFaceHeight * m_cOutputFPSStruct.rows,
+  m_pcOutputFrame = new CalypFrame( m_uiFaceWidth * m_cOutputFPSStruct.cols, m_uiFaceHeight * m_cOutputFPSStruct.rows,
                                     apcFrameList[0]->getPelFormat(), apcFrameList[0]->getBitsPel() );
 
   return true;
@@ -149,7 +154,6 @@ CalypFrame* ThreeSixtyDynamicDownsampling::process( std::vector<CalypFrame*> apc
 
 void ThreeSixtyDynamicDownsampling::destroy()
 {
-  if( m_pcOutputFrame )
-    delete m_pcOutputFrame;
+  if( m_pcOutputFrame ) delete m_pcOutputFrame;
   m_pcOutputFrame = NULL;
 }

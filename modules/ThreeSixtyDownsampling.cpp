@@ -25,9 +25,11 @@
 #include "ThreeSixtyDownsampling.h"
 
 #include <opencv2/core/core.hpp>
-//#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/photo.hpp>
+#if CV_VERSION_MAJOR >= 5
+#include <opencv2/geometry.hpp>
+#endif
 
 using cv::Rect;
 using cv::Scalar;
@@ -43,9 +45,7 @@ ThreeSixtyDownsampling::ThreeSixtyDownsampling()
   m_pchModuleLongName = "Adaptive Latitude Downsampling";
   m_pchModuleTooltip = "Adaptive Latitude Downsampling";
   m_uiNumberOfFrames = 1;
-  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying |
-                           ClpModuleFeature::Options |
-                           ClpModuleFeature::HasInfo |
+  m_uiModuleRequirements = ClpModuleFeature::SkipWhilePlaying | ClpModuleFeature::Options | ClpModuleFeature::HasInfo |
                            ClpModuleFeature::KeysShortcuts;
 
   m_cModuleOptions.addOptions()                                                                     /**/
@@ -77,13 +77,13 @@ ThreeSixtyDownsampling::ThreeSixtyDownsampling()
   m_pcDownsampled = NULL;
   m_dPixelRatio = 0;
 
-  //#ifdef DEBUG
-  //  m_uiY0 = 25;
-  //  m_uiX0 = 0;
-  //  m_iInterpolation = 4;
-  //  m_bForceIntSlope = 1;
-  //  m_iRearrange = 1;
-  //#endif
+  // #ifdef DEBUG
+  //   m_uiY0 = 25;
+  //   m_uiX0 = 0;
+  //   m_iInterpolation = 4;
+  //   m_bForceIntSlope = 1;
+  //   m_iRearrange = 1;
+  // #endif
 }
 
 std::string ThreeSixtyDownsampling::moduleInfo()
@@ -205,9 +205,11 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
   m_isOdd = !( m_iHeight % 2 );
   for( unsigned ch = 0; ch < m_pcDownsampled->getNumberChannels(); ch++ )
   {
-    Mat* downsamplingMaskPtr = new Mat( m_pcDownsampled->getHeight( ch ), m_pcDownsampled->getWidth( ch ), CV_8UC1, Scalar( 0 ) );
+    Mat* downsamplingMaskPtr =
+        new Mat( m_pcDownsampled->getHeight( ch ), m_pcDownsampled->getWidth( ch ), CV_8UC1, Scalar( 0 ) );
     Mat downsamplingMask = *downsamplingMaskPtr;
-    Mat_<Point> initialReshapePoints( m_pcDownsampled->getHeight( ch ), m_pcDownsampled->getWidth( ch ), Point( -1, -1 ) );
+    Mat_<Point> initialReshapePoints( m_pcDownsampled->getHeight( ch ), m_pcDownsampled->getWidth( ch ),
+                                      Point( -1, -1 ) );
 
     int imH = m_pcDownsampled->getHeight( ch );
     int imN = imH / 2;
@@ -230,10 +232,12 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
 
     if( m_uiY0 > 0 )
     {
-      double x0min = ( 1 + y0 / tan( theta ) - imH + WIDTH_TRIM_START_POINT ) * double( imN - y0 ) / y0 + y0 / tan( theta );
+      double x0min =
+          ( 1 + y0 / tan( theta ) - imH + WIDTH_TRIM_START_POINT ) * double( imN - y0 ) / y0 + y0 / tan( theta );
 
       x0 = std::max( x0, x0min );
-      xl = double( imH - WIDTH_TRIM_START_POINT ) - y0 / tan( theta ) - y0 * y0 / double( imN - y0 ) * ( 1.0 / tan( theta ) - x0 / y0 );
+      xl = double( imH - WIDTH_TRIM_START_POINT ) - y0 / tan( theta ) -
+           y0 * y0 / double( imN - y0 ) * ( 1.0 / tan( theta ) - x0 / y0 );
       xl = std::floor( xl );
       if( m_iRearrange == 3 )
         xl = imH / 2;
@@ -243,8 +247,7 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
         xl = imH / 3;
 
       slope2 = xl / ( double( imN ) - y0 );
-      if( m_bForceIntSlope )
-        slope2 = std::round( slope2 );
+      if( m_bForceIntSlope ) slope2 = std::round( slope2 );
 
       // calculate the final coordinates of point corresponding to y0
       // p0 corresponds to a coordinate system with reference ate left-most equator
@@ -316,23 +319,25 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
       // Strecth into wide rectangle
       if( m_iRearrange == 1 )
       {
-        intermediateReshapePoints = Mat_<Point>( initialReshapePoints.rows, initialReshapePoints.cols, Point( -1, -1 ) );
+        intermediateReshapePoints =
+            Mat_<Point>( initialReshapePoints.rows, initialReshapePoints.cols, Point( -1, -1 ) );
         Size maskSize( imH - p0.x, imN - p0.y );
         for( int hemisfer = -1; hemisfer < 2; hemisfer += 2 )
         {
           // copy center
           Point r0_pt( 0, imN );
           Point r0_size( 2 * imH, hemisfer * p0.y );
-          initialReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ).copyTo( intermediateReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ) );
+          initialReshapePoints( Rect( r0_pt, r0_pt + r0_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ) );
 
           // main triangle
           Mat currMask;
           downsamplingMask( Rect( Point( p0.x, 0 ), maskSize ) ).copyTo( currMask );
-          if( hemisfer == 1 )
-            cv::flip( currMask, currMask, 0 );  // Filp vertically
+          if( hemisfer == 1 ) cv::flip( currMask, currMask, 0 );  // Filp vertically
 
           initialReshapePoints( Rect( Point( p0.x, hemisfer == -1 ? 0 : imN + p0.y ), maskSize ) )
-              .copyTo( intermediateReshapePoints( Rect( Point( 1, hemisfer == -1 ? 0 : imN + p0.y ), maskSize ) ), currMask );
+              .copyTo( intermediateReshapePoints( Rect( Point( 1, hemisfer == -1 ? 0 : imN + p0.y ), maskSize ) ),
+                       currMask );
 
           // rotated triangle
           Mat tmpTriangle;
@@ -341,7 +346,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
 
           cv::flip( currMask, currMask, 1 );  // Filp horizontaly
           cv::flip( currMask, currMask, 0 );
-          tmpTriangle.copyTo( intermediateReshapePoints( Rect( Point( 0, hemisfer == -1 ? 0 : imN + p0.y ), maskSize ) ), currMask );
+          tmpTriangle.copyTo(
+              intermediateReshapePoints( Rect( Point( 0, hemisfer == -1 ? 0 : imN + p0.y ), maskSize ) ), currMask );
           tmpTriangle.release();
         }
         // At this point the two triangle were merged into a rectangle
@@ -350,9 +356,11 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
           int numberRectSlices = ( imN - p0.y ) / p0.y;
           int rectSlicesWidth = 2 * imN - p0.x + 1;
           // create extended  reshapePoints
-          Mat_<Point> extendedReshapePoints( 2 * p0.y, intermediateReshapePoints.cols + rectSlicesWidth * numberRectSlices, Point( -1, -1 ) );
+          Mat_<Point> extendedReshapePoints(
+              2 * p0.y, intermediateReshapePoints.cols + rectSlicesWidth * numberRectSlices, Point( -1, -1 ) );
           intermediateReshapePoints( Rect( Point( 0, imN - p0.y ), Size( intermediateReshapePoints.cols, 2 * p0.y ) ) )
-              .copyTo( extendedReshapePoints( Rect( Point( 0, 0 ), Size( intermediateReshapePoints.cols, 2 * p0.y ) ) ) );
+              .copyTo(
+                  extendedReshapePoints( Rect( Point( 0, 0 ), Size( intermediateReshapePoints.cols, 2 * p0.y ) ) ) );
           for( int hemisfer = -1; hemisfer < 2; hemisfer += 2 )
           {
             Point initSize( rectSlicesWidth, hemisfer * p0.y );
@@ -360,7 +368,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
             for( int i = 0; i < numberRectSlices; i++ )
             {
               Point initPoint = Point( 0, imN + hemisfer * ( p0.y + i * p0.y ) );
-              intermediateReshapePoints( Rect( initPoint, initPoint + initSize ) ).copyTo( extendedReshapePoints( Rect( finalPoint, finalPoint + initSize ) ) );
+              intermediateReshapePoints( Rect( initPoint, initPoint + initSize ) )
+                  .copyTo( extendedReshapePoints( Rect( finalPoint, finalPoint + initSize ) ) );
               finalPoint += Point( rectSlicesWidth, 0 );
             }
           }
@@ -372,7 +381,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
       // Rotate triangles into a rectangle and spread the top small triangles
       else if( m_iRearrange == 2 )
       {
-        intermediateReshapePoints = Mat_<Point>( initialReshapePoints.rows, initialReshapePoints.cols, Point( -1, -1 ) );
+        intermediateReshapePoints =
+            Mat_<Point>( initialReshapePoints.rows, initialReshapePoints.cols, Point( -1, -1 ) );
         for( int hemisfer = -1; hemisfer < 2; hemisfer += 2 )
         {
           if( p0.x < imN )
@@ -382,13 +392,15 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
               // center
               Point r0_pt( imH, imN );
               Point r0_size( side * imH, hemisfer * p0.y );
-              initialReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ).copyTo( intermediateReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ) );
+              initialReshapePoints( Rect( r0_pt, r0_pt + r0_size ) )
+                  .copyTo( intermediateReshapePoints( Rect( r0_pt, r0_pt + r0_size ) ) );
 
               // copy center unmodified
               Point r1_pt = r0_pt + Point( 0, hemisfer * p0.y );
               Point r1_size( side * imH, hemisfer * ( p1.y - p0.y ) / 2 );
               Rect mainRoi( r1_pt, r1_pt + r1_size );
-              initialReshapePoints( mainRoi ).copyTo( intermediateReshapePoints( mainRoi ), downsamplingMask( mainRoi ) );
+              initialReshapePoints( mainRoi ).copyTo( intermediateReshapePoints( mainRoi ),
+                                                      downsamplingMask( mainRoi ) );
 
               // rotated polygon
               Point r2_pt = r1_pt + Point( 0, hemisfer * ( p1.y - p0.y ) / 2 );
@@ -403,7 +415,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
               auxMask.release();
 
               // top triangle
-              // the top triangle is converted to a rectangle and then reshape into and new rectangle with a larger width
+              // the top triangle is converted to a rectangle and then reshape into and new rectangle with a larger
+              // width
               Point r34_size( side * ( imH - p1.x + 1 ), hemisfer * ( imN - p1.y ) / 2 );
               Point r3_pt( imH, imN + hemisfer * p1.y );
               Point r4_pt = r3_pt + Point( 0, r34_size.y );
@@ -427,8 +440,7 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
               int reshapedWidth = imH;
               while( 1 )
               {
-                if( !( shape_area % reshapedWidth ) )
-                  break;
+                if( !( shape_area % reshapedWidth ) ) break;
                 reshapedWidth--;
               }
               int reshaped_height = shape_area / reshapedWidth;
@@ -437,7 +449,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
                 return false;
               }
               topTriangleReshape = topTriangleReshape.reshape( 1, reshaped_height );
-              topTriangleReshape.copyTo( intermediateReshapePoints( Rect( r3l_pt, r3l_pt + Point( side * topTriangleReshape.cols, hemisfer * topTriangleReshape.rows ) ) ) );
+              topTriangleReshape.copyTo( intermediateReshapePoints( Rect(
+                  r3l_pt, r3l_pt + Point( side * topTriangleReshape.cols, hemisfer * topTriangleReshape.rows ) ) ) );
             }
           }
           else
@@ -460,14 +473,16 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
           r_pt = Point( p0.x, imN );
           r_size = Point( 2 * ( imH - p0.x ), hemisfer * p0.y );
           r_pt_final = Point( p0.x, 3 * p0.y );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
 
           // copy triangle 2 or 4
           r_pt = Point( imH, imN + hemisfer * p0.y );
           r_size = Point( -( imH - p0.x ), hemisfer * ( imN - p0.y ) );
           r_pt_final = Point( imH, 3 * p0.y + hemisfer * p0.y );
           downsamplingMask( Rect( r_pt, r_pt + r_size ) ).copyTo( currMask );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
           currMask.release();
 
           // copy triangle 3 or 1
@@ -476,7 +491,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
           r_pt_final = Point( p0.x, hemisfer == -1 ? 0 : 6 * p0.y );
 
           downsamplingMask( Rect( r_pt, r_pt + r_size ) ).copyTo( currMask );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
 
           // copy rectangle 7 and 8
           r_pt = Point( imH - hemisfer * ( imH - p0.x ), imN - p0.y );
@@ -485,7 +501,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
             r_pt_final = Point( imH, 0 );
           else
             r_pt_final = Point( 2 * imH - p0.x, 4 * p0.y );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
         }
       }
       else if( m_iRearrange == 4 )
@@ -518,14 +535,16 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
           r_pt = Point( p0.x, imN - p0.y );
           r_size = Point( 2 * ( imH - p0.x ), 2 * p0.y );
           r_pt_final = Point( p0.x, imN - p0.y );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
 
           // copy triangle 2 or 1
           r_pt = Point( imH, imN - p0.y );
           r_size = Point( side * ( imH - p0.x ), -( imN - p0.y ) );
           r_pt_final = Point( imH, imN - p0.y );
           downsamplingMask( Rect( r_pt, r_pt + r_size ) ).copyTo( currMask );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
           currMask.release();
 
           // copy triangle 4 or 3
@@ -533,7 +552,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
           r_size = Point( side * ( imH - p0.x ), imN - p0.y );
           r_pt_final = Point( imH - side * ( imH - p0.x ), 0 );
           downsamplingMask( Rect( r_pt, r_pt + r_size ) ).copyTo( currMask );
-          initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
+          initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+              .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ), currMask );
 
           // copy rectangle 7 and 8
           if( m_uiY0 == 40 )
@@ -549,7 +569,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
             }
             else
             {
-              initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
+              initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+                  .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
             }
           }
           else
@@ -557,7 +578,8 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
             r_pt = Point( imH + side * ( imH - p0.x ), imN - p0.y );
             r_size = Point( side * p0.x, p0.y * 2 );
             r_pt_final = Point( imH - side * p0.x, imN + p0.y + ver_pad );
-            initialReshapePoints( Rect( r_pt, r_pt + r_size ) ).copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
+            initialReshapePoints( Rect( r_pt, r_pt + r_size ) )
+                .copyTo( intermediateReshapePoints( Rect( r_pt_final, r_pt_final + r_size ) ) );
           }
         }
       }
@@ -587,17 +609,17 @@ bool ThreeSixtyDownsampling::createDownsamplingMask( CalypFrame* pcInputFrame )
   switch( m_uiDownsampling )
   {
   case 0:
-    m_pcResultedFrame = new CalypFrame( m_pcDownsampled->getWidth(), m_pcDownsampled->getHeight(), pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
+    m_pcResultedFrame = new CalypFrame( m_pcDownsampled->getWidth(), m_pcDownsampled->getHeight(),
+                                        pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
     break;
   case 1:
-    m_pcResultedFrame = new CalypFrame( m_cvReshapePoints[0]->cols, m_cvReshapePoints[0]->rows, pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
+    m_pcResultedFrame = new CalypFrame( m_cvReshapePoints[0]->cols, m_cvReshapePoints[0]->rows,
+                                        pcInputFrame->getPelFormat(), pcInputFrame->getBitsPel() );
     break;
   case 2:
-    m_pcResultedFrame = new CalypFrame{ pcInputFrame->getWidth(),
-                                        pcInputFrame->getHeight(),
-                                        pcInputFrame->getPelFormat(),
-                                        pcInputFrame->getBitsPel(),
-                                        pcInputFrame->getHasNegativeValues() };
+    m_pcResultedFrame =
+        new CalypFrame{ pcInputFrame->getWidth(), pcInputFrame->getHeight(), pcInputFrame->getPelFormat(),
+                        pcInputFrame->getBitsPel(), pcInputFrame->getHasNegativeValues() };
     break;
   }
   return true;
@@ -679,8 +701,7 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
       for( unsigned x = 0; x < pcInputFrame->getWidth( ch ); x++ )
       {
         Point pt = reshapePoints.at<Point>( y, x );
-        if( pt.x > -1 )
-          downSampPelBuff[pt.y][pt.x] = *( pelInputPtr );
+        if( pt.x > -1 ) downSampPelBuff[pt.y][pt.x] = *( pelInputPtr );
         pelInputPtr++;
       }
     }
@@ -695,7 +716,8 @@ void ThreeSixtyDownsampling::upsamplingOperation( CalypFrame* pcInputFrame )
       unsigned int xpos = imH - lineWidth / 2;  // N - WIDTH/2
 
       // resize
-      cv::resize( cvDownsampled.row( y ).colRange( xpos, xpos + lineWidth ), cvUpsample, cvUpsample.size(), 0, 0, m_iInterpolation );
+      cv::resize( cvDownsampled.row( y ).colRange( xpos, xpos + lineWidth ), cvUpsample, cvUpsample.size(), 0, 0,
+                  m_iInterpolation );
 
       // copy to output
       ClpPel* outpel = &m_pcResultedFrame->getPelBufferYUV()[ch][y][0];
@@ -756,10 +778,8 @@ bool ThreeSixtyDownsampling::keyPressed( enum Module_Key_Supported value )
 
 void ThreeSixtyDownsampling::destroy()
 {
-  if( m_pcDownsampled )
-    delete m_pcDownsampled;
+  if( m_pcDownsampled ) delete m_pcDownsampled;
   m_pcDownsampled = NULL;
-  if( m_pcResultedFrame )
-    delete m_pcResultedFrame;
+  if( m_pcResultedFrame ) delete m_pcResultedFrame;
   m_pcResultedFrame = NULL;
 }

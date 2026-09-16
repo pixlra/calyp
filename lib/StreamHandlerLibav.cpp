@@ -30,12 +30,12 @@
 #include "CalypFrame.h"
 #include "PixelFormats.h"
 
-#if( ( LIBAVCODEC_VERSION_MAJOR > 57 ) || ( LIBAVCODEC_VERSION_MAJOR == 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )
+#if ( ( LIBAVCODEC_VERSION_MAJOR > 57 ) || ( LIBAVCODEC_VERSION_MAJOR == 57 ) && ( LIBAVCODEC_VERSION_MINOR >= 37 ) )
 #define FF_SEND_RECEIVE_API
 #define FF_USER_CODEC_PARAM
 #endif
 
-#if( LIBAVCODEC_VERSION_MAJOR >= 59 && LIBAVFORMAT_VERSION_MAJOR >= 59 )
+#if ( LIBAVCODEC_VERSION_MAJOR >= 59 && LIBAVFORMAT_VERSION_MAJOR >= 59 )
 #define FF_API_LAVF_AVCTX
 #endif
 
@@ -212,8 +212,7 @@ bool StreamHandlerLibav::openHandler( std::string strFilename, bool bInput )
   }
 
   double fr = 30;
-  if( m_cStream->avg_frame_rate.den && m_cStream->avg_frame_rate.num )
-    fr = av_q2d( m_cStream->avg_frame_rate );
+  if( m_cStream->avg_frame_rate.den && m_cStream->avg_frame_rate.num ) fr = av_q2d( m_cStream->avg_frame_rate );
 #if FF_API_R_FRAME_RATE
   else if( m_cStream->r_frame_rate.den && m_cStream->r_frame_rate.num )
     fr = av_q2d( m_cStream->r_frame_rate );
@@ -312,10 +311,14 @@ void StreamHandlerLibav::closeHandler()
   if( m_bHasStream )
   {
     if( m_cCodedCtx )
-      avcodec_close( m_cCodedCtx );
+    {
+      avcodec_free_context( &m_cCodedCtx );
+    }
 
     if( m_cFmtCtx )
+    {
       avformat_close_input( &m_cFmtCtx );
+    }
 
     av_free( m_cFrame );
     av_packet_free( &m_cPacket );
@@ -378,8 +381,7 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
 #else
     if( m_cPacket->stream_index == m_iStreamIdx )
     {
-      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, m_cPacket ) ) < 0 )
-        return false;
+      if( ( iRet = avcodec_decode_video2( m_cCodedCtx, m_cFrame, &bGotFrame, m_cPacket ) ) < 0 ) return false;
       m_cPacket->data += iRet;
       m_cPacket->size -= iRet;
       if( m_cPacket->size <= 0 )
@@ -389,8 +391,7 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
       }
     }
 #endif
-    if( bGotFrame )
-      break;
+    if( bGotFrame ) break;
     if( bReadPkt )
     {
       bReadPkt = false;
@@ -407,8 +408,9 @@ bool StreamHandlerLibav::read( CalypFrame& pcFrame )
       m_cOrgPacket = *m_cPacket;
 #ifdef FF_SEND_RECEIVE_API
       if( m_cPacket->stream_index == m_iStreamIdx )
-        if( ( iRet = avcodec_send_packet( m_cCodedCtx, m_cPacket ) ) < 0 )
-          return false;
+      {
+        if( ( iRet = avcodec_send_packet( m_cCodedCtx, m_cPacket ) ) < 0 ) return false;
+      }
 #endif
     }
   }
@@ -440,11 +442,9 @@ bool StreamHandlerLibav::write( const CalypFrame& pcFrame )
 
 bool StreamHandlerLibav::seek( std::uint64_t iFrameNum )
 {
-  if( m_uiTotalNumberFrames == 1 )
-    return true;
+  if( m_uiTotalNumberFrames == 1 ) return true;
 
-  if( m_uiCurrFrameFileIdx == iFrameNum )
-    return true;
+  if( m_uiCurrFrameFileIdx == iFrameNum ) return true;
 
   int flags = AVSEEK_FLAG_ANY | AVSEEK_FLAG_FRAME;
   if( iFrameNum < m_uiCurrFrameFileIdx )

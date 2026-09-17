@@ -66,6 +66,8 @@ void ResourceWorker::start()
 
 void ResourceWorker::run()
 {
+  using namespace std::chrono_literals;
+
   m_bStop = false;
   m_bStarted = true;
   m_bStarting = false;
@@ -77,7 +79,7 @@ void ResourceWorker::run()
     {
       // Wait here
       m_Mutex.lock();
-      m_ResourceIdle.wait( &m_Mutex );
+      m_ResourceIdle.wait( &m_Mutex, QDeadlineTimer{ 5s } );
       m_Mutex.unlock();
     }
 

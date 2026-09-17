@@ -18,9 +18,17 @@
  */
 
 /**
- * \file     CalypLibTests.cpp
- * \brief    CalypLib main test file
+ * \file     CalypAppTests.cpp
+ * \brief    CalypApp main test file
  */
 
-#define CATCH_CONFIG_MAIN
+#include <QCoreApplication>
+#include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
+
+int main( int argc, char* argv[] )
+{
+  QCoreApplication app( argc, argv );
+
+  return Catch::Session().run( argc, argv );
+}

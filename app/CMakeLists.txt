@@ -20,7 +20,7 @@ OPTION(CALYP_THREADED_MODULES "Use threads for modules" ON)
 
 IF(${USE_QT6})
   FIND_PACKAGE(Qt6 QUIET COMPONENTS Core Gui Widgets Concurrent)
-  IF (NOT Qt6_FOUND)
+  IF(NOT Qt6_FOUND)
     FIND_PACKAGE(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
   ENDIF()
 ELSE()
@@ -49,7 +49,6 @@ IF(USE_QTDBUS)
     LIST(APPEND QT_MODULES DBus)
   ENDIF()
 ENDIF()
-
 
 ADD_DEFINITIONS(
   -DQT_NO_CAST_TO_ASCII
@@ -103,8 +102,6 @@ IF(USE_QTDBUS)
   LIST(APPEND Calyp_App_GUI_SRCS DBusAppAdaptor.cpp)
 ENDIF()
 
-SET(Calyp_App_UI "")
-
 SET(Calyp_App_RCC resources/${PROJECT_NAME}.qrc)
 
 IF(USE_FERVOR)
@@ -147,7 +144,6 @@ SET_PACKAGE_PROPERTIES(
 )
 ADD_FEATURE_INFO(Fervor USE_FERVOR "Fervor lib includes check for updates feature.")
 
-QT_WRAP_UI(Calyp_App_UI_Wrap ${Calyp_App_UI})
 QT_ADD_RESOURCES(Calyp_App_RCC ${Calyp_App_RCC})
 
 # Instruct CMake to run moc automatically when needed.
@@ -175,7 +171,7 @@ IF(WIN32)
       COMMENT "Add icon on windows platform"
     )
   ENDIF()
-  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${WINDOWS_RES_FILE})
+  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_RCC} ${WINDOWS_RES_FILE})
 ELSEIF(CMAKE_HOST_APPLE)
   SET(CMAKE_MACOSX_BUNDLE ON)
   SET(MACOSX_BUNDLE_EXECUTABLE_NAME ${PROJECT_NAME})
@@ -183,9 +179,9 @@ ELSEIF(CMAKE_HOST_APPLE)
   SET(MACOSX_BUNDLE_BUNDLE_NAME Calyp)
   SET(APP_ICON_MACOSX ${CMAKE_CURRENT_SOURCE_DIR}/resources/calyp.icns)
   SET_SOURCE_FILES_PROPERTIES(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-  ADD_EXECUTABLE(${PROJECT_NAME} MACOSX_BUNDLE ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC} ${APP_ICON_MACOSX})
+  ADD_EXECUTABLE(${PROJECT_NAME} MACOSX_BUNDLE ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_RCC} ${APP_ICON_MACOSX})
 ELSE()
-  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_UI_Wrap} ${Calyp_App_RCC})
+  ADD_EXECUTABLE(${PROJECT_NAME} ${Calyp_App_GUI_SRCS} ${HEADERS_MOC_FILES} ${Calyp_App_RCC})
 ENDIF()
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PROJECT_LIBRARY} CalypModules ${APP_LINKER_LIBS} ${QT_LINKER_LIBS} QCustomPlotLib)
 
@@ -199,11 +195,7 @@ INSTALL(FILES resources/calyp.xml DESTINATION share/mime/packages)
 IF(BUILD_TESTS)
   FETCHCONTENT_MAKEAVAILABLE(Catch2)
 
-  SET(Calyp_App_Catch2_Tests_SRCS
-    ${Calyp_App_Module_SRCS}
-    catch2/CalypAppTests.cpp
-    catch2/CalypResourcesTests.cpp
-  )
+  SET(Calyp_App_Catch2_Tests_SRCS ${Calyp_App_Module_SRCS} catch2/CalypAppTests.cpp catch2/CalypResourcesTests.cpp)
 
   ADD_DEFINITIONS(-DCALYP_TEST_DATA_DIR=\"${CALYP_TEST_DATA_DIR}\")
 
@@ -215,7 +207,7 @@ IF(BUILD_TESTS)
     ${APP_LINKER_LIBS}
     ${QT_LINKER_LIBS}
     QCustomPlotLib
-    Catch2::Catch2WithMain
+    Catch2::Catch2
   )
   CATCH_DISCOVER_TESTS(CalypAppCatch2Tests)
 ENDIF()

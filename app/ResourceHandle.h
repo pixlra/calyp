@@ -107,6 +107,7 @@ private:
   auto addResource() -> std::size_t;
 
 private:  // NOLINT
+  std::size_t m_uiNextUniqueId{ 0 };
   std::unique_ptr<QThread> m_thread;
   std::map<std::size_t, std::shared_ptr<CalypResource>> m_apcStreamResourcesList;
   std::map<std::size_t, std::unique_ptr<ResourceWorker>> m_apcStreamResourcesWorkersList;

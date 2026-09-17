@@ -1303,14 +1303,9 @@ bool CalypFrame::toMat( cv::Mat& cvMat, bool convertToGray, bool scale, unsigned
 
 auto CalypFrame::fromMat( cv::Mat& cvMat, int channel ) -> bool
 {
-  bool bRet = false;
 #ifdef USE_OPENCV
-  unsigned numBytes = getBitsPel() > kNumBitsInByte ? 2 : 1;
-  auto numChannels = getNumberChannels();
-  auto cvPrecision = getBitsPel() > kNumBitsInByte ? CV_16U : CV_8U;
   if( !m_d->m_bInit )
   {
-    uchar depth = cvMat.type() & CV_MAT_DEPTH_MASK;
     if( m_d->m_iPixelFormat == ClpPixelFormats::Invalid )
     {
       switch( cvMat.channels() )
@@ -1326,13 +1321,26 @@ auto CalypFrame::fromMat( cv::Mat& cvMat, int channel ) -> bool
         return false;
       }
     }
-    m_d->m_uiBitsPel = depth == CV_8U ? kNumBitsInByte : kMinBitsPerPixel * 2;
+    switch( cvMat.depth() )
+    {
+    case CV_8U:
+      m_d->m_uiBitsPel = 8;
+      break;
+
+    case CV_16U:
+      m_d->m_uiBitsPel = 16;
+      break;
+
+    default:
+      return false;
+    }
     m_d->init( cvMat.cols, cvMat.rows, m_d->m_iPixelFormat, m_d->m_uiBitsPel );
   }
 
   m_d->m_bHasRGBPel = false;
   m_d->m_bHasHistogram = false;
 
+  auto numChannels = getNumberChannels();
   if( channel >= 0 )
   {
     numChannels = 1;
@@ -1350,53 +1358,60 @@ auto CalypFrame::fromMat( cv::Mat& cvMat, int channel ) -> bool
   auto imgWidth = getWidth( channel );
   auto imgHeight = getHeight( channel );
 
-  if( numChannels > 1 )
+  if( numChannels == 1 )
   {
-    cv::Mat tmpMat( imgHeight, imgWidth, CV_MAKETYPE( cvPrecision, numChannels ) );
-    switch( getColorSpace() )
+    if( cvMat.depth() == CV_8U )
     {
-    case CLP_COLOR_YUV:
-      cv::cvtColor( tmpMat, cvMat, cv::COLOR_RGB2YCrCb );
-      break;
-    }
-    auto* cv_data = tmpMat.data;
-    auto cv_step = tmpMat.step;
-    CalypPixel currPel;
-    for( unsigned int y = 0; y < imgHeight; y++ )
-    {
-      for( unsigned int x = 0; x < imgWidth; x++ )
+      for( unsigned y = 0; y < imgHeight; ++y )
       {
-        for( unsigned int ch = 0; ch < numChannels; ch++ )
-        {
-          currPel[ch] = 0;
-          for( unsigned b = 0; b < numBytes; b++ )
-          {
-            currPel[ch] = currPel[ch] + ( *( cv_data + y * cv_step + x * numChannels * numBytes + ch + b )
-                                          << ( kNumBitsInByte * b ) );
-          }
-        }
-        setPixel( x, y, currPel );
+        const auto* src = cvMat.ptr<std::uint8_t>( y );
+        auto* dst = getPelBufferYUV()[channel][y];
+        for( unsigned x = 0; x < imgWidth; ++x )
+          dst[x] = src[x];
       }
     }
-  }
-  else
-  {
-    auto* cv_data = cvMat.data;
-    ClpPel* pel = getPelBufferYUV()[channel][0];
-    for( unsigned int y = 0; y < imgHeight * imgWidth; y++ )
+    else if( cvMat.depth() == CV_16U )
     {
-      ClpPel curr_pel{ 0 };
-      for( unsigned b = 0; b < numBytes; b++ )
+      for( unsigned y = 0; y < imgHeight; ++y )
       {
-        curr_pel += ( *cv_data++ ) << ( kNumBitsInByte * b );
-      }
-      *pel++ = curr_pel;
-    }
-  }
+        const auto* src = cvMat.ptr<std::uint16_t>( y );
+        auto* dst = getPelBufferYUV()[channel][y];
 
-  bRet = true;
+        for( unsigned x = 0; x < imgWidth; ++x )
+          dst[x] = src[x];
+      }
+    }
+    return true;
+  }
+  cv::Mat tmpMat;
+  switch( getColorSpace() )
+  {
+  case CLP_COLOR_YUV:
+    cv::cvtColor( cvMat, tmpMat, cv::COLOR_RGB2YCrCb );
+    break;
+  case CLP_COLOR_RGB:
+  case CLP_COLOR_RGBA:
+    tmpMat = cvMat;
+    break;
+  default:
+    return false;
+  }
+  for( unsigned int y = 0; y < imgHeight; ++y )
+  {
+    const auto* row = tmpMat.ptr<std::uint8_t>( y );
+    for( unsigned int x = 0; x < imgWidth; ++x )
+    {
+      CalypPixel currPel;
+      for( unsigned int ch = 0; ch < numChannels; ++ch )
+      {
+        currPel[ch] = row[x * numChannels + ch];
+      }
+      setPixel( x, y, currPel );
+    }
+  }
+  return true;
 #endif
-  return bRet;
+  return false;
 }
 
 /*

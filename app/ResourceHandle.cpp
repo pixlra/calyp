@@ -32,12 +32,6 @@
 #include <QThread>
 #include <memory>
 
-auto get_new_resource_id() -> std::size_t
-{
-  static std::size_t unique_id{ 0 };
-  return unique_id++;
-}
-
 ResourceWorker::~ResourceWorker()
 {
   stop();
@@ -77,7 +71,7 @@ void ResourceWorker::run()
   m_bStarting = false;
 
   // Loop forever
-  for( ;; )
+  while( true )
   {
     while( !m_bStop && !m_resource->isReady() )
     {
@@ -141,7 +135,7 @@ void ResourceHandle::cleanup()
 
 auto ResourceHandle::addResource() -> std::size_t
 {
-  auto resource_id = get_new_resource_id();
+  auto resource_id = m_uiNextUniqueId++;
   auto newStreamResource = std::make_shared<OldStreamResource>();
   auto newStreamResourceWorker = std::make_unique<ResourceWorker>( newStreamResource );
   m_apcStreamResourcesList[resource_id] = newStreamResource;
@@ -172,7 +166,7 @@ auto ResourceHandle::getResourceAsset( std::size_t id ) -> CalypStream*
 
 auto ResourceHandle::appendResource( std::unique_ptr<CalypResource>&& resource ) -> std::size_t
 {
-  auto resource_id = get_new_resource_id();
+  auto resource_id = m_uiNextUniqueId++;
   m_apcStreamResourcesList[resource_id] = std::move( resource );
   m_apcStreamResourcesWorkersList[resource_id] =
       std::make_unique<ResourceWorker>( m_apcStreamResourcesList[resource_id] );

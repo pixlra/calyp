@@ -185,13 +185,14 @@ TEST_CASE( "Resource handle can store a video resource", "VideoResource" )
     auto videoResource = std::make_unique<VideostreamResource>( nullptr );
     REQUIRE( videoResource != nullptr );
     CHECK( videoResource->loadFile( streamInfo ) );
-    resourceHandle->appendResource( std::move( videoResource ) );
+    CHECK( resourceHandle->appendResource( std::move( videoResource ) ) == 0 );
   }
 
   auto videoResource = std::make_unique<VideostreamResource>( nullptr );
   REQUIRE( videoResource != nullptr );
   CHECK( videoResource->loadFile( streamInfo ) );
   auto resource_id = resourceHandle->appendResource( std::move( videoResource ) );
+  CHECK( resource_id == 1 );
 
   SECTION( "Can start and stop resource" )
   {

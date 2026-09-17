@@ -16,9 +16,7 @@ SET(qcustomplot_SRCS qcustomplot.cpp qcustomplot.h)
 
 SET(CMAKE_AUTOMOC ON)
 
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-deprecated-declarations -Wno-deprecated-enum-enum-conversion")
-ENDIF()
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-deprecated-declarations -Wno-deprecated-enum-enum-conversion -Wno-misleading-indentation")
 
 ADD_LIBRARY(QCustomPlotLib STATIC ${qcustomplot_SRCS})
 TARGET_LINK_LIBRARIES(QCustomPlotLib Qt::Core Qt::Gui Qt::Widgets Qt::PrintSupport)
